@@ -1,0 +1,1305 @@
+2026-05-31 19:38:31  INFO      radiant_mvt.frontend — ============================================================
+2026-05-31 19:38:31  INFO      radiant_mvt.frontend — ============================================================
+2026-05-31 19:38:31  INFO      radiant_mvt.frontend — Radiant-MVT Frontend Server
+2026-05-31 19:38:31  INFO      radiant_mvt.frontend — Radiant-MVT Frontend Server
+2026-05-31 19:38:31  INFO      radiant_mvt.frontend — Serving : /Users/prakash.babu/Library/CloudStorage/OneDrive-HCLTECHNOLOGIESLIMITED/Code/MVT Trader Demo/radiant-mvt/frontend
+2026-05-31 19:38:31  INFO      radiant_mvt.frontend — Serving : /Users/prakash.babu/Library/CloudStorage/OneDrive-HCLTECHNOLOGIESLIMITED/Code/MVT Trader Demo/radiant-mvt/frontend
+2026-05-31 19:38:31  INFO      radiant_mvt.frontend — URL     : http://localhost:3000
+2026-05-31 19:38:31  INFO      radiant_mvt.frontend — URL     : http://localhost:3000
+2026-05-31 19:38:31  INFO      radiant_mvt.frontend — API     : http://localhost:8000  (backend)
+2026-05-31 19:38:31  INFO      radiant_mvt.frontend — API     : http://localhost:8000  (backend)
+2026-05-31 19:38:31  INFO      radiant_mvt.frontend — Log     : frontend.log
+2026-05-31 19:38:31  INFO      radiant_mvt.frontend — Log     : frontend.log
+2026-05-31 19:38:31  INFO      radiant_mvt.frontend — Stop    : Ctrl+C
+2026-05-31 19:38:31  INFO      radiant_mvt.frontend — Stop    : Ctrl+C
+2026-05-31 19:38:31  INFO      radiant_mvt.frontend — ============================================================
+2026-05-31 19:38:31  INFO      radiant_mvt.frontend — ============================================================
+2026-05-31 19:38:48  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 19:38:48  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 19:38:48  INFO      radiant_mvt.frontend — GET /index.html                                    OK  4.6ms
+2026-05-31 19:38:48  INFO      radiant_mvt.frontend — GET /index.html                                    OK  4.6ms
+2026-05-31 19:38:48  INFO      radiant_mvt.frontend — ← 200  /static/css/main.css?v=1780269839
+2026-05-31 19:38:48  INFO      radiant_mvt.frontend — ← 200  /static/css/main.css?v=1780269839
+2026-05-31 19:38:48  INFO      radiant_mvt.frontend — GET /static/css/main.css?v=1780269839              OK  0.7ms
+2026-05-31 19:38:48  INFO      radiant_mvt.frontend — GET /static/css/main.css?v=1780269839              OK  0.7ms
+2026-05-31 19:38:48  INFO      radiant_mvt.frontend — ← 200  /static/js/app.js?v=1780269839
+2026-05-31 19:38:48  INFO      radiant_mvt.frontend — ← 200  /static/js/app.js?v=1780269839
+2026-05-31 19:38:48  INFO      radiant_mvt.frontend — GET /static/js/app.js?v=1780269839                 OK  0.6ms
+2026-05-31 19:38:48  INFO      radiant_mvt.frontend — GET /static/js/app.js?v=1780269839                 OK  0.6ms
+2026-05-31 19:38:48  INFO      radiant_mvt.frontend — ← 200  /static/js/screens/screens.js?v=1780269839
+2026-05-31 19:38:48  INFO      radiant_mvt.frontend — ← 200  /static/js/screens/screens.js?v=1780269839
+2026-05-31 19:38:48  INFO      radiant_mvt.frontend — GET /static/js/screens/screens.js?v=1780269839     OK  0.8ms
+2026-05-31 19:38:48  INFO      radiant_mvt.frontend — GET /static/js/screens/screens.js?v=1780269839     OK  0.8ms
+2026-05-31 19:38:48  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 19:38:48  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 19:38:48  INFO      radiant_mvt.frontend — GET /index.html                                    OK  0.6ms
+2026-05-31 19:38:48  INFO      radiant_mvt.frontend — GET /index.html                                    OK  0.6ms
+2026-05-31 19:46:40  INFO      radiant_mvt.frontend — Frontend server stopped.
+2026-05-31 19:46:41  INFO      radiant_mvt.frontend — ============================================================
+2026-05-31 19:46:41  INFO      radiant_mvt.frontend — ============================================================
+2026-05-31 19:46:41  INFO      radiant_mvt.frontend — Radiant-MVT Frontend Server
+2026-05-31 19:46:41  INFO      radiant_mvt.frontend — Radiant-MVT Frontend Server
+2026-05-31 19:46:41  INFO      radiant_mvt.frontend — Serving : /Users/prakash.babu/Library/CloudStorage/OneDrive-HCLTECHNOLOGIESLIMITED/Code/MVT Trader Demo/radiant-mvt/frontend
+2026-05-31 19:46:41  INFO      radiant_mvt.frontend — Serving : /Users/prakash.babu/Library/CloudStorage/OneDrive-HCLTECHNOLOGIESLIMITED/Code/MVT Trader Demo/radiant-mvt/frontend
+2026-05-31 19:46:41  INFO      radiant_mvt.frontend — URL     : http://localhost:3000
+2026-05-31 19:46:41  INFO      radiant_mvt.frontend — URL     : http://localhost:3000
+2026-05-31 19:46:41  INFO      radiant_mvt.frontend — API     : http://localhost:8000  (backend)
+2026-05-31 19:46:41  INFO      radiant_mvt.frontend — API     : http://localhost:8000  (backend)
+2026-05-31 19:46:41  INFO      radiant_mvt.frontend — Log     : frontend.log
+2026-05-31 19:46:41  INFO      radiant_mvt.frontend — Log     : frontend.log
+2026-05-31 19:46:41  INFO      radiant_mvt.frontend — Stop    : Ctrl+C
+2026-05-31 19:46:41  INFO      radiant_mvt.frontend — Stop    : Ctrl+C
+2026-05-31 19:46:41  INFO      radiant_mvt.frontend — ============================================================
+2026-05-31 19:46:41  INFO      radiant_mvt.frontend — ============================================================
+2026-05-31 19:47:00  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 19:47:00  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 19:47:00  INFO      radiant_mvt.frontend — GET /index.html                                    OK  5.9ms
+2026-05-31 19:47:00  INFO      radiant_mvt.frontend — GET /index.html                                    OK  5.9ms
+2026-05-31 19:47:00  INFO      radiant_mvt.frontend — ← 200  /static/css/main.css?v=1780269839
+2026-05-31 19:47:00  INFO      radiant_mvt.frontend — ← 200  /static/css/main.css?v=1780269839
+2026-05-31 19:47:00  INFO      radiant_mvt.frontend — GET /static/css/main.css?v=1780269839              OK  0.9ms
+2026-05-31 19:47:00  INFO      radiant_mvt.frontend — GET /static/css/main.css?v=1780269839              OK  0.9ms
+2026-05-31 19:47:00  INFO      radiant_mvt.frontend — ← 200  /static/js/screens/screens.js?v=1780269839
+2026-05-31 19:47:00  INFO      radiant_mvt.frontend — GET /static/js/screens/screens.js?v=1780269839     OK  2.6ms
+2026-05-31 19:47:00  INFO      radiant_mvt.frontend — ← 200  /static/js/screens/screens.js?v=1780269839
+2026-05-31 19:47:00  INFO      radiant_mvt.frontend — GET /static/js/screens/screens.js?v=1780269839     OK  2.6ms
+2026-05-31 19:47:00  INFO      radiant_mvt.frontend — ← 200  /static/js/app.js?v=1780269839
+2026-05-31 19:47:00  INFO      radiant_mvt.frontend — ← 200  /static/js/app.js?v=1780269839
+2026-05-31 19:47:00  INFO      radiant_mvt.frontend — GET /static/js/app.js?v=1780269839                 OK  2.9ms
+2026-05-31 19:47:00  INFO      radiant_mvt.frontend — GET /static/js/app.js?v=1780269839                 OK  2.9ms
+2026-05-31 19:47:00  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 19:47:00  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 19:47:00  INFO      radiant_mvt.frontend — GET /index.html                                    OK  0.6ms
+2026-05-31 19:47:00  INFO      radiant_mvt.frontend — GET /index.html                                    OK  0.6ms
+2026-05-31 20:11:18  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 20:11:18  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 20:11:18  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  33.1ms
+2026-05-31 20:11:18  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  33.1ms
+2026-05-31 20:11:18  INFO      radiant_mvt.frontend — ← 304  /static/css/main.css?v=1780269839
+2026-05-31 20:11:18  INFO      radiant_mvt.frontend — ← 304  /static/css/main.css?v=1780269839
+2026-05-31 20:11:18  INFO      radiant_mvt.frontend — GET /static/css/main.css?v=1780269839              Not Modified  1.1ms
+2026-05-31 20:11:18  INFO      radiant_mvt.frontend — GET /static/css/main.css?v=1780269839              Not Modified  1.1ms
+2026-05-31 20:11:18  INFO      radiant_mvt.frontend — ← 304  /static/js/app.js?v=1780269839
+2026-05-31 20:11:18  INFO      radiant_mvt.frontend — ← 304  /static/js/app.js?v=1780269839
+2026-05-31 20:11:18  INFO      radiant_mvt.frontend — GET /static/js/app.js?v=1780269839                 Not Modified  0.6ms
+2026-05-31 20:11:18  INFO      radiant_mvt.frontend — GET /static/js/app.js?v=1780269839                 Not Modified  0.6ms
+2026-05-31 20:11:18  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 20:11:18  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 20:11:18  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.1ms
+2026-05-31 20:11:18  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.1ms
+2026-05-31 20:18:07  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 20:18:07  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 20:18:07  INFO      radiant_mvt.frontend — GET /index.html                                    OK  0.7ms
+2026-05-31 20:18:07  INFO      radiant_mvt.frontend — GET /index.html                                    OK  0.7ms
+2026-05-31 20:18:07  INFO      radiant_mvt.frontend — ← 200  /static/js/app.js?v=1780276363
+2026-05-31 20:18:07  INFO      radiant_mvt.frontend — ← 200  /static/js/app.js?v=1780276363
+2026-05-31 20:18:07  INFO      radiant_mvt.frontend — ← 200  /static/css/main.css?v=1780276363
+2026-05-31 20:18:07  INFO      radiant_mvt.frontend — ← 200  /static/css/main.css?v=1780276363
+2026-05-31 20:18:07  INFO      radiant_mvt.frontend — GET /static/css/main.css?v=1780276363              OK  2.8ms
+2026-05-31 20:18:07  INFO      radiant_mvt.frontend — GET /static/css/main.css?v=1780276363              OK  2.8ms
+2026-05-31 20:18:07  INFO      radiant_mvt.frontend — ← 200  /static/js/screens/screens.js?v=1780276363
+2026-05-31 20:18:07  INFO      radiant_mvt.frontend — GET /static/js/app.js?v=1780276363                 OK  6.0ms
+2026-05-31 20:18:07  INFO      radiant_mvt.frontend — ← 200  /static/js/screens/screens.js?v=1780276363
+2026-05-31 20:18:07  INFO      radiant_mvt.frontend — GET /static/js/app.js?v=1780276363                 OK  6.0ms
+2026-05-31 20:18:07  INFO      radiant_mvt.frontend — GET /static/js/screens/screens.js?v=1780276363     OK  2.8ms
+2026-05-31 20:18:07  INFO      radiant_mvt.frontend — GET /static/js/screens/screens.js?v=1780276363     OK  2.8ms
+2026-05-31 20:18:07  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 20:18:07  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 20:18:07  INFO      radiant_mvt.frontend — GET /index.html                                    OK  0.8ms
+2026-05-31 20:18:07  INFO      radiant_mvt.frontend — GET /index.html                                    OK  0.8ms
+2026-05-31 20:18:09  WARNING   radiant_mvt.frontend — ← 501  /api/auth/login
+2026-05-31 20:18:09  WARNING   radiant_mvt.frontend — ← 501  /api/auth/login
+2026-05-31 20:18:09  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 20:18:09  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 20:18:09  INFO      radiant_mvt.frontend — GET /index.html                                    OK  1.0ms
+2026-05-31 20:18:09  INFO      radiant_mvt.frontend — GET /index.html                                    OK  1.0ms
+2026-05-31 20:25:48  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 20:25:48  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 20:25:48  INFO      radiant_mvt.frontend — GET /index.html                                    OK  2.7ms
+2026-05-31 20:25:48  INFO      radiant_mvt.frontend — GET /index.html                                    OK  2.7ms
+2026-05-31 20:25:56  INFO      radiant_mvt.frontend — Frontend server stopped.
+2026-05-31 20:25:58  INFO      radiant_mvt.frontend — ============================================================
+2026-05-31 20:25:58  INFO      radiant_mvt.frontend — ============================================================
+2026-05-31 20:25:58  INFO      radiant_mvt.frontend — Radiant-MVT Frontend Server
+2026-05-31 20:25:58  INFO      radiant_mvt.frontend — Radiant-MVT Frontend Server
+2026-05-31 20:25:58  INFO      radiant_mvt.frontend — Serving : /Users/prakash.babu/Library/CloudStorage/OneDrive-HCLTECHNOLOGIESLIMITED/Code/MVT Trader Demo/radiant-mvt/frontend
+2026-05-31 20:25:58  INFO      radiant_mvt.frontend — Serving : /Users/prakash.babu/Library/CloudStorage/OneDrive-HCLTECHNOLOGIESLIMITED/Code/MVT Trader Demo/radiant-mvt/frontend
+2026-05-31 20:25:58  INFO      radiant_mvt.frontend — URL     : http://localhost:3000
+2026-05-31 20:25:58  INFO      radiant_mvt.frontend — URL     : http://localhost:3000
+2026-05-31 20:25:58  INFO      radiant_mvt.frontend — API     : http://localhost:8000  (backend)
+2026-05-31 20:25:58  INFO      radiant_mvt.frontend — API     : http://localhost:8000  (backend)
+2026-05-31 20:25:58  INFO      radiant_mvt.frontend — Log     : frontend.log
+2026-05-31 20:25:58  INFO      radiant_mvt.frontend — Log     : frontend.log
+2026-05-31 20:25:58  INFO      radiant_mvt.frontend — Stop    : Ctrl+C
+2026-05-31 20:25:58  INFO      radiant_mvt.frontend — Stop    : Ctrl+C
+2026-05-31 20:25:58  INFO      radiant_mvt.frontend — ============================================================
+2026-05-31 20:25:58  INFO      radiant_mvt.frontend — ============================================================
+2026-05-31 20:26:05  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 20:26:05  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 20:26:05  INFO      radiant_mvt.frontend — GET /index.html                                    OK  4.5ms
+2026-05-31 20:26:05  INFO      radiant_mvt.frontend — GET /index.html                                    OK  4.5ms
+2026-05-31 20:26:05  INFO      radiant_mvt.frontend — ← 200  /static/js/app.js?v=1780276870
+2026-05-31 20:26:05  INFO      radiant_mvt.frontend — ← 200  /static/js/app.js?v=1780276870
+2026-05-31 20:26:05  INFO      radiant_mvt.frontend — ← 200  /static/css/main.css?v=1780276870
+2026-05-31 20:26:05  INFO      radiant_mvt.frontend — GET /static/js/app.js?v=1780276870                 OK  2.7ms
+2026-05-31 20:26:05  INFO      radiant_mvt.frontend — ← 200  /static/css/main.css?v=1780276870
+2026-05-31 20:26:05  INFO      radiant_mvt.frontend — GET /static/js/app.js?v=1780276870                 OK  2.7ms
+2026-05-31 20:26:05  INFO      radiant_mvt.frontend — GET /static/css/main.css?v=1780276870              OK  1.7ms
+2026-05-31 20:26:05  INFO      radiant_mvt.frontend — GET /static/css/main.css?v=1780276870              OK  1.7ms
+2026-05-31 20:26:05  INFO      radiant_mvt.frontend — ← 200  /static/js/screens/screens.js?v=1780276870
+2026-05-31 20:26:05  INFO      radiant_mvt.frontend — ← 200  /static/js/screens/screens.js?v=1780276870
+2026-05-31 20:26:05  INFO      radiant_mvt.frontend — GET /static/js/screens/screens.js?v=1780276870     OK  2.0ms
+2026-05-31 20:26:05  INFO      radiant_mvt.frontend — GET /static/js/screens/screens.js?v=1780276870     OK  2.0ms
+2026-05-31 20:26:07  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 20:26:07  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 20:26:07  INFO      radiant_mvt.frontend — GET /index.html                                    OK  0.7ms
+2026-05-31 20:26:07  INFO      radiant_mvt.frontend — GET /index.html                                    OK  0.7ms
+2026-05-31 20:26:25  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 20:26:25  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 20:26:25  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 20:26:25  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 20:26:25  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 20:26:25  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 20:26:25  INFO      radiant_mvt.frontend — GET /index.html                                    OK  2.6ms
+2026-05-31 20:26:25  INFO      radiant_mvt.frontend — GET /index.html                                    OK  2.6ms
+2026-05-31 20:26:25  INFO      radiant_mvt.frontend — GET /index.html                                    OK  2.5ms
+2026-05-31 20:26:25  INFO      radiant_mvt.frontend — GET /index.html                                    OK  2.5ms
+2026-05-31 20:26:25  INFO      radiant_mvt.frontend — GET /index.html                                    OK  2.5ms
+2026-05-31 20:26:25  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 20:26:25  INFO      radiant_mvt.frontend — GET /index.html                                    OK  2.5ms
+2026-05-31 20:26:25  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 20:26:25  INFO      radiant_mvt.frontend — GET /index.html                                    OK  2.1ms
+2026-05-31 20:26:25  INFO      radiant_mvt.frontend — GET /index.html                                    OK  2.1ms
+2026-05-31 20:26:25  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 20:26:25  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 20:26:25  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.1ms
+2026-05-31 20:26:25  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.1ms
+2026-05-31 20:26:35  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 20:26:35  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 20:26:35  INFO      radiant_mvt.frontend — GET /index.html                                    OK  0.6ms
+2026-05-31 20:26:35  INFO      radiant_mvt.frontend — GET /index.html                                    OK  0.6ms
+2026-05-31 20:26:38  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 20:26:38  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 20:26:38  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.7ms
+2026-05-31 20:26:38  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.7ms
+2026-05-31 20:28:02  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 20:28:02  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 20:28:02  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 20:28:02  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 20:28:02  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 20:28:02  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.6ms
+2026-05-31 20:28:02  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 20:28:02  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.6ms
+2026-05-31 20:28:02  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.6ms
+2026-05-31 20:28:02  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 20:28:02  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.6ms
+2026-05-31 20:28:02  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  2.7ms
+2026-05-31 20:28:02  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 20:28:02  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 20:28:02  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  2.7ms
+2026-05-31 20:28:02  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 20:28:02  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.2ms
+2026-05-31 20:28:02  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.2ms
+2026-05-31 20:28:02  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.2ms
+2026-05-31 20:28:02  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.2ms
+2026-05-31 20:28:04  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 20:28:04  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 20:28:04  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.7ms
+2026-05-31 20:28:04  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.7ms
+2026-05-31 21:10:02  INFO      radiant_mvt.frontend — Frontend server stopped.
+2026-05-31 21:10:03  INFO      radiant_mvt.frontend — ============================================================
+2026-05-31 21:10:03  INFO      radiant_mvt.frontend — ============================================================
+2026-05-31 21:10:03  INFO      radiant_mvt.frontend — Radiant-MVT Frontend Server
+2026-05-31 21:10:03  INFO      radiant_mvt.frontend — Radiant-MVT Frontend Server
+2026-05-31 21:10:03  INFO      radiant_mvt.frontend — Serving : /Users/prakash.babu/Library/CloudStorage/OneDrive-HCLTECHNOLOGIESLIMITED/Code/MVT Trader Demo/radiant-mvt/frontend
+2026-05-31 21:10:03  INFO      radiant_mvt.frontend — Serving : /Users/prakash.babu/Library/CloudStorage/OneDrive-HCLTECHNOLOGIESLIMITED/Code/MVT Trader Demo/radiant-mvt/frontend
+2026-05-31 21:10:03  INFO      radiant_mvt.frontend — URL     : http://localhost:3000
+2026-05-31 21:10:03  INFO      radiant_mvt.frontend — URL     : http://localhost:3000
+2026-05-31 21:10:03  INFO      radiant_mvt.frontend — API     : http://localhost:8000  (backend)
+2026-05-31 21:10:03  INFO      radiant_mvt.frontend — API     : http://localhost:8000  (backend)
+2026-05-31 21:10:03  INFO      radiant_mvt.frontend — Log     : frontend.log
+2026-05-31 21:10:03  INFO      radiant_mvt.frontend — Log     : frontend.log
+2026-05-31 21:10:03  INFO      radiant_mvt.frontend — Stop    : Ctrl+C
+2026-05-31 21:10:03  INFO      radiant_mvt.frontend — Stop    : Ctrl+C
+2026-05-31 21:10:03  INFO      radiant_mvt.frontend — ============================================================
+2026-05-31 21:10:03  INFO      radiant_mvt.frontend — ============================================================
+2026-05-31 21:10:19  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 21:10:19  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 21:10:19  INFO      radiant_mvt.frontend — GET /index.html                                    OK  7.0ms
+2026-05-31 21:10:19  INFO      radiant_mvt.frontend — GET /index.html                                    OK  7.0ms
+2026-05-31 21:10:19  INFO      radiant_mvt.frontend — ← 200  /static/js/app.js?v=1780278059
+2026-05-31 21:10:19  INFO      radiant_mvt.frontend — ← 200  /static/js/app.js?v=1780278059
+2026-05-31 21:10:19  INFO      radiant_mvt.frontend — GET /static/js/app.js?v=1780278059                 OK  3.0ms
+2026-05-31 21:10:19  INFO      radiant_mvt.frontend — GET /static/js/app.js?v=1780278059                 OK  3.0ms
+2026-05-31 21:10:19  INFO      radiant_mvt.frontend — ← 200  /static/js/screens/screens.js?v=1780278059
+2026-05-31 21:10:19  INFO      radiant_mvt.frontend — ← 200  /static/js/screens/screens.js?v=1780278059
+2026-05-31 21:10:19  INFO      radiant_mvt.frontend — ← 200  /static/css/main.css?v=1780278059
+2026-05-31 21:10:19  INFO      radiant_mvt.frontend — ← 200  /static/css/main.css?v=1780278059
+2026-05-31 21:10:19  INFO      radiant_mvt.frontend — GET /static/css/main.css?v=1780278059              OK  2.3ms
+2026-05-31 21:10:19  INFO      radiant_mvt.frontend — GET /static/css/main.css?v=1780278059              OK  2.3ms
+2026-05-31 21:10:19  INFO      radiant_mvt.frontend — GET /static/js/screens/screens.js?v=1780278059     OK  2.2ms
+2026-05-31 21:10:19  INFO      radiant_mvt.frontend — GET /static/js/screens/screens.js?v=1780278059     OK  2.2ms
+2026-05-31 21:10:20  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 21:10:20  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 21:10:20  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 21:10:20  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 21:10:20  INFO      radiant_mvt.frontend — GET /index.html                                    OK  0.7ms
+2026-05-31 21:10:20  INFO      radiant_mvt.frontend — GET /index.html                                    OK  0.7ms
+2026-05-31 21:10:20  INFO      radiant_mvt.frontend — GET /index.html                                    OK  0.6ms
+2026-05-31 21:10:20  INFO      radiant_mvt.frontend — GET /index.html                                    OK  0.6ms
+2026-05-31 21:10:20  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 21:10:20  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 21:10:20  INFO      radiant_mvt.frontend — GET /index.html                                    OK  0.8ms
+2026-05-31 21:10:20  INFO      radiant_mvt.frontend — GET /index.html                                    OK  0.8ms
+2026-05-31 21:10:20  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 21:10:20  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 21:10:20  INFO      radiant_mvt.frontend — GET /index.html                                    OK  0.5ms
+2026-05-31 21:10:20  INFO      radiant_mvt.frontend — GET /index.html                                    OK  0.5ms
+2026-05-31 21:10:48  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 21:10:48  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 21:10:48  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 21:10:48  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 21:10:48  INFO      radiant_mvt.frontend — GET /index.html                                    OK  2.6ms
+2026-05-31 21:10:48  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 21:10:48  INFO      radiant_mvt.frontend — GET /index.html                                    OK  2.6ms
+2026-05-31 21:10:48  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 21:10:48  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 21:10:48  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 21:10:48  INFO      radiant_mvt.frontend — GET /index.html                                    OK  3.1ms
+2026-05-31 21:10:48  INFO      radiant_mvt.frontend — GET /index.html                                    OK  3.1ms
+2026-05-31 21:10:48  INFO      radiant_mvt.frontend — GET /index.html                                    OK  3.0ms
+2026-05-31 21:10:48  INFO      radiant_mvt.frontend — GET /index.html                                    OK  3.0ms
+2026-05-31 21:10:48  INFO      radiant_mvt.frontend — GET /index.html                                    OK  2.1ms
+2026-05-31 21:10:48  INFO      radiant_mvt.frontend — GET /index.html                                    OK  2.1ms
+2026-05-31 21:10:50  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 21:10:50  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 21:10:50  INFO      radiant_mvt.frontend — GET /index.html                                    OK  1.1ms
+2026-05-31 21:10:50  INFO      radiant_mvt.frontend — GET /index.html                                    OK  1.1ms
+2026-05-31 21:11:14  WARNING   radiant_mvt.frontend — ← 501  /api/market/curves/shift
+2026-05-31 21:11:14  WARNING   radiant_mvt.frontend — ← 501  /api/market/curves/shift
+2026-05-31 21:13:20  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:13:20  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:13:20  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.3ms
+2026-05-31 21:13:20  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.3ms
+2026-05-31 21:13:20  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:13:20  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:13:20  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.2ms
+2026-05-31 21:13:20  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.2ms
+2026-05-31 21:17:20  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:17:20  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:17:20  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.0ms
+2026-05-31 21:17:20  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.0ms
+2026-05-31 21:17:20  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:17:20  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:17:20  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.9ms
+2026-05-31 21:17:20  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.9ms
+2026-05-31 21:21:24  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:21:24  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:21:24  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.4ms
+2026-05-31 21:21:24  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.4ms
+2026-05-31 21:21:24  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:21:24  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:21:24  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.7ms
+2026-05-31 21:21:24  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.7ms
+2026-05-31 21:25:28  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 21:25:28  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 21:25:28  INFO      radiant_mvt.frontend — GET /index.html                                    OK  1.9ms
+2026-05-31 21:25:28  INFO      radiant_mvt.frontend — GET /index.html                                    OK  1.9ms
+2026-05-31 21:25:28  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 21:25:28  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 21:25:28  INFO      radiant_mvt.frontend — GET /index.html                                    OK  0.7ms
+2026-05-31 21:25:28  INFO      radiant_mvt.frontend — GET /index.html                                    OK  0.7ms
+2026-05-31 21:26:29  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 21:26:29  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 21:26:29  INFO      radiant_mvt.frontend — GET /index.html                                    OK  2.3ms
+2026-05-31 21:26:29  INFO      radiant_mvt.frontend — GET /index.html                                    OK  2.3ms
+2026-05-31 21:26:29  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 21:26:29  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 21:26:29  INFO      radiant_mvt.frontend — GET /index.html                                    OK  0.7ms
+2026-05-31 21:26:29  INFO      radiant_mvt.frontend — GET /index.html                                    OK  0.7ms
+2026-05-31 21:27:30  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:27:30  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:27:30  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.0ms
+2026-05-31 21:27:30  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.0ms
+2026-05-31 21:27:30  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:27:30  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:27:30  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.7ms
+2026-05-31 21:27:30  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.7ms
+2026-05-31 21:28:31  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:28:31  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:28:31  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.9ms
+2026-05-31 21:28:31  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.9ms
+2026-05-31 21:28:31  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:28:31  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:28:31  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.7ms
+2026-05-31 21:28:31  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.7ms
+2026-05-31 21:29:32  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:29:32  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:29:32  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.6ms
+2026-05-31 21:29:32  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.6ms
+2026-05-31 21:29:32  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:29:32  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:29:32  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.9ms
+2026-05-31 21:29:32  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.9ms
+2026-05-31 21:30:33  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:30:33  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:30:33  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.0ms
+2026-05-31 21:30:33  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.0ms
+2026-05-31 21:30:33  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:30:33  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:30:33  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  2.6ms
+2026-05-31 21:30:33  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  2.6ms
+2026-05-31 21:31:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:31:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:31:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.4ms
+2026-05-31 21:31:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.4ms
+2026-05-31 21:31:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:31:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:31:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.5ms
+2026-05-31 21:31:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.5ms
+2026-05-31 21:32:35  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:32:35  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:32:35  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.1ms
+2026-05-31 21:32:35  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.1ms
+2026-05-31 21:32:35  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:32:35  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:32:35  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.6ms
+2026-05-31 21:32:35  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.6ms
+2026-05-31 21:33:36  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:33:36  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:33:36  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.3ms
+2026-05-31 21:33:36  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.3ms
+2026-05-31 21:33:36  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:33:36  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:33:36  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.5ms
+2026-05-31 21:33:36  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.5ms
+2026-05-31 21:34:37  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:34:37  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:34:37  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.1ms
+2026-05-31 21:34:37  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.1ms
+2026-05-31 21:34:37  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:34:37  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:34:37  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.6ms
+2026-05-31 21:34:37  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.6ms
+2026-05-31 21:35:38  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:35:38  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:35:38  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.7ms
+2026-05-31 21:35:38  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.7ms
+2026-05-31 21:35:38  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:35:38  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:35:38  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.1ms
+2026-05-31 21:35:38  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.1ms
+2026-05-31 21:36:39  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:36:39  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:36:39  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.9ms
+2026-05-31 21:36:39  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.9ms
+2026-05-31 21:36:39  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:36:39  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:36:39  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.9ms
+2026-05-31 21:36:39  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.9ms
+2026-05-31 21:37:31  INFO      radiant_mvt.frontend — Frontend server stopped.
+2026-05-31 21:37:32  INFO      radiant_mvt.frontend — ============================================================
+2026-05-31 21:37:32  INFO      radiant_mvt.frontend — ============================================================
+2026-05-31 21:37:32  INFO      radiant_mvt.frontend — Radiant-MVT Frontend Server
+2026-05-31 21:37:32  INFO      radiant_mvt.frontend — Radiant-MVT Frontend Server
+2026-05-31 21:37:32  INFO      radiant_mvt.frontend — Serving : /Users/prakash.babu/Library/CloudStorage/OneDrive-HCLTECHNOLOGIESLIMITED/Code/MVT Trader Demo/radiant-mvt/frontend
+2026-05-31 21:37:32  INFO      radiant_mvt.frontend — Serving : /Users/prakash.babu/Library/CloudStorage/OneDrive-HCLTECHNOLOGIESLIMITED/Code/MVT Trader Demo/radiant-mvt/frontend
+2026-05-31 21:37:32  INFO      radiant_mvt.frontend — URL     : http://localhost:3000
+2026-05-31 21:37:32  INFO      radiant_mvt.frontend — URL     : http://localhost:3000
+2026-05-31 21:37:32  INFO      radiant_mvt.frontend — API     : http://localhost:8000  (backend)
+2026-05-31 21:37:32  INFO      radiant_mvt.frontend — API     : http://localhost:8000  (backend)
+2026-05-31 21:37:32  INFO      radiant_mvt.frontend — Log     : frontend.log
+2026-05-31 21:37:32  INFO      radiant_mvt.frontend — Log     : frontend.log
+2026-05-31 21:37:32  INFO      radiant_mvt.frontend — Stop    : Ctrl+C
+2026-05-31 21:37:32  INFO      radiant_mvt.frontend — Stop    : Ctrl+C
+2026-05-31 21:37:32  INFO      radiant_mvt.frontend — ============================================================
+2026-05-31 21:37:32  INFO      radiant_mvt.frontend — ============================================================
+2026-05-31 21:37:41  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 21:37:41  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 21:37:41  INFO      radiant_mvt.frontend — GET /index.html                                    OK  5.1ms
+2026-05-31 21:37:41  INFO      radiant_mvt.frontend — GET /index.html                                    OK  5.1ms
+2026-05-31 21:37:41  INFO      radiant_mvt.frontend — ← 200  /static/css/main.css?v=1780281409
+2026-05-31 21:37:41  INFO      radiant_mvt.frontend — ← 200  /static/css/main.css?v=1780281409
+2026-05-31 21:37:41  INFO      radiant_mvt.frontend — ← 200  /static/js/screens/screens.js?v=1780281409
+2026-05-31 21:37:41  INFO      radiant_mvt.frontend — ← 200  /static/js/screens/screens.js?v=1780281409
+2026-05-31 21:37:41  INFO      radiant_mvt.frontend — GET /static/css/main.css?v=1780281409              OK  2.7ms
+2026-05-31 21:37:41  INFO      radiant_mvt.frontend — GET /static/css/main.css?v=1780281409              OK  2.7ms
+2026-05-31 21:37:41  INFO      radiant_mvt.frontend — GET /static/js/screens/screens.js?v=1780281409     OK  2.8ms
+2026-05-31 21:37:41  INFO      radiant_mvt.frontend — GET /static/js/screens/screens.js?v=1780281409     OK  2.8ms
+2026-05-31 21:37:41  INFO      radiant_mvt.frontend — ← 200  /static/js/app.js?v=1780281409
+2026-05-31 21:37:41  INFO      radiant_mvt.frontend — ← 200  /static/js/app.js?v=1780281409
+2026-05-31 21:37:41  INFO      radiant_mvt.frontend — GET /static/js/app.js?v=1780281409                 OK  3.6ms
+2026-05-31 21:37:41  INFO      radiant_mvt.frontend — GET /static/js/app.js?v=1780281409                 OK  3.6ms
+2026-05-31 21:37:41  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 21:37:41  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 21:37:41  INFO      radiant_mvt.frontend — GET /index.html                                    OK  1.7ms
+2026-05-31 21:37:41  INFO      radiant_mvt.frontend — GET /index.html                                    OK  1.7ms
+2026-05-31 21:37:41  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 21:37:41  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 21:37:41  INFO      radiant_mvt.frontend — GET /index.html                                    OK  1.1ms
+2026-05-31 21:37:41  INFO      radiant_mvt.frontend — GET /index.html                                    OK  1.1ms
+2026-05-31 21:37:41  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 21:37:41  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 21:37:41  INFO      radiant_mvt.frontend — GET /index.html                                    OK  0.8ms
+2026-05-31 21:37:41  INFO      radiant_mvt.frontend — GET /index.html                                    OK  0.8ms
+2026-05-31 21:37:41  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 21:37:41  INFO      radiant_mvt.frontend — GET /index.html                                    OK  1.5ms
+2026-05-31 21:37:41  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 21:37:41  INFO      radiant_mvt.frontend — GET /index.html                                    OK  1.5ms
+2026-05-31 21:38:41  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:38:41  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:38:41  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.7ms
+2026-05-31 21:38:41  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.7ms
+2026-05-31 21:38:41  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 21:38:41  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 21:38:41  INFO      radiant_mvt.frontend — GET /index.html                                    OK  1.0ms
+2026-05-31 21:38:41  INFO      radiant_mvt.frontend — GET /index.html                                    OK  1.0ms
+2026-05-31 21:39:42  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:39:42  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:39:42  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  3.4ms
+2026-05-31 21:39:42  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  3.4ms
+2026-05-31 21:39:42  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:39:42  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:39:42  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.0ms
+2026-05-31 21:39:42  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.0ms
+2026-05-31 21:40:42  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:40:42  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:40:42  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.2ms
+2026-05-31 21:40:42  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.2ms
+2026-05-31 21:40:42  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:40:42  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:40:42  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.6ms
+2026-05-31 21:40:42  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.6ms
+2026-05-31 21:41:42  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 21:41:42  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 21:41:42  INFO      radiant_mvt.frontend — GET /index.html                                    OK  1.7ms
+2026-05-31 21:41:42  INFO      radiant_mvt.frontend — GET /index.html                                    OK  1.7ms
+2026-05-31 21:41:42  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 21:41:42  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 21:41:42  INFO      radiant_mvt.frontend — GET /index.html                                    OK  1.4ms
+2026-05-31 21:41:42  INFO      radiant_mvt.frontend — GET /index.html                                    OK  1.4ms
+2026-05-31 21:42:42  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:42:42  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:42:42  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  3.8ms
+2026-05-31 21:42:42  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  3.8ms
+2026-05-31 21:42:42  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:42:42  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:42:42  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.5ms
+2026-05-31 21:42:42  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.5ms
+2026-05-31 21:43:42  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:43:42  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:43:42  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.7ms
+2026-05-31 21:43:42  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.7ms
+2026-05-31 21:43:42  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:43:42  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:43:42  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.7ms
+2026-05-31 21:43:42  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.7ms
+2026-05-31 21:44:42  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:44:42  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.3ms
+2026-05-31 21:44:42  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:44:42  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.3ms
+2026-05-31 21:44:42  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:44:42  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:44:42  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.2ms
+2026-05-31 21:44:42  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.2ms
+2026-05-31 21:45:43  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:45:43  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:45:43  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.9ms
+2026-05-31 21:45:43  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.9ms
+2026-05-31 21:45:43  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:45:43  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:45:43  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.8ms
+2026-05-31 21:45:43  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.8ms
+2026-05-31 21:46:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:46:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:46:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.0ms
+2026-05-31 21:46:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.0ms
+2026-05-31 21:46:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:46:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:46:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.7ms
+2026-05-31 21:46:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.7ms
+2026-05-31 21:47:44  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 21:47:44  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 21:47:44  INFO      radiant_mvt.frontend — GET /index.html                                    OK  1.9ms
+2026-05-31 21:47:44  INFO      radiant_mvt.frontend — GET /index.html                                    OK  1.9ms
+2026-05-31 21:47:44  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 21:47:44  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 21:47:44  INFO      radiant_mvt.frontend — GET /index.html                                    OK  0.8ms
+2026-05-31 21:47:44  INFO      radiant_mvt.frontend — GET /index.html                                    OK  0.8ms
+2026-05-31 21:48:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:48:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:48:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.9ms
+2026-05-31 21:48:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.9ms
+2026-05-31 21:48:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:48:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:48:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.9ms
+2026-05-31 21:48:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.9ms
+2026-05-31 21:49:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:49:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:49:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.3ms
+2026-05-31 21:49:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.3ms
+2026-05-31 21:49:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:49:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:49:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.1ms
+2026-05-31 21:49:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.1ms
+2026-05-31 21:50:44  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 21:50:44  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 21:50:44  INFO      radiant_mvt.frontend — GET /index.html                                    OK  2.6ms
+2026-05-31 21:50:44  INFO      radiant_mvt.frontend — GET /index.html                                    OK  2.6ms
+2026-05-31 21:50:44  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 21:50:44  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-05-31 21:50:44  INFO      radiant_mvt.frontend — GET /index.html                                    OK  1.2ms
+2026-05-31 21:50:44  INFO      radiant_mvt.frontend — GET /index.html                                    OK  1.2ms
+2026-05-31 21:51:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:51:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:51:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  4.8ms
+2026-05-31 21:51:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  4.8ms
+2026-05-31 21:51:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:51:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:51:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.7ms
+2026-05-31 21:51:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.7ms
+2026-05-31 21:52:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:52:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:52:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.5ms
+2026-05-31 21:52:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.5ms
+2026-05-31 21:52:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:52:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.5ms
+2026-05-31 21:52:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:52:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.5ms
+2026-05-31 21:53:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:53:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:53:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.9ms
+2026-05-31 21:53:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.9ms
+2026-05-31 21:53:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:53:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:53:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.6ms
+2026-05-31 21:53:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.6ms
+2026-05-31 21:54:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:54:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:54:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.8ms
+2026-05-31 21:54:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.8ms
+2026-05-31 21:54:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:54:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:54:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.5ms
+2026-05-31 21:54:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.5ms
+2026-05-31 21:55:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:55:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:55:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.5ms
+2026-05-31 21:55:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.5ms
+2026-05-31 21:55:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:55:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:55:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.4ms
+2026-05-31 21:55:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.4ms
+2026-05-31 21:56:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:56:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:56:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.7ms
+2026-05-31 21:56:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.7ms
+2026-05-31 21:56:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:56:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:56:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.8ms
+2026-05-31 21:56:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.8ms
+2026-05-31 21:57:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:57:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.7ms
+2026-05-31 21:57:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:57:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.7ms
+2026-05-31 21:57:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:57:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:57:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.6ms
+2026-05-31 21:57:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.6ms
+2026-05-31 21:58:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:58:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:58:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.5ms
+2026-05-31 21:58:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.5ms
+2026-05-31 21:58:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:58:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:58:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.5ms
+2026-05-31 21:58:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.5ms
+2026-05-31 21:59:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:59:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:59:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.9ms
+2026-05-31 21:59:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.9ms
+2026-05-31 21:59:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:59:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 21:59:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.4ms
+2026-05-31 21:59:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.4ms
+2026-05-31 22:00:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 22:00:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 22:00:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.5ms
+2026-05-31 22:00:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.5ms
+2026-05-31 22:00:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 22:00:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 22:00:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.4ms
+2026-05-31 22:00:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.4ms
+2026-05-31 22:02:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 22:02:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 22:02:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.6ms
+2026-05-31 22:02:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.6ms
+2026-05-31 22:02:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 22:02:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 22:02:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.5ms
+2026-05-31 22:02:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.5ms
+2026-05-31 22:04:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 22:04:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 22:04:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.5ms
+2026-05-31 22:04:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.5ms
+2026-05-31 22:04:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 22:04:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 22:04:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.4ms
+2026-05-31 22:04:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.4ms
+2026-05-31 22:06:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 22:06:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 22:06:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.7ms
+2026-05-31 22:06:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.7ms
+2026-05-31 22:06:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 22:06:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 22:06:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.5ms
+2026-05-31 22:06:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.5ms
+2026-05-31 22:08:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 22:08:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 22:08:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  2.9ms
+2026-05-31 22:08:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  2.9ms
+2026-05-31 22:08:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 22:08:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 22:08:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.6ms
+2026-05-31 22:08:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.6ms
+2026-05-31 22:10:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 22:10:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 22:10:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.5ms
+2026-05-31 22:10:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.5ms
+2026-05-31 22:10:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 22:10:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 22:10:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.4ms
+2026-05-31 22:10:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.4ms
+2026-05-31 22:13:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 22:13:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 22:13:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.4ms
+2026-05-31 22:13:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.4ms
+2026-05-31 22:13:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 22:13:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 22:13:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.5ms
+2026-05-31 22:13:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.5ms
+2026-05-31 22:16:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 22:16:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 22:16:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.6ms
+2026-05-31 22:16:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.6ms
+2026-05-31 22:16:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 22:16:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 22:16:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.9ms
+2026-05-31 22:16:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.9ms
+2026-05-31 22:19:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 22:19:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 22:19:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.8ms
+2026-05-31 22:19:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.8ms
+2026-05-31 22:19:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 22:19:44  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 22:19:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.4ms
+2026-05-31 22:19:44  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.4ms
+2026-05-31 22:45:27  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 22:45:27  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 22:45:27  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  2.5ms
+2026-05-31 22:45:27  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  2.5ms
+2026-05-31 22:45:27  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 22:45:27  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 22:45:27  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  2.0ms
+2026-05-31 22:45:27  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  2.0ms
+2026-05-31 23:52:27  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 23:52:27  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 23:52:27  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.5ms
+2026-05-31 23:52:27  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.5ms
+2026-05-31 23:52:27  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 23:52:27  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-05-31 23:52:27  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.7ms
+2026-05-31 23:52:27  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.7ms
+2026-06-01 01:22:35  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 01:22:35  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 01:22:35  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  2.3ms
+2026-06-01 01:22:35  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  2.3ms
+2026-06-01 01:22:35  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 01:22:35  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.0ms
+2026-06-01 01:22:35  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 01:22:35  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.0ms
+2026-06-01 02:23:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 02:23:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 02:23:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.4ms
+2026-06-01 02:23:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.4ms
+2026-06-01 02:23:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 02:23:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 02:23:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.6ms
+2026-06-01 02:23:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.6ms
+2026-06-01 03:14:35  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 03:14:35  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 03:14:35  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.3ms
+2026-06-01 03:14:35  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.3ms
+2026-06-01 03:14:35  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 03:14:35  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 03:14:35  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.8ms
+2026-06-01 03:14:35  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.8ms
+2026-06-01 04:14:36  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 04:14:36  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 04:14:36  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  2.5ms
+2026-06-01 04:14:36  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  2.5ms
+2026-06-01 04:14:36  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 04:14:36  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  2.1ms
+2026-06-01 04:14:36  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 04:14:36  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  2.1ms
+2026-06-01 05:00:59  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 05:00:59  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 05:00:59  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.9ms
+2026-06-01 05:00:59  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.9ms
+2026-06-01 05:00:59  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 05:00:59  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 05:00:59  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.9ms
+2026-06-01 05:00:59  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.9ms
+2026-06-01 05:58:11  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 05:58:11  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 05:58:11  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.3ms
+2026-06-01 05:58:11  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.3ms
+2026-06-01 05:58:11  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 05:58:11  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 05:58:11  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  2.3ms
+2026-06-01 05:58:11  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  2.3ms
+2026-06-01 06:47:43  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 06:47:43  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 06:47:43  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  2.4ms
+2026-06-01 06:47:43  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  2.4ms
+2026-06-01 06:47:43  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 06:47:43  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 06:47:43  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.2ms
+2026-06-01 06:47:43  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.2ms
+2026-06-01 07:41:42  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 07:41:42  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 07:41:42  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  4.4ms
+2026-06-01 07:41:42  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  4.4ms
+2026-06-01 07:41:42  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 07:41:42  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 07:41:42  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.9ms
+2026-06-01 07:41:42  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.9ms
+2026-06-01 08:36:25  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-06-01 08:36:25  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-06-01 08:36:25  INFO      radiant_mvt.frontend — GET /index.html                                    OK  2.2ms
+2026-06-01 08:36:25  INFO      radiant_mvt.frontend — GET /index.html                                    OK  2.2ms
+2026-06-01 08:36:25  INFO      radiant_mvt.frontend — ← 200  /static/css/main.css?v=1780282200
+2026-06-01 08:36:25  INFO      radiant_mvt.frontend — ← 200  /static/css/main.css?v=1780282200
+2026-06-01 08:36:25  INFO      radiant_mvt.frontend — GET /static/css/main.css?v=1780282200              OK  1.6ms
+2026-06-01 08:36:25  INFO      radiant_mvt.frontend — GET /static/css/main.css?v=1780282200              OK  1.6ms
+2026-06-01 08:36:25  INFO      radiant_mvt.frontend — ← 200  /static/js/app.js?v=1780282200
+2026-06-01 08:36:25  INFO      radiant_mvt.frontend — ← 200  /static/js/app.js?v=1780282200
+2026-06-01 08:36:25  INFO      radiant_mvt.frontend — ← 200  /static/js/screens/screens.js?v=1780282200
+2026-06-01 08:36:25  INFO      radiant_mvt.frontend — ← 200  /static/js/screens/screens.js?v=1780282200
+2026-06-01 08:36:25  INFO      radiant_mvt.frontend — GET /static/js/app.js?v=1780282200                 OK  1.2ms
+2026-06-01 08:36:25  INFO      radiant_mvt.frontend — GET /static/js/app.js?v=1780282200                 OK  1.2ms
+2026-06-01 08:36:25  INFO      radiant_mvt.frontend — GET /static/js/screens/screens.js?v=1780282200     OK  1.4ms
+2026-06-01 08:36:25  INFO      radiant_mvt.frontend — GET /static/js/screens/screens.js?v=1780282200     OK  1.4ms
+2026-06-01 08:36:25  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-06-01 08:36:25  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-06-01 08:36:25  INFO      radiant_mvt.frontend — GET /index.html                                    OK  0.9ms
+2026-06-01 08:36:25  INFO      radiant_mvt.frontend — GET /index.html                                    OK  0.9ms
+2026-06-01 08:36:25  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-06-01 08:36:25  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-06-01 08:36:25  INFO      radiant_mvt.frontend — GET /index.html                                    OK  1.0ms
+2026-06-01 08:36:25  INFO      radiant_mvt.frontend — GET /index.html                                    OK  1.0ms
+2026-06-01 08:36:25  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-06-01 08:36:25  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-06-01 08:36:25  INFO      radiant_mvt.frontend — GET /index.html                                    OK  0.6ms
+2026-06-01 08:36:25  INFO      radiant_mvt.frontend — GET /index.html                                    OK  0.6ms
+2026-06-01 08:37:35  WARNING   radiant_mvt.frontend — ← 501  /api/chat/message
+2026-06-01 08:37:35  WARNING   radiant_mvt.frontend — ← 501  /api/chat/message
+2026-06-01 08:37:57  INFO      radiant_mvt.frontend — Frontend server stopped.
+2026-06-01 08:37:58  INFO      radiant_mvt.frontend — ============================================================
+2026-06-01 08:37:58  INFO      radiant_mvt.frontend — ============================================================
+2026-06-01 08:37:58  INFO      radiant_mvt.frontend — Radiant-MVT Frontend Server
+2026-06-01 08:37:58  INFO      radiant_mvt.frontend — Radiant-MVT Frontend Server
+2026-06-01 08:37:58  INFO      radiant_mvt.frontend — Serving : /Users/prakash.babu/Library/CloudStorage/OneDrive-HCLTECHNOLOGIESLIMITED/Code/MVT Trader Demo/radiant-mvt/frontend
+2026-06-01 08:37:58  INFO      radiant_mvt.frontend — Serving : /Users/prakash.babu/Library/CloudStorage/OneDrive-HCLTECHNOLOGIESLIMITED/Code/MVT Trader Demo/radiant-mvt/frontend
+2026-06-01 08:37:58  INFO      radiant_mvt.frontend — URL     : http://localhost:3000
+2026-06-01 08:37:58  INFO      radiant_mvt.frontend — URL     : http://localhost:3000
+2026-06-01 08:37:58  INFO      radiant_mvt.frontend — API     : http://localhost:8000  (backend)
+2026-06-01 08:37:58  INFO      radiant_mvt.frontend — API     : http://localhost:8000  (backend)
+2026-06-01 08:37:58  INFO      radiant_mvt.frontend — Log     : frontend.log
+2026-06-01 08:37:58  INFO      radiant_mvt.frontend — Log     : frontend.log
+2026-06-01 08:37:58  INFO      radiant_mvt.frontend — Stop    : Ctrl+C
+2026-06-01 08:37:58  INFO      radiant_mvt.frontend — Stop    : Ctrl+C
+2026-06-01 08:37:58  INFO      radiant_mvt.frontend — ============================================================
+2026-06-01 08:37:58  INFO      radiant_mvt.frontend — ============================================================
+2026-06-01 08:38:17  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-06-01 08:38:17  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-06-01 08:38:17  INFO      radiant_mvt.frontend — GET /index.html                                    OK  4.3ms
+2026-06-01 08:38:17  INFO      radiant_mvt.frontend — GET /index.html                                    OK  4.3ms
+2026-06-01 08:38:17  INFO      radiant_mvt.frontend — ← 200  /static/js/screens/screens.js?v=1780321032
+2026-06-01 08:38:17  INFO      radiant_mvt.frontend — ← 200  /static/js/screens/screens.js?v=1780321032
+2026-06-01 08:38:17  INFO      radiant_mvt.frontend — ← 200  /static/css/main.css?v=1780321032
+2026-06-01 08:38:17  INFO      radiant_mvt.frontend — ← 200  /static/css/main.css?v=1780321032
+2026-06-01 08:38:17  INFO      radiant_mvt.frontend — ← 200  /static/js/app.js?v=1780321032
+2026-06-01 08:38:17  INFO      radiant_mvt.frontend — GET /static/js/screens/screens.js?v=1780321032     OK  2.1ms
+2026-06-01 08:38:17  INFO      radiant_mvt.frontend — ← 200  /static/js/app.js?v=1780321032
+2026-06-01 08:38:17  INFO      radiant_mvt.frontend — GET /static/js/screens/screens.js?v=1780321032     OK  2.1ms
+2026-06-01 08:38:17  INFO      radiant_mvt.frontend — GET /static/js/app.js?v=1780321032                 OK  1.0ms
+2026-06-01 08:38:17  INFO      radiant_mvt.frontend — GET /static/js/app.js?v=1780321032                 OK  1.0ms
+2026-06-01 08:38:17  INFO      radiant_mvt.frontend — GET /static/css/main.css?v=1780321032              OK  1.8ms
+2026-06-01 08:38:17  INFO      radiant_mvt.frontend — GET /static/css/main.css?v=1780321032              OK  1.8ms
+2026-06-01 08:38:17  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-06-01 08:38:17  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-06-01 08:38:17  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-06-01 08:38:17  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-06-01 08:38:17  INFO      radiant_mvt.frontend — GET /index.html                                    OK  1.4ms
+2026-06-01 08:38:17  INFO      radiant_mvt.frontend — GET /index.html                                    OK  1.4ms
+2026-06-01 08:38:17  INFO      radiant_mvt.frontend — GET /index.html                                    OK  3.0ms
+2026-06-01 08:38:17  INFO      radiant_mvt.frontend — GET /index.html                                    OK  3.0ms
+2026-06-01 08:38:17  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-06-01 08:38:17  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-06-01 08:38:17  INFO      radiant_mvt.frontend — GET /index.html                                    OK  1.8ms
+2026-06-01 08:38:17  INFO      radiant_mvt.frontend — GET /index.html                                    OK  1.8ms
+2026-06-01 08:38:22  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-06-01 08:38:22  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-06-01 08:38:22  INFO      radiant_mvt.frontend — GET /index.html                                    OK  1.5ms
+2026-06-01 08:38:22  INFO      radiant_mvt.frontend — GET /index.html                                    OK  1.5ms
+2026-06-01 08:38:22  INFO      radiant_mvt.frontend — ← 200  /static/css/main.css?v=1780321032
+2026-06-01 08:38:22  INFO      radiant_mvt.frontend — ← 200  /static/css/main.css?v=1780321032
+2026-06-01 08:38:22  INFO      radiant_mvt.frontend — GET /static/css/main.css?v=1780321032              OK  1.7ms
+2026-06-01 08:38:22  INFO      radiant_mvt.frontend — GET /static/css/main.css?v=1780321032              OK  1.7ms
+2026-06-01 08:38:22  INFO      radiant_mvt.frontend — ← 200  /static/js/screens/screens.js?v=1780321032
+2026-06-01 08:38:22  INFO      radiant_mvt.frontend — ← 200  /static/js/screens/screens.js?v=1780321032
+2026-06-01 08:38:22  INFO      radiant_mvt.frontend — GET /static/js/screens/screens.js?v=1780321032     OK  1.1ms
+2026-06-01 08:38:22  INFO      radiant_mvt.frontend — GET /static/js/screens/screens.js?v=1780321032     OK  1.1ms
+2026-06-01 08:38:22  INFO      radiant_mvt.frontend — ← 200  /static/js/app.js?v=1780321032
+2026-06-01 08:38:22  INFO      radiant_mvt.frontend — ← 200  /static/js/app.js?v=1780321032
+2026-06-01 08:38:22  INFO      radiant_mvt.frontend — GET /static/js/app.js?v=1780321032                 OK  1.5ms
+2026-06-01 08:38:22  INFO      radiant_mvt.frontend — GET /static/js/app.js?v=1780321032                 OK  1.5ms
+2026-06-01 08:38:22  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-06-01 08:38:22  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-06-01 08:38:22  INFO      radiant_mvt.frontend — GET /index.html                                    OK  1.6ms
+2026-06-01 08:38:22  INFO      radiant_mvt.frontend — GET /index.html                                    OK  1.6ms
+2026-06-01 08:38:22  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-06-01 08:38:22  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-06-01 08:38:22  INFO      radiant_mvt.frontend — GET /index.html                                    OK  2.3ms
+2026-06-01 08:38:22  INFO      radiant_mvt.frontend — GET /index.html                                    OK  2.3ms
+2026-06-01 08:38:22  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-06-01 08:38:22  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-06-01 08:38:22  INFO      radiant_mvt.frontend — GET /index.html                                    OK  1.0ms
+2026-06-01 08:38:22  INFO      radiant_mvt.frontend — GET /index.html                                    OK  1.0ms
+2026-06-01 08:38:25  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-06-01 08:38:25  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-06-01 08:38:25  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-06-01 08:38:25  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-06-01 08:38:25  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-06-01 08:38:25  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-06-01 08:38:25  INFO      radiant_mvt.frontend — GET /index.html                                    OK  1.4ms
+2026-06-01 08:38:25  INFO      radiant_mvt.frontend — GET /index.html                                    OK  1.4ms
+2026-06-01 08:38:25  INFO      radiant_mvt.frontend — GET /index.html                                    OK  1.2ms
+2026-06-01 08:38:25  INFO      radiant_mvt.frontend — GET /index.html                                    OK  1.2ms
+2026-06-01 08:38:25  INFO      radiant_mvt.frontend — GET /index.html                                    OK  1.9ms
+2026-06-01 08:38:25  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-06-01 08:38:25  INFO      radiant_mvt.frontend — GET /index.html                                    OK  1.9ms
+2026-06-01 08:38:25  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-06-01 08:38:25  INFO      radiant_mvt.frontend — GET /index.html                                    OK  1.3ms
+2026-06-01 08:38:25  INFO      radiant_mvt.frontend — GET /index.html                                    OK  1.3ms
+2026-06-01 08:38:27  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-06-01 08:38:27  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-06-01 08:38:27  INFO      radiant_mvt.frontend — GET /index.html                                    OK  1.2ms
+2026-06-01 08:38:27  INFO      radiant_mvt.frontend — GET /index.html                                    OK  1.2ms
+2026-06-01 08:38:29  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:38:29  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:38:29  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  4.2ms
+2026-06-01 08:38:29  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  4.2ms
+2026-06-01 08:38:32  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-06-01 08:38:32  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-06-01 08:38:32  INFO      radiant_mvt.frontend — GET /index.html                                    OK  0.7ms
+2026-06-01 08:38:32  INFO      radiant_mvt.frontend — GET /index.html                                    OK  0.7ms
+2026-06-01 08:38:45  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-06-01 08:38:45  INFO      radiant_mvt.frontend — GET /index.html                                    OK  1.6ms
+2026-06-01 08:38:45  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-06-01 08:38:45  INFO      radiant_mvt.frontend — GET /index.html                                    OK  1.6ms
+2026-06-01 08:38:45  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:38:45  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:38:45  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.9ms
+2026-06-01 08:38:45  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.9ms
+2026-06-01 08:39:02  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-06-01 08:39:02  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-06-01 08:39:02  INFO      radiant_mvt.frontend — GET /index.html                                    OK  1.0ms
+2026-06-01 08:39:02  INFO      radiant_mvt.frontend — GET /index.html                                    OK  1.0ms
+2026-06-01 08:39:02  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:39:02  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:39:02  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.5ms
+2026-06-01 08:39:02  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.5ms
+2026-06-01 08:39:10  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:39:10  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:39:10  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.1ms
+2026-06-01 08:39:10  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.1ms
+2026-06-01 08:39:21  WARNING   radiant_mvt.frontend — ← 501  /api/chat/message
+2026-06-01 08:39:21  WARNING   radiant_mvt.frontend — ← 501  /api/chat/message
+2026-06-01 08:39:22  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:39:22  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:39:22  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.0ms
+2026-06-01 08:39:22  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.0ms
+2026-06-01 08:40:23  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:40:23  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:40:23  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.2ms
+2026-06-01 08:40:23  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.2ms
+2026-06-01 08:41:23  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:41:23  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:41:23  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.2ms
+2026-06-01 08:41:23  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.2ms
+2026-06-01 08:41:23  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-06-01 08:41:23  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-06-01 08:41:23  INFO      radiant_mvt.frontend — GET /index.html                                    OK  1.7ms
+2026-06-01 08:41:23  INFO      radiant_mvt.frontend — GET /index.html                                    OK  1.7ms
+2026-06-01 08:42:23  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:42:23  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:42:23  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.5ms
+2026-06-01 08:42:23  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.5ms
+2026-06-01 08:42:23  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:42:23  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:42:23  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.1ms
+2026-06-01 08:42:23  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.1ms
+2026-06-01 08:43:23  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:43:23  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:43:23  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.8ms
+2026-06-01 08:43:23  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.8ms
+2026-06-01 08:43:23  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:43:23  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:43:23  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.6ms
+2026-06-01 08:43:23  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.6ms
+2026-06-01 08:44:23  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:44:23  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:44:23  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.4ms
+2026-06-01 08:44:23  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.4ms
+2026-06-01 08:44:23  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:44:23  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:44:23  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.2ms
+2026-06-01 08:44:23  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.2ms
+2026-06-01 08:45:23  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-06-01 08:45:23  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-06-01 08:45:23  INFO      radiant_mvt.frontend — GET /index.html                                    OK  1.0ms
+2026-06-01 08:45:23  INFO      radiant_mvt.frontend — GET /index.html                                    OK  1.0ms
+2026-06-01 08:45:23  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-06-01 08:45:23  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-06-01 08:45:23  INFO      radiant_mvt.frontend — GET /index.html                                    OK  0.7ms
+2026-06-01 08:45:23  INFO      radiant_mvt.frontend — GET /index.html                                    OK  0.7ms
+2026-06-01 08:46:24  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:46:24  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:46:24  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  2.3ms
+2026-06-01 08:46:24  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  2.3ms
+2026-06-01 08:46:24  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:46:24  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:46:24  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.9ms
+2026-06-01 08:46:24  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.9ms
+2026-06-01 08:47:23  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:47:23  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:47:23  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.1ms
+2026-06-01 08:47:23  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.1ms
+2026-06-01 08:47:23  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:47:23  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:47:23  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.5ms
+2026-06-01 08:47:23  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.5ms
+2026-06-01 08:48:24  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-06-01 08:48:24  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-06-01 08:48:24  INFO      radiant_mvt.frontend — GET /index.html                                    OK  0.9ms
+2026-06-01 08:48:24  INFO      radiant_mvt.frontend — GET /index.html                                    OK  0.9ms
+2026-06-01 08:48:24  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-06-01 08:48:24  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-06-01 08:48:24  INFO      radiant_mvt.frontend — GET /index.html                                    OK  0.5ms
+2026-06-01 08:48:24  INFO      radiant_mvt.frontend — GET /index.html                                    OK  0.5ms
+2026-06-01 08:49:25  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:49:25  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:49:25  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.1ms
+2026-06-01 08:49:25  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.1ms
+2026-06-01 08:49:25  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:49:25  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:49:25  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.7ms
+2026-06-01 08:49:25  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.7ms
+2026-06-01 08:50:26  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-06-01 08:50:26  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-06-01 08:50:26  INFO      radiant_mvt.frontend — GET /index.html                                    OK  1.1ms
+2026-06-01 08:50:26  INFO      radiant_mvt.frontend — GET /index.html                                    OK  1.1ms
+2026-06-01 08:50:26  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-06-01 08:50:26  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-06-01 08:50:26  INFO      radiant_mvt.frontend — GET /index.html                                    OK  0.7ms
+2026-06-01 08:50:26  INFO      radiant_mvt.frontend — GET /index.html                                    OK  0.7ms
+2026-06-01 08:51:27  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:51:27  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:51:27  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.9ms
+2026-06-01 08:51:27  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.9ms
+2026-06-01 08:51:27  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:51:27  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:51:27  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.7ms
+2026-06-01 08:51:27  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.7ms
+2026-06-01 08:52:28  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:52:28  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:52:28  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.9ms
+2026-06-01 08:52:28  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.9ms
+2026-06-01 08:52:28  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:52:28  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:52:28  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.5ms
+2026-06-01 08:52:28  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.5ms
+2026-06-01 08:53:29  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:53:29  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:53:29  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.6ms
+2026-06-01 08:53:29  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.6ms
+2026-06-01 08:53:29  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:53:29  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:53:29  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.5ms
+2026-06-01 08:53:29  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.5ms
+2026-06-01 08:54:30  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:54:30  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:54:30  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.2ms
+2026-06-01 08:54:30  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.2ms
+2026-06-01 08:54:30  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:54:30  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:54:30  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.8ms
+2026-06-01 08:54:30  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.8ms
+2026-06-01 08:55:31  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:55:31  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:55:31  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  2.4ms
+2026-06-01 08:55:31  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  2.4ms
+2026-06-01 08:55:31  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:55:31  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:55:31  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.6ms
+2026-06-01 08:55:31  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.6ms
+2026-06-01 08:56:32  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:56:32  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:56:32  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.8ms
+2026-06-01 08:56:32  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.8ms
+2026-06-01 08:56:32  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:56:32  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:56:32  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.8ms
+2026-06-01 08:56:32  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.8ms
+2026-06-01 08:57:33  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:57:33  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:57:33  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.0ms
+2026-06-01 08:57:33  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.0ms
+2026-06-01 08:57:33  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:57:33  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:57:33  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.1ms
+2026-06-01 08:57:33  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.1ms
+2026-06-01 08:58:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:58:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:58:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.5ms
+2026-06-01 08:58:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.5ms
+2026-06-01 08:58:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:58:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:58:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.8ms
+2026-06-01 08:58:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.8ms
+2026-06-01 08:59:35  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:59:35  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:59:35  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.1ms
+2026-06-01 08:59:35  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.1ms
+2026-06-01 08:59:35  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:59:35  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 08:59:35  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.8ms
+2026-06-01 08:59:35  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.8ms
+2026-06-01 09:00:36  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 09:00:36  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 09:00:36  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.6ms
+2026-06-01 09:00:36  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.6ms
+2026-06-01 09:00:36  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 09:00:36  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 09:00:36  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.2ms
+2026-06-01 09:00:36  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.2ms
+2026-06-01 09:02:38  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 09:02:38  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 09:02:38  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  5.8ms
+2026-06-01 09:02:38  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  5.8ms
+2026-06-01 09:02:38  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 09:02:38  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 09:02:38  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.3ms
+2026-06-01 09:02:38  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.3ms
+2026-06-01 09:04:40  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 09:04:40  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 09:04:40  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.7ms
+2026-06-01 09:04:40  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.7ms
+2026-06-01 09:04:40  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 09:04:40  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 09:04:40  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.5ms
+2026-06-01 09:04:40  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.5ms
+2026-06-01 09:06:42  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 09:06:42  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 09:06:42  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.0ms
+2026-06-01 09:06:42  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.0ms
+2026-06-01 09:06:42  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 09:06:42  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 09:06:42  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.5ms
+2026-06-01 09:06:42  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.5ms
+2026-06-01 09:08:42  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 09:08:42  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 09:08:42  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.8ms
+2026-06-01 09:08:42  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.8ms
+2026-06-01 09:08:42  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 09:08:42  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 09:08:42  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.0ms
+2026-06-01 09:08:42  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.0ms
+2026-06-01 09:10:42  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 09:10:42  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 09:10:42  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  5.1ms
+2026-06-01 09:10:42  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  5.1ms
+2026-06-01 09:10:42  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 09:10:42  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 09:10:42  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.2ms
+2026-06-01 09:10:42  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.2ms
+2026-06-01 09:13:42  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 09:13:42  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 09:13:42  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.9ms
+2026-06-01 09:13:42  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.9ms
+2026-06-01 09:13:42  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 09:13:42  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 09:13:42  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.8ms
+2026-06-01 09:13:42  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.8ms
+2026-06-01 09:16:42  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 09:16:42  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 09:16:42  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.9ms
+2026-06-01 09:16:42  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.9ms
+2026-06-01 09:16:42  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 09:16:42  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 09:16:42  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.7ms
+2026-06-01 09:16:42  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.7ms
+2026-06-01 09:19:42  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 09:19:42  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 09:19:42  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.7ms
+2026-06-01 09:19:42  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.7ms
+2026-06-01 09:19:42  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 09:19:42  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 09:19:42  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.6ms
+2026-06-01 09:19:42  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.6ms
+2026-06-01 09:23:42  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 09:23:42  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 09:23:42  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.4ms
+2026-06-01 09:23:42  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.4ms
+2026-06-01 09:23:42  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 09:23:42  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 09:23:42  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.5ms
+2026-06-01 09:23:42  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.5ms
+2026-06-01 09:27:42  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 09:27:42  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 09:27:42  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.9ms
+2026-06-01 09:27:42  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.9ms
+2026-06-01 09:27:42  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 09:27:42  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 09:27:42  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.7ms
+2026-06-01 09:27:42  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.7ms
+2026-06-01 09:31:42  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 09:31:42  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 09:31:42  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.7ms
+2026-06-01 09:31:42  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.7ms
+2026-06-01 09:31:42  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 09:31:42  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 09:31:42  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.9ms
+2026-06-01 09:31:42  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.9ms
+2026-06-01 09:51:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 09:51:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 09:51:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  2.4ms
+2026-06-01 09:51:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  2.4ms
+2026-06-01 09:51:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 09:51:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 09:51:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.5ms
+2026-06-01 09:51:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.5ms
+2026-06-01 09:58:34  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-06-01 09:58:34  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-06-01 09:58:34  INFO      radiant_mvt.frontend — GET /index.html                                    OK  1.9ms
+2026-06-01 09:58:34  INFO      radiant_mvt.frontend — GET /index.html                                    OK  1.9ms
+2026-06-01 09:58:34  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-06-01 09:58:34  INFO      radiant_mvt.frontend — ← 200  /index.html
+2026-06-01 09:58:34  INFO      radiant_mvt.frontend — GET /index.html                                    OK  0.7ms
+2026-06-01 09:58:34  INFO      radiant_mvt.frontend — GET /index.html                                    OK  0.7ms
+2026-06-01 09:59:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 09:59:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 09:59:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.8ms
+2026-06-01 09:59:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.8ms
+2026-06-01 09:59:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 09:59:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 09:59:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.7ms
+2026-06-01 09:59:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.7ms
+2026-06-01 10:00:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 10:00:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 10:00:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.0ms
+2026-06-01 10:00:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.0ms
+2026-06-01 10:00:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 10:00:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 10:00:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.7ms
+2026-06-01 10:00:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.7ms
+2026-06-01 10:01:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 10:01:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 10:01:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.9ms
+2026-06-01 10:01:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.9ms
+2026-06-01 10:01:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 10:01:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 10:01:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.5ms
+2026-06-01 10:01:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  0.5ms
+2026-06-01 10:02:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 10:02:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 10:02:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.0ms
+2026-06-01 10:02:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.0ms
+2026-06-01 10:02:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 10:02:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 10:02:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.2ms
+2026-06-01 10:02:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.2ms
+2026-06-01 10:03:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 10:03:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 10:03:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.1ms
+2026-06-01 10:03:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.1ms
+2026-06-01 10:03:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 10:03:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 10:03:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.0ms
+2026-06-01 10:03:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.0ms
+2026-06-01 10:04:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 10:04:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 10:04:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.7ms
+2026-06-01 10:04:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.7ms
+2026-06-01 10:04:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 10:04:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 10:04:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.7ms
+2026-06-01 10:04:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.7ms
+2026-06-01 10:06:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 10:06:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 10:06:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.1ms
+2026-06-01 10:06:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.1ms
+2026-06-01 10:06:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 10:06:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 10:06:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.0ms
+2026-06-01 10:06:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.0ms
+2026-06-01 10:08:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 10:08:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 10:08:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.7ms
+2026-06-01 10:08:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.7ms
+2026-06-01 10:08:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 10:08:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 10:08:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.0ms
+2026-06-01 10:08:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.0ms
+2026-06-01 10:10:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 10:10:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 10:10:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.6ms
+2026-06-01 10:10:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.6ms
+2026-06-01 10:10:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 10:10:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 10:10:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.0ms
+2026-06-01 10:10:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.0ms
+2026-06-01 10:12:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 10:12:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 10:12:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.8ms
+2026-06-01 10:12:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.8ms
+2026-06-01 10:12:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 10:12:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 10:12:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.1ms
+2026-06-01 10:12:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.1ms
+2026-06-01 10:14:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 10:14:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 10:14:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.6ms
+2026-06-01 10:14:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.6ms
+2026-06-01 10:14:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 10:14:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 10:14:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.1ms
+2026-06-01 10:14:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.1ms
+2026-06-01 10:17:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 10:17:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 10:17:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  2.1ms
+2026-06-01 10:17:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  2.1ms
+2026-06-01 10:17:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 10:17:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 10:17:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.1ms
+2026-06-01 10:17:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.1ms
+2026-06-01 10:20:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 10:20:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 10:20:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  2.1ms
+2026-06-01 10:20:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  2.1ms
+2026-06-01 10:20:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 10:20:34  INFO      radiant_mvt.frontend — ← 304  /index.html
+2026-06-01 10:20:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.3ms
+2026-06-01 10:20:34  INFO      radiant_mvt.frontend — GET /index.html                                    Not Modified  1.3ms
