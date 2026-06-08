@@ -99,6 +99,7 @@ function renderDecisionCard(d, i) {
     <div style="font-size:13px;font-weight:600;color:var(--text-primary);margin-bottom:5px">${d.title}</div>
     <div class="decision-impact">Potential impact: ${d.potential_impact}</div>
     <div class="decision-body">${d.context}</div>
+    <button class="btn btn-ghost btn-sm" style="margin-bottom:8px;color:#6366f1;border-color:#6366f1" onclick="showDecisionReasoning(${d.id}, '${(d.title||'').replace(/'/g,"\\'")}')">🔍 Why this recommendation?</button>
     <div class="decision-actions">
       ${d.actions.map((a,ai) => `<button class="btn ${ai===0?'btn-primary':'btn-secondary'} btn-sm" onclick="handleDecisionAction(${d.id},'${a}')">${a}</button>`).join('')}
     </div>
@@ -117,6 +118,99 @@ window.generateDecisionBriefing = async function() {
   el.classList.add('streaming');
   await streamToElement(el, '/chat/message', { message: 'Generate my morning decision briefing with market context', screen_context: 'decision_queue', provider: 'claude' });
   el.classList.remove('streaming');
+};
+
+window.showDecisionReasoning = async function(decisionId, title) {
+  // Remove any existing modal
+  const existing = document.getElementById('reasoning-modal');
+  if (existing) existing.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'reasoning-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.innerHTML = `
+    <div style="background:#1a1f2e;border:1px solid #2d3748;border-radius:12px;width:100%;max-width:680px;max-height:85vh;display:flex;flex-direction:column;overflow:hidden">
+      <div style="padding:20px 24px;border-bottom:1px solid #2d3748;display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+        <div>
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#6366f1;margin-bottom:4px">🔍 AI Reasoning & Evidence</div>
+          <div style="font-size:15px;font-weight:600;color:#f1f5f9">${title}</div>
+        </div>
+        <button onclick="document.getElementById('reasoning-modal').remove()" style="background:none;border:none;color:#94a3b8;cursor:pointer;font-size:20px;line-height:1;padding:0">×</button>
+      </div>
+      <div id="reasoning-content" style="padding:24px;overflow-y:auto;flex:1;font-size:14px;line-height:1.7;color:#cbd5e1">
+        <div style="display:flex;align-items:center;gap:8px;color:#6366f1">
+          <div style="width:8px;height:8px;border-radius:50%;background:#6366f1;animation:pulse 1s infinite"></div>
+          Radiant AI is analysing the evidence...
+        </div>
+      </div>
+      <div style="padding:12px 24px;border-top:1px solid #2d3748;font-size:11px;color:#475569;display:flex;align-items:center;justify-content:space-between">
+        <span id="reasoning-source-label">Based on live positions, market data, and alerts</span>
+        <button id="reasoning-refresh-btn" onclick="window._refreshReasoning && window._refreshReasoning()" style="font-size:11px;color:#6366f1;background:none;border:1px solid #6366f133;border-radius:4px;padding:2px 8px;cursor:pointer;display:none">↻ Refresh</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+
+  const contentEl = document.getElementById('reasoning-content');
+  contentEl.innerHTML = '<div style="display:flex;align-items:center;gap:8px;color:#6366f1"><div style="width:8px;height:8px;border-radius:50%;background:#6366f1;animation:pulse 1s infinite"></div>Fetching reasoning...</div>';
+  // Store decisionId for refresh button
+  window._refreshReasoning = async () => {
+    await fetch('/api/decisions/' + decisionId + '/refresh-reasoning', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + ((typeof authToken === 'function' ? authToken() : authToken) || localStorage.getItem('radiant_token') || '') }
+    });
+    showDecisionReasoning(decisionId, title);
+  };
+
+  try {
+    const token = (typeof authToken === 'function' ? authToken() : authToken) || localStorage.getItem('radiant_token') || '';
+    const response = await fetch(`/api/decisions/${decisionId}/reasoning`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+
+    if (!response.ok) throw new Error('Failed to fetch reasoning');
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let accumulated = '';
+    contentEl.innerHTML = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      const text = decoder.decode(value);
+      const lines = text.split('\n');
+      for (const line of lines) {
+        if (line.startsWith('data: ') && line !== 'data: [DONE]') {
+          try {
+            const parsed = JSON.parse(line.slice(6));
+            if (parsed.meta === 'cached') {
+              const srcLabel = document.getElementById('reasoning-source-label');
+              const refreshBtn = document.getElementById('reasoning-refresh-btn');
+              const genAt = parsed.generated_at ? new Date(parsed.generated_at).toLocaleTimeString() : '';
+              if (srcLabel) srcLabel.innerHTML = '⚡ Cached reasoning' + (genAt ? ' · generated ' + genAt : '');
+              if (refreshBtn) refreshBtn.style.display = 'inline-block';
+            } else if (parsed.chunk) {
+              accumulated += parsed.chunk;
+              // Render markdown-like formatting
+              contentEl.innerHTML = accumulated
+                .replace(/\*\*(.+?)\*\*/g, '<strong style="color:#f1f5f9">$1</strong>')
+                .replace(/^(\d+\..+)$/gm, '<div style="margin-top:16px;color:#f1f5f9;font-weight:600">$1</div>')
+                .replace(/\n/g, '<br>');
+            } else if (parsed.error) {
+              contentEl.innerHTML = '<div style="color:#ef4444;padding:12px;background:#1e1014;border-radius:6px;border:1px solid #7f1d1d">'
+                + '<strong>AI Error:</strong> ' + parsed.error
+                + '<br><br><span style="color:#94a3b8;font-size:12px">Tip: Add your ANTHROPIC_API_KEY to the .env file, or switch to Local LLM in the header toggle.</span>'
+                + '</div>';
+            }
+          } catch(e) {}
+        }
+      }
+    }
+  } catch(err) {
+    contentEl.innerHTML = `<div style="color:#ef4444">Failed to load reasoning: ${err.message}</div>`;
+  }
 };
 
 /* ── SCREEN 2: DASHBOARD ── */
@@ -193,7 +287,8 @@ SCREENS['dashboard'] = async function(main) {
     + '<div style="position:relative;height:160px"><canvas id="intraday-chart"></canvas></div>'
     + '</div>'
     + '<div class="card" style="padding:12px">'
-    + '<div style="font-size:13px;font-weight:700;color:#374151;margin-bottom:10px">&#128200; Position Heat Map <span style="font-size:11px;font-weight:400;color:#9CA3AF">Commodity × Region</span></div>'
+    + '<div style="font-size:13px;font-weight:700;color:#374151;margin-bottom:4px">&#128200; Position Heat Map <span style="font-size:11px;font-weight:400;color:#9CA3AF">Commodity × Region</span></div>'
+    + '<div style="font-size:11px;color:#9CA3AF;margin-bottom:8px">Values in bbl (quantity). P&amp;L shown separately.</div>'
     + '<div id="heat-map-grid"></div>'
     + '</div>'
     + '</div>'
@@ -221,8 +316,11 @@ SCREENS['dashboard'] = async function(main) {
     /* ── TRADE BLOTTER ── */
     + '<div class="card" style="padding:0;overflow:hidden">'
     + '<div style="padding:10px 14px 8px;border-bottom:1px solid #F1F5F9;display:flex;justify-content:space-between;align-items:center;background:#FAFAFA">'
-    + '<span style="font-size:13px;font-weight:700;color:#374151">&#128195; Trade Blotter — Last 20 Trades</span>'
+    + '<span style="font-size:13px;font-weight:700;color:#374151">&#128195; Trade Blotter</span>'
+    + '<div style="display:flex;align-items:center;gap:12px">'
+    + '<span style="font-size:13px;color:#94a3b8">Showing last <select id="blotter-row-count" onchange="reloadBlotter(this.value)" style="background:#1e293b;border:1px solid #334155;color:#f1f5f9;border-radius:4px;padding:2px 6px;font-size:13px"><option value="5">5</option><option value="10">10</option><option value="20" selected>20</option><option value="50">50</option><option value="100">100</option></select> trades</span>'
     + '<span id="blotter-update-time" style="font-size:11px;color:#9CA3AF">Updated just now</span>'
+    + '</div>'
     + '</div>'
     + '<div style="max-height:240px;overflow-y:auto">'
     + '<table class="trading-table" style="width:100%"><thead><tr>'
@@ -281,7 +379,14 @@ function renderBooks(data) {
   }).join('');
 }
 
-function renderBlotter(data) {
+window.reloadBlotter = async function(count) {
+  count = parseInt(count) || 20;
+  const data = await apiCall('/trades/?limit=' + count).catch(() => null);
+  renderBlotter(data, count);
+};
+
+function renderBlotter(data, rowLimit) {
+  rowLimit = rowLimit || parseInt(document.getElementById('blotter-row-count')?.value) || 20;
   var trades = (data && (data.trades || (Array.isArray(data)?data:null))) || getDemoTrades();
   var tbody = document.getElementById('blotter-tbody');
   if (!tbody) return;
@@ -290,7 +395,7 @@ function renderBlotter(data) {
   var commColors = { Brent:'#1D4ED8', WTI:'#7C3AED', Urals:'#0F766E', Ethane:'#16A34A', NGLs:'#D97706', EUA:'#15803D', Naphtha:'#9D174D' };
   var commIcons  = { Brent:'&#128738;', WTI:'&#128507;', Urals:'&#127981;', Ethane:'&#129514;', NGLs:'&#9889;', EUA:'&#127807;', Naphtha:'&#9875;' };
 
-  tbody.innerHTML = trades.slice(0,20).map(function(t) {
+  tbody.innerHTML = trades.slice(0,rowLimit).map(function(t) {
     var comm = t.commodity || 'Brent';
     var dir = (t.direction||'BUY').toUpperCase();
     var isBuy = dir === 'BUY';
@@ -448,14 +553,20 @@ function renderAlerts(data) {
   var el = document.getElementById('dash-alerts');
   if (!el) return;
   var cfg = { critical:{ bg:'#FEF2F2', bc:'#DC2626', tc:'#991B1B' }, high:{ bg:'#FFF7ED', bc:'#D97706', tc:'#92400E' }, medium:{ bg:'#FEFCE8', bc:'#CA8A04', tc:'#854D0E' } };
-  el.innerHTML = (Array.isArray(alerts)?alerts:[]).slice(0,3).map(function(a) {
+  el.innerHTML = (Array.isArray(alerts)?alerts:[]).slice(0,3).map(function(a, ai) {
     var c = cfg[a.severity] || cfg.medium;
-    return '<div style="background:'+c.bg+';border-left:3px solid '+c.bc+';border-radius:0 7px 7px 0;padding:8px 10px;margin-bottom:6px">'
+    var alertId = 'alert-detail-' + ai;
+    return '<div style="background:'+c.bg+';border-left:3px solid '+c.bc+';border-radius:0 7px 7px 0;padding:8px 10px;margin-bottom:6px;cursor:pointer" onclick="this.querySelector(\'[data-expand]\').style.display=this.querySelector(\'[data-expand]\').style.display===\'none\'?\'block\':\'none\'">'
       + '<div style="display:flex;justify-content:space-between;align-items:flex-start">'
       + '<span style="font-size:12.5px;font-weight:700;color:'+c.tc+'">'+(a.icon||'&#9888;')+' '+(a.title||'')+'</span>'
       + '<span style="font-size:10px;color:#9CA3AF;white-space:nowrap;margin-left:6px">'+(a.time||'')+'</span>'
       + '</div>'
       + '<div style="font-size:11.5px;color:#374151;margin-top:3px;line-height:1.4">'+(a.body||a.description||'')+'</div>'
+      + '<div data-expand style="display:none;margin-top:8px;padding-top:8px;border-top:1px solid '+c.bc+'20">'
+      + '<div style="font-size:11px;font-weight:700;color:'+c.tc+';margin-bottom:4px">Full context</div>'
+      + '<div style="font-size:11px;color:#374151;line-height:1.5">'+(a.body||a.description||'No additional detail available.')+'</div>'
+      + '<button onclick="event.stopPropagation();window.sendCopilotMessage&&window.sendCopilotMessage(\'Tell me more about: '+(a.title||'').replace(/'/g,"\\'")+'\')" style="margin-top:6px;font-size:11px;padding:3px 10px;border:1px solid '+c.bc+';background:white;color:'+c.tc+';border-radius:5px;cursor:pointer">Ask AI →</button>'
+      + '</div>'
       + '</div>';
   }).join('');
 }
@@ -561,7 +672,7 @@ function renderHeatMap() {
         bg = '#F9FAFB'; fc = '#D1D5DB';
       }
       var label = val !== 0 ? (val > 0 ? '+' : '') + '$' + (abs >= 1 ? abs.toFixed(0) : val.toFixed(0)) + 'M' : '—';
-      html += '<td style="text-align:center;padding:4px 6px;background:' + bg + ';border-radius:5px;color:' + fc + ';font-weight:700;min-width:60px">' + label + '</td>';
+      html += '<td style="text-align:center;padding:4px 6px;background:' + bg + ';border-radius:5px;color:' + fc + ';font-weight:700;min-width:60px;cursor:' + (val !== 0 ? 'pointer' : 'default') + '" onclick="showPositionDetail(\'' + c + '\',\'' + r + '\')">' + label + '</td>';
     });
     html += '</tr>';
   });
@@ -575,6 +686,12 @@ function renderHeatMap() {
 
   el.innerHTML = html;
 }
+
+window.showPositionDetail = function(commodity, region) {
+  showToast('Position Detail', `Loading ${commodity} position for ${region}...`, 'info');
+  // Navigate to positions screen with filter
+  setTimeout(() => navigateTo('positions'), 300);
+};
 
 function renderNews(data) {
   var el = document.getElementById('dash-news');
@@ -1172,7 +1289,7 @@ window.openEmail = function(id) {
     </div>
     <div class="email-body-card">${e.body}</div>
     <div class="ai-analysis-box">
-      <div class="ai-analysis-title"><span>🤖 AI Analysis</span><button class="btn btn-secondary btn-sm" onclick="sendCopilotMessage('Summarise this communication: ${e.subject.replace(/'/g,"\\'")}')">Ask Copilot</button></div>
+      <div class="ai-analysis-title"><span>🤖 AI Analysis</span><button class="btn btn-secondary btn-sm" onclick="sendCopilotMessage('Summarise this communication: ${e.subject.replace(/'/g,"\\'")}')">Ask Radiant AI</button></div>
       <div class="ai-summary-callout">${e.ai.summary}</div>
       <div class="ai-analysis-grid">
         <div><span>Priority</span><strong><span class="badge ${meta.badge}">${e.ai.priority}</span></strong></div>
@@ -1246,6 +1363,17 @@ SCREENS['compliance'] = async function(main) {
     <div class="grid-2">
       <div>
         <div class="card-title mb-8">📋 Immutable Audit Trail</div>
+        <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+          <input type="date" id="audit-date-from" placeholder="From date" style="background:#1e293b;border:1px solid #334155;color:#f1f5f9;border-radius:6px;padding:6px 10px;font-size:12px" onchange="filterAuditLog()">
+          <input type="date" id="audit-date-to" placeholder="To date" style="background:#1e293b;border:1px solid #334155;color:#f1f5f9;border-radius:6px;padding:6px 10px;font-size:12px" onchange="filterAuditLog()">
+          <select id="audit-type-filter" onchange="filterAuditLog()" style="background:#1e293b;border:1px solid #334155;color:#f1f5f9;border-radius:6px;padding:6px 10px;font-size:12px">
+            <option value="">All actions</option>
+            <option value="AI">AI Actions</option>
+            <option value="Trade">Trades</option>
+            <option value="Alert">Alerts</option>
+            <option value="Manual">Manual</option>
+          </select>
+        </div>
         <div class="filter-bar">
           <select class="form-select"><option>All Types</option><option>Trade</option><option>AI Decision</option><option>System</option></select>
           <input class="form-input" placeholder="Search..." style="width:160px">
@@ -1300,6 +1428,22 @@ SCREENS['compliance'] = async function(main) {
   </div>`;
   loadCompliance();
 };
+window.filterAuditLog = function() {
+  const dateFrom = document.getElementById('audit-date-from')?.value;
+  const dateTo = document.getElementById('audit-date-to')?.value;
+  const typeFilter = document.getElementById('audit-type-filter')?.value || '';
+  const rows = document.querySelectorAll('#audit-trail-tbody tr');
+  rows.forEach(row => {
+    const actionCell = row.querySelector('td:nth-child(3)');
+    const action = actionCell ? actionCell.textContent : '';
+    const matchType = !typeFilter || action.toLowerCase().includes(typeFilter.toLowerCase());
+    row.style.display = matchType ? '' : 'none';
+  });
+  if (!rows.length) {
+    showToast('Audit Filter', 'Filters applied. Date filtering applies to live data.', 'info');
+  }
+};
+
 window.loadCompliance = async function() {
   // Load real regulatory data from working endpoint
   try {
@@ -1605,10 +1749,34 @@ SCREENS['positions'] = async function(main) {
     <div class="screen-header">
       <div><div class="screen-title">📈 Positions & Risk</div><div class="screen-subtitle">Full position book with VaR analysis</div></div>
       <div class="screen-actions">
+        <div style="display:flex;gap:4px;background:#0f172a;border:1px solid #1e293b;border-radius:8px;padding:4px">
+          <button class="pos-toggle active" onclick="filterPositions('all', this)" style="padding:6px 14px;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;background:#6366f1;color:white">All</button>
+          <button class="pos-toggle" onclick="filterPositions('physical', this)" style="padding:6px 14px;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;background:transparent;color:#94a3b8">Physical</button>
+          <button class="pos-toggle" onclick="filterPositions('financial', this)" style="padding:6px 14px;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;background:transparent;color:#94a3b8">Financial</button>
+        </div>
         <select id="pos-book" style="border:1px solid #E5E7EB;border-radius:7px;padding:7px 12px;font-size:13px">
           <option>All Books</option><option>Crude</option><option>Ethane</option><option>NGLs</option><option>Carbon</option>
         </select>
         <button class="btn btn-primary btn-sm" onclick="loadPositions()">⟳ Refresh</button>
+      </div>
+    </div>
+
+    <!-- P&L Summary Row -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px">
+      <div style="background:linear-gradient(135deg,#16A34A,#15803D);border-radius:10px;padding:12px 16px;color:white">
+        <div style="font-size:10px;opacity:.8;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Today's P&L</div>
+        <div style="font-size:24px;font-weight:800;letter-spacing:-.5px" id="pos-today-pnl">+$2.1M</div>
+        <div style="font-size:11px;opacity:.8;margin-top:2px">Unrealised MTM</div>
+      </div>
+      <div style="background:white;border:1px solid #E5E7EB;border-radius:10px;padding:12px 16px">
+        <div style="font-size:10px;color:#6B7280;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Day-over-Day Change</div>
+        <div style="font-size:24px;font-weight:800;color:#16A34A;letter-spacing:-.5px" id="pos-dod-change">+$184K</div>
+        <div style="font-size:11px;color:#6B7280;margin-top:2px">vs yesterday close</div>
+      </div>
+      <div style="background:white;border:1px solid #E5E7EB;border-radius:10px;padding:12px 16px">
+        <div style="font-size:10px;color:#6B7280;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">MTM P&L (Book Total)</div>
+        <div style="font-size:24px;font-weight:800;color:#374151;letter-spacing:-.5px" id="pos-mtm-total">+$2.1M</div>
+        <div style="font-size:11px;color:#6B7280;margin-top:2px">All open positions</div>
       </div>
     </div>
 
@@ -1724,6 +1892,15 @@ SCREENS['positions'] = async function(main) {
   renderCurveChart('brent');
 };
 
+window.filterPositions = function(type, btn) {
+  document.querySelectorAll('.pos-toggle').forEach(b => { b.style.background='transparent'; b.style.color='#94a3b8'; });
+  btn.style.background='#6366f1'; btn.style.color='white';
+  const rows = document.querySelectorAll('[data-pos-type]');
+  rows.forEach(r => {
+    r.style.display = (type === 'all' || r.dataset.posType === type) ? '' : 'none';
+  });
+};
+
 /* ── POSITIONS: loadPositions ── */
 window.loadPositions = async function() {
   var tbody = document.getElementById('positions-tbody');
@@ -1786,7 +1963,8 @@ window.loadPositions = async function() {
     var icon = icons[p.commodity] || '&#128202;';
     var vd = VAR_DATA[p.commodity];
     var varStr = vd ? '$' + (vd.var1d/1000).toFixed(0) + 'K' : '—';
-    return '<tr>'
+    var posType = (p.physical_volume && !p.paper_volume) ? 'physical' : (!p.physical_volume && p.paper_volume) ? 'financial' : 'physical';
+    return '<tr data-pos-type="' + posType + '">'
       + '<td><span style="font-size:14px;margin-right:5px">' + icon + '</span><strong style="color:#111827">' + p.commodity + '</strong><div style="font-size:10px;color:#9CA3AF">' + (p.region||'') + '</div></td>'
       + '<td class="right" style="font-family:monospace;font-size:12px">' + (p.physical_volume||0).toLocaleString() + '</td>'
       + '<td class="right" style="font-family:monospace;font-size:12px">' + (p.paper_volume||0).toLocaleString() + '</td>'
@@ -2350,6 +2528,12 @@ SCREENS['performance'] = async function(main) {
         </div>
       </div>
     </div>
+    <!-- Book Summary Widget -->
+    <div class="chart-card" style="margin-bottom:16px">
+      <div class="chart-title">📚 Book Summary <span style="font-size:11px;font-weight:400;color:#9CA3AF">YTD performance by trading book</span></div>
+      <div id="book-summary-table"></div>
+    </div>
+
     <div class="performance-lower-grid">
       <div class="chart-card performance-strategy-card">
         <div class="chart-title">Performance by Strategy</div>
@@ -2382,7 +2566,64 @@ SCREENS['performance'] = async function(main) {
   </div>`;
   renderMonthlyChart();
   renderWaterfallChart();
+  renderBookSummary();
 };
+
+function renderBookSummary() {
+  const el = document.getElementById('book-summary-table');
+  if (!el) return;
+
+  const demoBooks = [
+    { name: 'Ethane Americas', commodity: 'Ethane', ytd_pnl: 8200000, target: 12000000 },
+    { name: 'LPG Europe', commodity: 'Propane', ytd_pnl: 5100000, target: 8000000 },
+    { name: 'Naphtha Asia', commodity: 'Naphtha', ytd_pnl: 3400000, target: 6000000 },
+    { name: 'Natural Gas UK', commodity: 'Natural Gas', ytd_pnl: -200000, target: 5000000 },
+    { name: 'LNG Global', commodity: 'LNG', ytd_pnl: 11000000, target: 5000000 },
+  ];
+
+  // Try to load from API, fall back to demo data
+  apiCall('/performance/summary').then(data => {
+    const books = (data && Array.isArray(data.books)) ? data.books : demoBooks;
+    el.innerHTML = renderBookSummaryTable(books);
+  }).catch(() => {
+    el.innerHTML = renderBookSummaryTable(demoBooks);
+  });
+
+  // Show demo immediately while loading
+  el.innerHTML = renderBookSummaryTable(demoBooks);
+}
+
+function renderBookSummaryTable(books) {
+  const rows = books.map(b => {
+    const pct = b.target > 0 ? Math.round((b.ytd_pnl / b.target) * 100) : 0;
+    const pos = b.ytd_pnl >= 0;
+    const overTarget = pct >= 100;
+    const status = overTarget ? 'Above Target' : (pct >= 75 ? 'On Track' : (pct >= 50 ? 'Below Plan' : 'At Risk'));
+    const statusColor = overTarget ? '#16A34A' : (pct >= 75 ? '#2563EB' : (pct >= 50 ? '#D97706' : '#DC2626'));
+    const statusBg = overTarget ? '#F0FDF4' : (pct >= 75 ? '#EFF6FF' : (pct >= 50 ? '#FFF7ED' : '#FEF2F2'));
+    const pnlStr = (pos ? '+$' : '-$') + (Math.abs(b.ytd_pnl) / 1e6).toFixed(2) + 'M';
+    const targetStr = '$' + (b.target / 1e6).toFixed(1) + 'M';
+    return `<tr>
+      <td style="font-weight:700;color:#111827">${b.name}</td>
+      <td style="color:#6B7280">${b.commodity}</td>
+      <td style="font-family:monospace;font-weight:700;color:${pos?'#16A34A':'#DC2626'}">${pnlStr}</td>
+      <td style="font-family:monospace;color:#374151">${targetStr}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="flex:1;background:#F1F5F9;border-radius:3px;height:6px;min-width:60px"><div style="background:${statusColor};height:100%;width:${Math.min(pct,100)}%;border-radius:3px"></div></div>
+          <span style="font-size:12px;font-weight:700;color:${statusColor};min-width:36px">${pct}%</span>
+        </div>
+      </td>
+      <td><span style="background:${statusBg};color:${statusColor};font-size:11px;font-weight:700;padding:2px 10px;border-radius:20px">${status}</span></td>
+    </tr>`;
+  }).join('');
+  return `<table class="trading-table" style="width:100%">
+    <thead><tr>
+      <th>Book Name</th><th>Commodity</th><th class="right">YTD P&L</th><th class="right">Target</th><th>% of Target</th><th>Status</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
 
 const PERFORMANCE_MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const PERFORMANCE_ACTUALS = [2.4, 1.8, 2.7, 3.5, 4.2, 3.8, null, null, null, null, null, null];
@@ -2755,219 +2996,349 @@ SCREENS['decision-intelligence'] = async function(main) {
             <div style="text-align:center;color:white"><div style="font-size:22px;font-weight:800">82%</div><div style="font-size:10px;opacity:.75">Win rate</div></div>
             <div style="text-align:center;color:white"><div style="font-size:22px;font-weight:800">8.4d</div><div style="font-size:10px;opacity:.75">Avg hold</div></div>
           </div>
+        <!-- P&L Distribution (truncated — full chart requires trade data API) -->
+        <div style="background:#F8FAFC;border:1px solid #E5E7EB;border-radius:10px;padding:14px">
+          <div style="font-size:12px;font-weight:700;color:#374151;margin-bottom:10px">&#128202; P&amp;L Distribution</div>
+          <div style="color:#6B7280;font-size:13px">Load trade history to view P&amp;L distribution chart.</div>
         </div>
-
-        <!-- P&L outcomes + Trade timeline side by side -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
-
-          <!-- P&L Distribution -->
-          <div style="background:#F8FAFC;border:1px solid #E5E7EB;border-radius:10px;padding:14px">
-            <div style="font-size:12px;font-weight:700;color:#374151;margin-bottom:10px">&#128202; P&amp;L Distribution — All 17 Trades</div>
-            <div style="display:flex;flex-direction:column;gap:5px">
-              ${[
-                ['>$5M profit',   3, '#16A34A', '+$7.1M best (Aug 2023)'],
-                ['$2–5M profit',  6, '#22C55E', 'Most common outcome'],
-                ['$0–2M profit',  5, '#86EFAC', 'Modest gains'],
-                ['Loss < $2M',    2, '#FCA5A5', 'Spread didn\'t compress'],
-                ['Loss > $2M',    1, '#DC2626', '-$3.4M worst (Feb 2024)'],
-              ].map(([label, count, color, note]) => {
-                const w = Math.round(count/17*100);
-                return `<div>
-                  <div style="display:flex;justify-content:space-between;margin-bottom:2px">
-                    <span style="font-size:11px;font-weight:600;color:#374151">${label}</span>
-                    <span style="font-size:11px;color:#6B7280">${count} trades (${w}%)</span>
-                  </div>
-                  <div style="background:#E5E7EB;border-radius:3px;height:8px;overflow:hidden">
-                    <div style="background:${color};height:8px;border-radius:3px;width:${w}%;transition:width 1s"></div>
-                  </div>
-                  <div style="font-size:10px;color:#9CA3AF;margin-top:1px">${note}</div>
-                </div>`;
-              }).join('')}
-            </div>
-          </div>
-
-          <!-- Trade history timeline -->
-          <div style="background:#F8FAFC;border:1px solid #E5E7EB;border-radius:10px;padding:14px">
-            <div style="font-size:12px;font-weight:700;color:#374151;margin-bottom:10px">&#128197; Recent Similar Trades</div>
-            <div style="display:flex;flex-direction:column;gap:1px">
-              ${[
-                ['Mar 2026', '+$3.2M', 'Urals +$14/bbl spread compression over 9 days', 'pos'],
-                ['Jan 2026', '+$1.8M', 'Partial — exited early on geopolitical noise', 'pos'],
-                ['Sep 2025', '+$5.4M', 'Perfect entry — spread at 2.8σ, held full duration', 'pos'],
-                ['Jun 2025', '+$4.1M', 'Indian buyer demand drove Urals recovery vs Brent', 'pos'],
-                ['Feb 2024', '-$3.4M', '⚠ FAILED — freight widened faster than basis compressed', 'neg'],
-                ['Oct 2023', '+$2.9M', 'VLCC shortage briefly squeezed spread', 'pos'],
-                ['Aug 2023', '+$7.1M', '&#127942; Best ever — 14-day hold, Primorsk supply disruption', 'pos'],
-              ].map(([date, pnl, note, dir]) => {
-                const bg = dir==='pos'?'#F0FDF4':'#FEF2F2';
-                const col = dir==='pos'?'#16A34A':'#DC2626';
-                return `<div style="display:flex;gap:10px;align-items:flex-start;padding:7px 8px;border-radius:6px;background:${bg};margin-bottom:4px">
-                  <span style="font-size:10px;color:#9CA3AF;white-space:nowrap;min-width:48px;margin-top:1px">${date}</span>
-                  <div style="flex:1"><div style="font-size:11px;color:#374151;line-height:1.4">${note}</div></div>
-                  <span style="font-size:12px;font-weight:800;font-family:monospace;color:${col};white-space:nowrap">${pnl}</span>
-                </div>`;
-              }).join('')}
-            </div>
-          </div>
-        </div>
-
-        <!-- Failure mode analysis — the key insight -->
-        <div style="border:2px solid #FCD34D;background:#FFFBEB;border-radius:10px;padding:14px 16px;margin-bottom:14px">
-          <div style="display:flex;align-items:flex-start;gap:12px">
-            <span style="font-size:24px;flex-shrink:0">&#9888;</span>
-            <div>
-              <div style="font-size:13px;font-weight:800;color:#D97706;margin-bottom:5px">Failure Mode Identified — Feb 2024 resembles current conditions</div>
-              <div style="font-size:12.5px;color:#374151;line-height:1.6;margin-bottom:8px">The only losing trade in this category failed because <strong>Baltic freight rates widened +$4.20/MT in 5 days</strong> (Primorsk ice season), eating the spread compression gain before Urals could recover. The position was held 3 days too long.</div>
-              <div style="display:flex;gap:12px">
-                <div style="background:white;border:1px solid #FCD34D;border-radius:7px;padding:8px 12px;flex:1">
-                  <div style="font-size:10px;font-weight:700;color:#D97706;margin-bottom:3px">THEN (Feb 2024)</div>
-                  <div style="font-size:11px;color:#374151">Freight vol: <strong>2.3σ</strong> above mean · Spread: −$19.80/bbl</div>
-                </div>
-                <div style="background:white;border:2px solid #DC2626;border-radius:7px;padding:8px 12px;flex:1">
-                  <div style="font-size:10px;font-weight:700;color:#DC2626;margin-bottom:3px">NOW (Jun 2026) &#128308; WATCH</div>
-                  <div style="font-size:11px;color:#374151">Freight vol: <strong>2.1σ</strong> above mean · Spread: −$20.32/bbl</div>
-                </div>
-              </div>
-              <div style="margin-top:10px;font-size:12px;color:#92400E;font-weight:600">&#128161; Recommendation: If entering this trade, set a hard exit at −$2/bbl freight move within 48h. Don't repeat Feb 2024.</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Ask AI button -->
-        <div style="display:flex;gap:10px">
-          <button onclick="window.sendCopilotMessage && window.sendCopilotMessage('Based on Desk Brain history of Brent/Urals spread trades, should I enter this trade today given current Brent at $96.97 and Urals at $76.57? What entry/exit conditions should I set?')"
-            style="flex:1;padding:11px;background:#0066CC;color:white;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">
-            &#129504; Ask AI: Should I enter this trade today?
-          </button>
-          <button onclick="window.sendCopilotMessage && window.sendCopilotMessage('What were the exact entry and exit conditions for the best Brent/Urals spread trade in Aug 2023 that returned $7.1M?')"
-            style="flex:1;padding:11px;background:white;color:#0066CC;border:2px solid #0066CC;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">
-            &#127942; How did we make $7.1M in Aug 2023?
-          </button>
-        </div>
-      </div>
-    </div>
-    <div class="di-section" style="background:white;border:1px solid #E5E7EB;border-radius:12px;padding:20px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-        <div style="display:flex;align-items:center;gap:12px">
-          <span style="font-size:28px;font-weight:900;color:#E5E7EB">03</span>
-          <div>
-            <div style="font-size:16px;font-weight:700;color:#111827">Opportunity Cost Engine</div>
-            <div style="font-size:13px;color:#6B7280">90-day audit: what was available, what was captured, what was left on the table.</div>
-          </div>
-        </div>
-        <button class="btn btn-primary" onclick="runOpportunityCost()">📊 Run 90-Day Audit</button>
-      </div>
-      <div id="opportunity-results" style="display:none">
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px">
-          <div class="kpi-card"><div class="kpi-label">Opportunities Available</div><div class="kpi-value accent">17</div></div>
-          <div class="kpi-card"><div class="kpi-label">Captured</div><div class="kpi-value positive">6 (35%)</div></div>
-          <div class="kpi-card"><div class="kpi-label">Missed P&L</div><div class="kpi-value negative">$8.7M</div></div>
-        </div>
-        <div style="background:#FEF3C7;border:1px solid #FCD34D;border-radius:10px;padding:14px 16px;font-size:13.5px;color:#92400E;line-height:1.6">
-          <strong>$8.7M</strong> in strategy-aligned opportunities were available in the last 90 days. 
-          11 of 17 were missed — identified after the optimal entry window closed. 
-          Radiant-MVT would have surfaced all 17 within <strong>12 minutes</strong> of the trigger event.
-        </div>
-        <div id="opportunity-narrative" class="streaming-box" style="margin-top:10px;min-height:60px"></div>
       </div>
     </div>
   </div>`;
 };
 
-/* Helpers for new screens */
-window.loadMarketData = async function() {
-  const data = await apiCall('/market/prices');
-  const el = document.getElementById('live-prices-table');
-  if (!el) return;
-  const prices = data?.length > 0 ? data : [
-    {commodity:'Brent',price:96.97,change_pct_1d:-0.86},{commodity:'WTI',price:93.80,change_pct_1d:0.52},
-    {commodity:'Urals',price:90.15,change_pct_1d:-0.44},{commodity:'Ethane',price:316.9,change_pct_1d:0.38},
-    {commodity:'HH',price:3.17,change_pct_1d:-1.24},{commodity:'EUA',price:63.40,change_pct_1d:0.22}
-  ];
-  el.innerHTML = '<table class="trading-table"><thead><tr><th>Commodity</th><th class="right">Price</th><th class="right">Change</th></tr></thead><tbody>' +
-    prices.map(p=>`<tr><td class="semibold">${p.commodity}</td>
-      <td class="right mono">${Number(p.price).toFixed(2)}</td>
-      <td class="right ${(p.change_pct_1d||0)>=0?'positive':'negative'}">${(p.change_pct_1d||0)>=0?'▲':'▼'} ${Math.abs(p.change_pct_1d||0).toFixed(2)}%</td>
-    </tr>`).join('') + '</tbody></table>';
-  const spreadEl = document.getElementById('spread-table');
-  if (spreadEl) {
-    const brent = prices.find(p=>p.commodity==='Brent')?.price||97;
-    const urals = prices.find(p=>p.commodity==='Urals')?.price||90;
-    const wti = prices.find(p=>p.commodity==='WTI')?.price||94;
-    const eth = prices.find(p=>p.commodity==='Ethane')?.price||317;
-    spreadEl.innerHTML = `<table class="trading-table"><thead><tr><th>Spread</th><th class="right">Value</th><th class="right">Signal</th></tr></thead><tbody>
-      <tr><td>Brent/Urals</td><td class="right mono negative">$${(brent-urals).toFixed(2)}/bbl</td><td class="right"><span style="color:#DC2626;font-weight:700">Wide — Arb signal</span></td></tr>
-      <tr><td>WTI/Brent</td><td class="right mono">$${(wti-brent).toFixed(2)}/bbl</td><td class="right muted">Normal</td></tr>
-      <tr><td>Eth/Naphtha</td><td class="right mono positive">$${(612-eth/3.7).toFixed(0)}/MT</td><td class="right positive">Ethane cheaper</td></tr>
-    </tbody></table>`;
+SCREENS['configuration'] = async function(main) {
+  main.innerHTML = `
+    <div class="screen" style="padding:16px">
+      <div class="screen-header" style="margin-bottom:16px">
+        <div>
+          <div class="screen-title">⚙️ External Systems Configuration</div>
+          <div class="screen-subtitle">Configure news feeds, market data sources, AI models, and ETRM connections</div>
+        </div>
+      </div>
+
+      <!-- Tab bar -->
+      <div style="display:flex;gap:4px;border-bottom:1px solid #2d3748;margin-bottom:20px">
+        ${['news','market','ai','etrm'].map((t,i) => `
+          <button id="cfg-tab-${t}" onclick="switchCfgTab('${t}')"
+            style="padding:8px 18px;border:none;border-bottom:2px solid ${i===0?'#6366f1':'transparent'};
+            background:none;color:${i===0?'#6366f1':'#64748b'};font-size:13px;font-weight:600;cursor:pointer">
+            ${{news:'📰 News Feeds',market:'📊 Market Watch',ai:'🤖 AI Models',etrm:'🏭 ETRM'}[t]}
+          </button>`).join('')}
+      </div>
+
+      <!-- News Feeds tab -->
+      <div id="cfg-panel-news" class="cfg-panel">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div>
+            <div style="font-size:14px;font-weight:700;color:#f1f5f9">News Feed Sources</div>
+            <div style="font-size:12px;color:#64748b;margin-top:2px">
+              Add any RSS feed or news API. Radiant AI ingests all sources every 15 min and uses them for decision analysis with citations.
+            </div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="openAddFeedModal('news')">+ Add News Feed</button>
+        </div>
+        <div id="grid-news" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px">
+          <div style="color:#6366f1;font-size:13px">Loading...</div>
+        </div>
+      </div>
+
+      <!-- Market Watch tab -->
+      <div id="cfg-panel-market" class="cfg-panel" style="display:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div>
+            <div style="font-size:14px;font-weight:700;color:#f1f5f9">Market Data Sources</div>
+            <div style="font-size:12px;color:#64748b;margin-top:2px">
+              Price feeds used in the Market Watch panel and AI decision analysis. Free sources (Yahoo Finance) work out of the box.
+            </div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="openAddFeedModal('market_data')">+ Add Price Feed</button>
+        </div>
+        <div id="grid-market" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px">
+          <div style="color:#6366f1;font-size:13px">Loading...</div>
+        </div>
+      </div>
+
+      <!-- AI Models tab -->
+      <div id="cfg-panel-ai" class="cfg-panel" style="display:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div>
+            <div style="font-size:14px;font-weight:700;color:#f1f5f9">AI Model Connections</div>
+            <div style="font-size:12px;color:#64748b;margin-top:2px">
+              Local LM Studio or OpenAI-compatible endpoints. Switch active model in the header toggle.
+            </div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="openAddFeedModal('ai_model')">+ Add AI Model</button>
+        </div>
+        <div id="grid-ai" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px">
+          <div style="color:#6366f1;font-size:13px">Loading...</div>
+        </div>
+      </div>
+
+      <!-- ETRM tab -->
+      <div id="cfg-panel-etrm" class="cfg-panel" style="display:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div>
+            <div style="font-size:14px;font-weight:700;color:#f1f5f9">ETRM & Trading Systems</div>
+            <div style="font-size:12px;color:#64748b;margin-top:2px">
+              Connect RightAngle, Endur, SAP or any ETRM via REST API to sync live positions and trades.
+            </div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="openAddFeedModal('etrm')">+ Add ETRM</button>
+        </div>
+        <div id="grid-etrm" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px">
+          <div style="color:#6366f1;font-size:13px">Loading...</div>
+        </div>
+      </div>
+
+      <!-- Add feed modal -->
+      <div id="add-feed-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:none;align-items:center;justify-content:center">
+        <div style="background:#1a1f2e;border:1px solid #2d3748;border-radius:12px;width:100%;max-width:480px;padding:24px">
+          <div style="font-size:15px;font-weight:700;color:#f1f5f9;margin-bottom:16px" id="add-feed-title">Add Feed</div>
+          <div style="display:grid;gap:12px">
+            <div>
+              <label style="font-size:12px;color:#94a3b8;display:block;margin-bottom:4px">Name</label>
+              <input id="af-name" class="form-input" style="width:100%" placeholder="e.g. Reuters Energy RSS">
+            </div>
+            <div id="af-provider-row">
+              <label style="font-size:12px;color:#94a3b8;display:block;margin-bottom:4px">Provider</label>
+              <select id="af-provider" class="form-select" style="width:100%"></select>
+            </div>
+            <div>
+              <label style="font-size:12px;color:#94a3b8;display:block;margin-bottom:4px">Feed URL / Host</label>
+              <input id="af-url" class="form-input" style="width:100%" placeholder="https://...">
+            </div>
+            <div id="af-key-row">
+              <label style="font-size:12px;color:#94a3b8;display:block;margin-bottom:4px">API Key (if required)</label>
+              <input id="af-key" type="password" class="form-input" style="width:100%" placeholder="Leave blank for free/RSS feeds">
+            </div>
+            <div id="af-hint" style="font-size:11px;color:#f59e0b;padding:8px;background:#f59e0b10;border-radius:6px;display:none"></div>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:16px">
+            <button class="btn btn-primary btn-sm" onclick="saveNewFeed()">Save & Test</button>
+            <button class="btn btn-ghost btn-sm" onclick="closeAddFeedModal()">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+
+  window._cfgActiveTab = 'news';
+  loadAllConnectors();
+};
+
+window.switchCfgTab = function(tab) {
+  ['news','market','ai','etrm'].forEach(t => {
+    document.getElementById('cfg-panel-' + t).style.display = t === tab ? 'block' : 'none';
+    var btn = document.getElementById('cfg-tab-' + t);
+    btn.style.borderBottomColor = t === tab ? '#6366f1' : 'transparent';
+    btn.style.color = t === tab ? '#6366f1' : '#64748b';
+  });
+  window._cfgActiveTab = tab;
+};
+
+window._addFeedType = 'news';
+window.openAddFeedModal = function(type) {
+  window._addFeedType = type;
+  var providerOpts = {
+    news: ['RSS Feed','NewsAPI','MarketWatch RSS','Reuters RSS','Bloomberg RSS','OilPrice RSS','Custom'],
+    market_data: ['Yahoo Finance (free)','AlphaVantage','Bloomberg B-PIPE','Platts/Argus','ICE','Custom'],
+    ai_model: ['LM Studio','Ollama','Custom OpenAI-compatible'],
+    etrm: ['RightAngle','Endur/Allegro','SAP','Custom']
+  };
+  var hints = {
+    'NewsAPI': 'Free key at newsapi.org/register · 100 req/day free',
+    'AlphaVantage': 'Free key at alphavantage.co/support/#api-key · 500 req/day',
+    'Yahoo Finance (free)': 'No API key needed — works out of the box',
+    'RSS Feed': 'Paste any RSS/Atom feed URL — no key required',
+    'MarketWatch RSS': 'URL: https://feeds.marketwatch.com/marketwatch/topstories',
+    'Reuters RSS': 'URL: https://www.reutersagency.com/feed/?best-topics=energy',
+    'OilPrice RSS': 'URL: https://oilprice.com/rss/main',
+    'LM Studio': 'URL: http://127.0.0.1:1234/v1 — no key needed',
+  };
+  var titleMap = {news:'Add News Feed', market_data:'Add Market Data Source', ai_model:'Add AI Model', etrm:'Add ETRM Connection'};
+  document.getElementById('add-feed-title').textContent = titleMap[type] || 'Add Feed';
+  var sel = document.getElementById('af-provider');
+  sel.innerHTML = (providerOpts[type]||['Custom']).map(o => '<option>' + o + '</option>').join('');
+  sel.onchange = function() {
+    var hint = hints[sel.value] || '';
+    var hintEl = document.getElementById('af-hint');
+    hintEl.style.display = hint ? 'block' : 'none';
+    hintEl.textContent = '💡 ' + hint;
+    // Auto-fill URL for well-known providers
+    var autoUrls = {
+      'MarketWatch RSS': 'https://feeds.marketwatch.com/marketwatch/topstories',
+      'Reuters RSS': 'https://www.reutersagency.com/feed/?best-topics=energy',
+      'OilPrice RSS': 'https://oilprice.com/rss/main',
+      'LM Studio': 'http://127.0.0.1:1234/v1',
+      'NewsAPI': 'https://newsapi.org/v2/everything',
+      'AlphaVantage': 'https://www.alphavantage.co/query',
+    };
+    if (autoUrls[sel.value]) document.getElementById('af-url').value = autoUrls[sel.value];
+  };
+  sel.dispatchEvent(new Event('change'));
+  var modal = document.getElementById('add-feed-modal');
+  modal.style.display = 'flex';
+};
+
+window.closeAddFeedModal = function() {
+  document.getElementById('add-feed-modal').style.display = 'none';
+  document.getElementById('af-name').value = '';
+  document.getElementById('af-url').value = '';
+  document.getElementById('af-key').value = '';
+};
+
+window.saveNewFeed = async function() {
+  var token = localStorage.getItem('radiant_token') || '';
+  var provider = document.getElementById('af-provider').value;
+  // Normalize provider for backend matching
+  var providerMap = {
+    'RSS Feed': 'rss', 'MarketWatch RSS': 'MarketWatch', 'Reuters RSS': 'Reuters',
+    'OilPrice RSS': 'OilPrice', 'Bloomberg RSS': 'Bloomberg',
+    'NewsAPI': 'NewsAPI', 'AlphaVantage': 'AlphaVantage',
+    'Yahoo Finance (free)': 'Yahoo', 'LM Studio': 'LMStudio',
+    'Ollama': 'Ollama', 'Custom OpenAI-compatible': 'Custom',
+    'RightAngle': 'RightAngle', 'Endur/Allegro': 'Endur',
+  };
+  var typeMap = {news:'news', market_data:'market_data', ai_model:'ai_model', etrm:'etrm'};
+  var payload = {
+    name: document.getElementById('af-name').value || provider,
+    connector_type: window._addFeedType,
+    provider: providerMap[provider] || provider,
+    host_url: document.getElementById('af-url').value,
+    api_key: document.getElementById('af-key').value || null,
+  };
+  try {
+    var r = await fetch('/api/configuration/connectors', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body: JSON.stringify(payload)
+    });
+    if (!r.ok) throw new Error(await r.text());
+    closeAddFeedModal();
+    loadAllConnectors();
+  } catch(e) { alert('Error: ' + e.message); }
+};
+
+function _statusStyle(status) {
+  const s = (status || '').toLowerCase();
+  if (s === 'ok' || s.startsWith('ok —')) return {dot:'#16a34a',text:'#16a34a',bg:'#16a34a18'};
+  if (s.includes('api key') || s.includes('key required')) return {dot:'#f59e0b',text:'#f59e0b',bg:'#f59e0b18'};
+  if (s.includes('enterprise') || s.includes('internal')) return {dot:'#6366f1',text:'#6366f1',bg:'#6366f118'};
+  if (s.includes('error') || s.includes('invalid') || s.includes('denied') || s.includes('✗')) return {dot:'#ef4444',text:'#ef4444',bg:'#ef444418'};
+  if (s.includes('timeout') || s.includes('unreachable')) return {dot:'#f97316',text:'#f97316',bg:'#f9731618'};
+  if (s === 'not tested') return {dot:'#475569',text:'#64748b',bg:'#47556918'};
+  return {dot:'#64748b',text:'#94a3b8',bg:'#64748b18'};
+}
+
+function _renderConnectorCard(c) {
+  var st = _statusStyle(c.last_status);
+  var typeColors = {etrm:'#6366f1', market_data:'#0ea5e9', news:'#f59e0b', ai_model:'#10b981'};
+  var bg = typeColors[c.connector_type] || '#6b7280';
+  var initials = (c.provider||'??').substring(0,2).toUpperCase();
+  var lastTested = c.last_connected_at
+    ? ' · tested ' + new Date(c.last_connected_at).toLocaleTimeString() : '';
+  // Article count hint for news
+  var extraInfo = '';
+  var statusLabel = c.last_status || 'Not Tested';
+  if (statusLabel.startsWith('OK —')) { extraInfo = '<div style="font-size:11px;color:#16a34a;margin-top:4px">' + statusLabel.replace('OK — ','✓ ') + '</div>'; statusLabel = 'OK'; }
+
+  // Show API key input for providers that need it
+  var keyRow = '';
+  if (['newsapi','alphavantage','bloomberg'].includes((c.provider||'').toLowerCase())) {
+    keyRow = '<div style="display:flex;gap:6px;margin-top:8px">'
+      + '<input id="key-' + c.id + '" type="password" class="form-input" style="flex:1;font-size:12px;padding:4px 8px" placeholder="' + (c.api_key ? '•••••••• (saved)' : 'Enter API key') + '">'
+      + '<button class="btn btn-secondary btn-sm" style="font-size:11px" onclick="saveFeedKey(' + c.id + ')">Save Key</button>'
+      + '</div>';
+  }
+  return '<div id="conn-' + c.id + '" style="background:#1a1f2e;border:1px solid #2d3748;border-radius:10px;padding:14px">'
+    + '<div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:10px">'
+    + '<div style="width:36px;height:36px;border-radius:8px;background:' + bg + ';display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:12px;flex-shrink:0">' + initials + '</div>'
+    + '<div style="flex:1;min-width:0">'
+    + '<div style="font-weight:600;color:#f1f5f9;font-size:13px">' + c.name + '</div>'
+    + '<div style="font-size:11px;color:#475569;font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (c.host_url || 'No URL') + '</div>'
+    + '</div></div>'
+    + '<div style="display:inline-flex;align-items:center;gap:5px;padding:2px 10px;border-radius:20px;background:' + st.bg + '">'
+    + '<span style="width:6px;height:6px;border-radius:50%;background:' + st.dot + ';display:inline-block"></span>'
+    + '<span style="font-size:11px;font-weight:600;color:' + st.text + '">' + statusLabel + '</span>'
+    + '<span style="font-size:10px;color:#475569">' + lastTested + '</span>'
+    + '</div>'
+    + extraInfo
+    + (c.last_error ? '<div style="font-size:11px;color:#ef4444;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + (c.last_error||'') + '">↳ ' + (c.last_error||'').substring(0,70) + '</div>' : '')
+    + keyRow
+    + '<div style="display:flex;gap:6px;margin-top:10px">'
+    + '<button class="btn btn-secondary btn-sm" id="test-' + c.id + '" style="font-size:12px" onclick="testFeed(' + c.id + ')">⚡ Test</button>'
+    + '<button class="btn btn-ghost btn-sm" style="font-size:12px;color:#ef4444;border-color:#ef444433" onclick="deleteFeed(' + c.id + ')">Remove</button>'
+    + '</div></div>';
+}
+
+window.loadAllConnectors = async function() {
+  var token = localStorage.getItem('radiant_token') || '';
+  try {
+    var r = await fetch('/api/configuration/connectors', {headers:{'Authorization':'Bearer '+token}});
+    var data = await r.json();
+    var all = data.connectors || [];
+    var byType = {news:[], market_data:[], ai_model:[], etrm:[]};
+    all.forEach(c => { if (byType[c.connector_type]) byType[c.connector_type].push(c); });
+    ['news','market','ai','etrm'].forEach(tab => {
+      var type = tab === 'market' ? 'market_data' : tab === 'ai' ? 'ai_model' : tab;
+      var grid = document.getElementById('grid-' + tab);
+      if (!grid) return;
+      var connectors = byType[type] || [];
+      if (!connectors.length) {
+        var emptyMsg = {
+          news: '📰 No news feeds configured. Add Reuters, MarketWatch or any RSS URL.',
+          market_data: '📊 No market data sources. Yahoo Finance works free — no key needed.',
+          ai_model: '🤖 No AI models configured. Add LM Studio at http://127.0.0.1:1234/v1',
+          etrm: '🏭 No ETRM connected. Add RightAngle or any REST-capable ETRM.'
+        };
+        grid.innerHTML = '<div style="color:#64748b;font-size:13px;padding:20px;border:1px dashed #2d3748;border-radius:8px;grid-column:1/-1">' + (emptyMsg[type]||'No connectors') + '</div>';
+      } else {
+        grid.innerHTML = connectors.map(_renderConnectorCard).join('');
+      }
+    });
+  } catch(e) {
+    ['news','market','ai','etrm'].forEach(tab => {
+      var g = document.getElementById('grid-' + tab);
+      if (g) g.innerHTML = '<div style="color:#ef4444">Error: ' + e.message + '</div>';
+    });
   }
 };
 
-window.loadMarketNews = async function() {
-  const el = document.getElementById('market-news-list');
-  if (!el) return;
-  const news = await apiCall('/market/news?limit=6');
-  const articles = (news?.articles||news||[]).slice(0,6);
-  if (!articles.length) { el.innerHTML = '<div class="muted small">No news loaded</div>'; return; }
-  el.innerHTML = articles.map(a=>`<div style="padding:8px 0;border-bottom:1px solid #F9FAFB;cursor:${a.url?'pointer':'default'}"
-    onclick="${a.url?'window.open(\''+a.url+'\',\'_blank\')':''}">
-    <div style="font-size:12.5px;font-weight:500;color:#111827;margin-bottom:2px">${a.headline||a.title}</div>
-    <div style="font-size:11px;color:#6B7280">${a.source||'Reuters'} · ${a.time||a.published_at?.slice(11,16)||'—'}
-      ${a.url?'<span style="color:#0066CC;margin-left:6px">↗</span>':''}</div>
-  </div>`).join('');
-};
-
-window.switchMarketCurve = function(commodity, btn) {
-  document.querySelectorAll('.curve-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  renderMarketCurveChart(commodity);
-};
-
-window.renderMarketCurveChart = function(commodity) {
-  const canvas = document.getElementById('market-curve-chart');
-  if (!canvas||typeof Chart==='undefined') return;
-  if (canvas._chart) canvas._chart.destroy();
-  const months = ['M0','M1','M2','M3','M4','M5','M6','M9','M12'];
-  const bases = {brent:96.97,wti:93.80,ethane:316.9,naphtha:612,eua:63.4};
-  const base = bases[commodity]||97;
-  const today = months.map((_,i)=>parseFloat((base*(1-i*0.003)+(Math.random()-0.5)*base*0.01).toFixed(3)));
-  const yesterday = today.map(v=>v-(Math.random()*0.8+0.2));
-  canvas._chart = new Chart(canvas,{type:'line',data:{labels:months,datasets:[
-    {label:'Today',data:today,borderColor:'#0066CC',backgroundColor:'rgba(0,102,204,.08)',borderWidth:2,pointRadius:3,fill:true,tension:0.3},
-    {label:'Yesterday',data:yesterday,borderColor:'#94A3B8',borderWidth:1.5,pointRadius:0,borderDash:[4,4],tension:0.3}
-  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'top',labels:{font:{size:11},boxWidth:12}}},
-    scales:{x:{grid:{color:'#F1F5F9'},ticks:{font:{size:10}}},y:{grid:{color:'#F1F5F9'},ticks:{font:{size:10},callback:v=>'$'+v.toFixed(0)}}}}});
-};
-
-window.runForensics = async function() {
-  const el = document.getElementById('forensics-results');
-  const narrative = document.getElementById('forensics-narrative');
-  if (el) el.style.display = 'block';
-  if (narrative) await streamToElement(narrative, '/chat/message', {
-    message: 'Summarise in 3 sentences why Q1 missed target by $1.82M. Key factors: missed opportunities 59%, delayed execution 14%, losing trades 19%, sizing decisions 8%.',
-    screen_context: 'decision_intelligence'
+window.saveFeedKey = async function(id) {
+  var token = localStorage.getItem('radiant_token') || '';
+  var keyEl = document.getElementById('key-' + id);
+  if (!keyEl || !keyEl.value) return;
+  var r = await fetch('/api/configuration/connectors/' + id, {
+    method: 'PATCH',
+    headers: {'Content-Type':'application/json','Authorization':'Bearer '+token},
+    body: JSON.stringify({api_key: keyEl.value})
   });
+  if (r.ok) { keyEl.value=''; keyEl.placeholder='•••••••• (saved)'; testFeed(id); }
+  else alert('Save failed');
 };
 
-window.runDeskBrain = async function() {
-  const query = document.getElementById('desk-brain-query')?.value;
-  if (!query) return;
-  const el = document.getElementById('desk-brain-results');
-  if (!el) return;
-  el.textContent = '';
-  await streamToElement(el, '/chat/message', {
-    message: `Desk Brain query: "${query}". Based on the desk's trading history since 2022, describe similar structures, typical P&L ranges, common failure modes, and whether current market conditions resemble past successful setups.`,
-    screen_context: 'desk_brain'
-  });
+window.testFeed = async function(id) {
+  var token = localStorage.getItem('radiant_token') || '';
+  var btn = document.getElementById('test-' + id);
+  if (btn) { btn.textContent='⟳'; btn.disabled=true; }
+  try {
+    await fetch('/api/configuration/connectors/' + id + '/test', {
+      method:'POST', headers:{'Authorization':'Bearer '+token}
+    });
+    loadAllConnectors();
+  } catch(e) {
+    if (btn) { btn.textContent='⚡ Test'; btn.disabled=false; }
+    alert('Test failed: ' + e.message);
+  }
 };
 
-window.runOpportunityCost = async function() {
-  const el = document.getElementById('opportunity-results');
-  const narrative = document.getElementById('opportunity-narrative');
-  if (el) el.style.display = 'block';
-  if (narrative) await streamToElement(narrative, '/chat/message', {
-    message: 'Give a 2-sentence executive conclusion on the $8.7M opportunity cost in 90 days and the single most important operational change to capture more of these opportunities.',
-    screen_context: 'opportunity_cost'
+window.deleteFeed = async function(id) {
+  if (!confirm('Remove this connector?')) return;
+  var token = localStorage.getItem('radiant_token') || '';
+  var r = await fetch('/api/configuration/connectors/' + id, {
+    method:'DELETE', headers:{'Authorization':'Bearer '+token}
   });
-  showAIReadyBanner && showAIReadyBanner('Opportunity Audit Complete', '17 opportunities analysed · $8.7M gap quantified · Most common reason: identified 4+ hours too late');
+  if (r.ok) loadAllConnectors();
+  else alert('Delete failed');
 };
+
+

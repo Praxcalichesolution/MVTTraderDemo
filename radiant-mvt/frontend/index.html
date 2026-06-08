@@ -125,6 +125,10 @@
       <a class="nav-item" data-screen="compliance" onclick="navigateTo('compliance')">
         <span class="ni">⚖️</span><span class="nl">Compliance</span>
       </a>
+      <div class="nav-section">Tools</div>
+      <a class="nav-item" data-screen="configuration" onclick="navigateTo('configuration')">
+        <span class="ni">&#9881;</span><span class="nl">Configuration</span>
+      </a>
       <div class="nav-section" id="nav-exec-section">Management</div>
       <a class="nav-item exec-only" data-screen="boardroom" onclick="navigateTo('boardroom')" style="display:none">
         <span class="ni">👔</span><span class="nl">Boardroom</span>
@@ -331,9 +335,22 @@
 <div id="copilot-backdrop" onclick="closeCopilot()"></div>
 <div id="copilot-panel">
   <div class="cp-header">
-    <div class="cp-title">🤖 Radiant AI Copilot</div>
-    <div class="cp-provider" id="cp-provider-badge">🤖 Radiant AI</div>
-    <button onclick="maximizeCopilot()" id="cp-maximize-btn" title="Maximize" style="background:none;border:none;color:#94A3B8;font-size:16px;cursor:pointer;padding:0 6px">⤢</button>
+    <div class="cp-title">🤖 Radiant AI</div>
+    <div style="display:flex;align-items:center;gap:6px;margin-left:auto">
+      <!-- AI Model Toggle -->
+      <div id="ai-model-toggle" style="display:flex;background:#0f172a;border:1px solid #334155;border-radius:20px;padding:2px;gap:2px">
+        <button id="toggle-claude" onclick="switchAIProvider('claude')"
+          style="padding:3px 10px;border:none;border-radius:16px;font-size:10px;font-weight:700;cursor:pointer;transition:all .2s;letter-spacing:.04em">
+          ☁ Claude
+        </button>
+        <button id="toggle-local" onclick="switchAIProvider('local')"
+          style="padding:3px 10px;border:none;border-radius:16px;font-size:10px;font-weight:700;cursor:pointer;transition:all .2s;letter-spacing:.04em">
+          🖥 Local LLM
+        </button>
+      </div>
+      <span id="ai-conn-status" style="font-size:9px;font-weight:700;letter-spacing:.06em;padding:2px 6px;border-radius:10px;background:#16a34a22;color:#4ade80">● ONLINE</span>
+    </div>
+    <button onclick="maximizeCopilot()" id="cp-maximize-btn" title="Maximize" style="background:none;border:none;color:#94A3B8;font-size:16px;cursor:pointer;padding:0 4px;margin-left:4px">⤢</button>
     <button onclick="closeCopilot()" style="background:none;border:none;color:#94A3B8;font-size:20px;cursor:pointer;padding:0 4px">✕</button>
   </div>
   <div class="cp-context" id="copilot-context-banner">You're viewing <span id="cp-screen-name">Decision Queue</span>. Ask me anything about this screen.</div>

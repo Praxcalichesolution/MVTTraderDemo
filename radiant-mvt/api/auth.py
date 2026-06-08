@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from typing import Optional
 import os
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Body, Depends, HTTPException, Request, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 
 from database.db import get_db
+from api.rate_limit import limiter
 
 router = APIRouter()
 
@@ -121,13 +122,13 @@ async def require_role(*roles: str):
 # ── Endpoints ────────────────────────────────────────────────────────────────
 
 @router.post("/login", response_model=Token)
-async def login(request: LoginRequest, db: Session = Depends(get_db)):
+async def login(request: Request, body: LoginRequest = Body(...), db: Session = Depends(get_db)):
     row = db.execute(
         text("SELECT id, email, hashed_password, full_name, role, desk, title, is_active FROM users WHERE email = :email"),
-        {"email": request.email.lower().strip()}
+        {"email": body.email.lower().strip()}
     ).fetchone()
 
-    if row is None or not verify_password(request.password, row.hashed_password):
+    if row is None or not verify_password(body.password, row.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",

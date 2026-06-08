@@ -49,3 +49,20 @@ CREATE TABLE IF NOT EXISTS market_watchlist (
 
 CREATE INDEX IF NOT EXISTS idx_market_watchlist_user
     ON market_watchlist(user_id, is_active, display_order);
+
+CREATE TABLE IF NOT EXISTS external_connectors (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    connector_type TEXT NOT NULL,
+    provider TEXT NOT NULL,
+    host_url TEXT,
+    api_key TEXT,
+    extra_config TEXT,
+    polling_interval_sec INTEGER DEFAULT 60,
+    is_active INTEGER DEFAULT 1,
+    last_connected_at DATETIME,
+    last_status TEXT DEFAULT 'Not tested',
+    last_error TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
