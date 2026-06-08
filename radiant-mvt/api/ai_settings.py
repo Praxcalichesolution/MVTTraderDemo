@@ -26,8 +26,28 @@ class AIProviderUpdate(BaseModel):
 
 def _get_provider(db: Session) -> str:
     from sqlalchemy import text
-    row = db.execute(text("SELECT value FROM app_config WHERE key='ai_provider'")).fetchone()
-    return row[0] if row else "claude"
+    try:
+        row = db.execute(text("SELECT value FROM app_config WHERE [key]='ai_provider'")).fetchone()
+        return row[0] if row else "local"
+    except Exception:
+        return "claude"
+
+
+def _upsert_provider(db: Session, provider: str):
+    """DB-agnostic upsert for app_config ai_provider."""
+    from sqlalchemy import text
+    try:
+        # Try SQL Server MERGE first
+        db.execute(text("""
+            MERGE app_config AS target
+            USING (SELECT :k AS [key], :v AS value) AS src ON target.[key] = src.[key]
+            WHEN MATCHED THEN UPDATE SET value = src.value
+            WHEN NOT MATCHED THEN INSERT ([key], value) VALUES (src.[key], src.value);
+        """), {"k": "ai_provider", "v": provider})
+    except Exception:
+        # Fall back to SQLite INSERT OR REPLACE
+        db.execute(text("INSERT OR REPLACE INTO app_config (key, value) VALUES ('ai_provider', :v)"), {"v": provider})
+    db.commit()
 
 
 @router.get("/provider")
@@ -46,9 +66,7 @@ async def set_ai_provider(
 ):
     if data.provider not in ("claude", "local"):
         raise HTTPException(status_code=400, detail="Provider must be 'claude' or 'local'")
-    from sqlalchemy import text
-    db.execute(text("INSERT OR REPLACE INTO app_config (key, value) VALUES ('ai_provider', :v)"), {"v": data.provider})
-    db.commit()
+    _upsert_provider(db, data.provider)
     return {"provider": data.provider, "message": f"AI provider set to {data.provider}"}
 
 
@@ -60,10 +78,23 @@ async def switch_provider(
 ):
     if provider not in ("claude", "local"):
         raise HTTPException(status_code=400, detail="Provider must be 'claude' or 'local'")
-    from sqlalchemy import text
-    db.execute(text("INSERT OR REPLACE INTO app_config (key, value) VALUES ('ai_provider', :v)"), {"v": provider})
-    db.commit()
-    return {"switched_to": provider, "status": "ok"}
+    _upsert_provider(db, provider)
+
+    # Also update the in-memory AI client
+    try:
+        from ai.client import ai_client
+        ai_client.set_provider(provider)
+    except Exception:
+        pass
+
+    local_url = os.getenv("LOCAL_LLM_URL", "http://localhost:1234/v1")
+    local_model = os.getenv("LOCAL_LLM_MODEL", "llama-3.1-8b-instruct")
+    return {
+        "switched_to": provider,
+        "status": "ok",
+        "model": "claude-sonnet-4-6" if provider == "claude" else local_model,
+        "endpoint": "Anthropic API" if provider == "claude" else local_url,
+    }
 
 
 @router.get("/status")
@@ -73,11 +104,26 @@ async def get_ai_status(
 ):
     provider = _get_provider(db)
     key_configured = bool(ANTHROPIC_API_KEY and not ANTHROPIC_API_KEY.startswith("your_key"))
+    local_url   = os.getenv("LOCAL_LLM_URL",   "http://localhost:1234/v1")
+    local_model = os.getenv("LOCAL_LLM_MODEL", "llama-3.1-8b-instruct")
+
+    local_online = False
+    if provider == "local":
+        try:
+            import httpx
+            r = httpx.get(f"{local_url}/models", timeout=3.0)
+            local_online = r.status_code == 200
+        except Exception:
+            local_online = False
+
+    is_online = (provider == "claude" and key_configured) or (provider == "local" and local_online)
     return {
         "provider": provider,
-        "model": "claude-sonnet-4-6" if provider == "claude" else "llama-3.1-8b-instruct",
-        "status": "online" if key_configured or provider == "local" else "key_not_configured",
+        "model": "claude-sonnet-4-6" if provider == "claude" else local_model,
+        "endpoint": "Anthropic API" if provider == "claude" else local_url,
+        "status": "online" if is_online else ("local_offline" if provider == "local" else "key_not_configured"),
         "key_configured": key_configured,
+        "local_reachable": local_online,
         "features": ["chat", "news_analysis", "alert_narration", "email_drafting", "curve_shift"],
     }
 

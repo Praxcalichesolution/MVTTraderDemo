@@ -507,6 +507,8 @@ class DecisionQueue(Base):
     snooze_until = Column(DateTime)
     created_at = Column(DateTime, server_default=func.now())
     completed_at = Column(DateTime)
+    reasoning_text = Column(Text)           # Pre-generated AI reasoning (cached)
+    reasoning_generated_at = Column(DateTime)  # When reasoning was last generated
 
     __table_args__ = (
         CheckConstraint("urgency IN ('Critical','High','Medium','Low') OR urgency IS NULL", name="chk_dq_urgency"),
@@ -568,3 +570,27 @@ class AppConfig(Base):
 
     def __repr__(self):
         return f"<AppConfig key={self.key} value={self.value}>"
+
+
+
+
+class ExternalConnector(Base):
+    __tablename__ = "external_connectors"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(Text, nullable=False)
+    connector_type = Column(Text, nullable=False)   # etrm | market_data | news | ai_model
+    provider = Column(Text, nullable=False)          # RightAngle | Bloomberg | NewsAPI | LMStudio
+    host_url = Column(Text)
+    api_key = Column(Text)
+    extra_config = Column(Text)                      # JSON blob
+    polling_interval_sec = Column(Integer, default=60)
+    is_active = Column(Integer, default=1)
+    last_connected_at = Column(DateTime)
+    last_status = Column(Text, default="Not tested")
+    last_error = Column(Text)
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
+    def __repr__(self):
+        return f"<ExternalConnector id={self.id} name={self.name} type={self.connector_type}>"

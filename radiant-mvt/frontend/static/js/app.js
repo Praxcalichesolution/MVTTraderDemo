@@ -7,7 +7,7 @@ const API_BASE = window.location.origin + '/api';
 let authToken = localStorage.getItem('radiant_token');
 let currentRole = localStorage.getItem('radiant_role') || 'trader';
 let currentScreen = 'decision-queue';
-let aiProvider = localStorage.getItem('radiant_ai_provider') || 'claude';
+let aiProvider = localStorage.getItem('radiant_ai_provider') || 'local';
 let copilotOpen = false;
 let priceUpdateInterval = null;
 let tickerData = {};
@@ -139,7 +139,7 @@ function loadScreen(screen) {
 }
 
 function updateConciergeBar(screen) {
-  const ctx = CONCIERGE_CONTEXT[screen] || { text: 'AI Copilot ready.', actions: ['Ask AI'] };
+  const ctx = CONCIERGE_CONTEXT[screen] || { text: 'Radiant AI ready.', actions: ['Ask AI'] };
   const textEl = document.getElementById('concierge-text');
   const actionsEl = document.getElementById('concierge-actions');
   if (textEl) textEl.innerHTML = ctx.text;
@@ -411,6 +411,8 @@ function initApp() {
   const hash = window.location.hash.replace('#', '') || 'decision-queue';
   navigateTo(hash);
   updateConciergeBar(hash);
+  // Sync AI provider from backend (non-blocking)
+  syncAIProviderFromBackend();
 }
 
 
@@ -990,6 +992,63 @@ window.API_BASE = API_BASE;
 window.authToken = () => authToken;
 window.currentRole = () => currentRole;
 window.aiProvider = () => aiProvider;
+
+/* ── AI Provider Toggle ─────────────────────────────────────────── */
+function applyProviderUI(provider) {
+  const claudeBtn  = document.getElementById('toggle-claude');
+  const localBtn   = document.getElementById('toggle-local');
+  const statusEl   = document.getElementById('ai-conn-status');
+  const labelEl    = document.getElementById('ai-provider-label');
+  if (!claudeBtn || !localBtn) return;
+
+  const isCloud = provider === 'claude';
+  claudeBtn.style.background  = isCloud  ? '#6366f1' : 'transparent';
+  claudeBtn.style.color        = isCloud  ? '#fff'    : '#64748b';
+  localBtn.style.background   = !isCloud ? '#0ea5e9' : 'transparent';
+  localBtn.style.color         = !isCloud ? '#fff'    : '#64748b';
+
+  if (labelEl) labelEl.textContent = isCloud ? 'Claude API' : 'Local LLM';
+}
+
+window.switchAIProvider = async function(provider) {
+  const statusEl = document.getElementById('ai-conn-status');
+  if (statusEl) { statusEl.textContent = '⟳ Switching...'; statusEl.style.color = '#f59e0b'; statusEl.style.background = '#f59e0b22'; }
+
+  try {
+    await apiCall(`/ai/switch/${provider}`, { method: 'POST' });
+    aiProvider = provider;
+    localStorage.setItem('radiant_ai_provider', provider);
+    applyProviderUI(provider);
+
+    // Test connection after switch
+    const status = await apiCall('/ai/status').catch(() => null);
+    if (statusEl) {
+      const online = status && status.status === 'online';
+      statusEl.textContent = online ? '● ONLINE' : '● CHECK CONFIG';
+      statusEl.style.color = online ? '#4ade80' : '#f87171';
+      statusEl.style.background = online ? '#16a34a22' : '#dc262622';
+    }
+    showToast('AI Model', `Switched to ${provider === 'claude' ? 'Claude API ☁' : 'Local LLM 🖥'}`, 'success');
+  } catch(e) {
+    if (statusEl) { statusEl.textContent = '● ERROR'; statusEl.style.color = '#f87171'; statusEl.style.background = '#dc262622'; }
+    showToast('AI Model', 'Switch failed — check server', 'error');
+  }
+};
+
+// Apply saved provider on load
+applyProviderUI(aiProvider);
+
+// Sync provider with backend after login
+async function syncAIProviderFromBackend() {
+  try {
+    const data = await apiCall('/ai/provider').catch(() => null);
+    if (data && data.provider && data.provider !== aiProvider) {
+      aiProvider = data.provider;
+      localStorage.setItem('radiant_ai_provider', aiProvider);
+      applyProviderUI(aiProvider);
+    }
+  } catch(e) { /* ignore */ }
+}
 
 
 async function renderIntelSparkline(commodity, intelData) {

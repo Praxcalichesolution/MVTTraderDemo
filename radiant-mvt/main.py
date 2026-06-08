@@ -14,6 +14,10 @@ from fastapi.responses import JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.base import BaseHTTPMiddleware
 
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+
 from database.db import init_db, run_migrations
 
 # ── Configure logging ────────────────────────────────────────────────────────
@@ -57,6 +61,7 @@ def _build_scheduler():
     from apscheduler.schedulers.asyncio import AsyncIOScheduler
     from feeds.market_data import fetch_and_store_market_data
     from feeds.news_feed import fetch_and_store_news
+    from feeds.feed_aggregator import aggregate_all_feeds
     from feeds.etrm_simulator import simulate_etrm_updates
     from feeds.vessel_simulator import simulate_vessel_positions
     from feeds.anomaly_injector import inject_random_anomaly
@@ -65,6 +70,7 @@ def _build_scheduler():
     scheduler = AsyncIOScheduler(timezone="UTC")
     scheduler.add_job(fetch_and_store_market_data, "interval", seconds=60,   id="market_data")
     scheduler.add_job(fetch_and_store_news,         "interval", seconds=300,  id="news_feed")
+    scheduler.add_job(aggregate_all_feeds,          "interval", minutes=15,   id="feed_aggregator")
     scheduler.add_job(simulate_etrm_updates,        "interval", seconds=180,  id="etrm_sim")
     scheduler.add_job(simulate_vessel_positions,    "interval", seconds=180,  id="vessel_sim")
     scheduler.add_job(inject_random_anomaly,        "interval", seconds=120,  id="anomaly_injector")
@@ -168,6 +174,11 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# ── Rate limiter ──────────────────────────────────────────────────────────────
+from api.rate_limit import limiter
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
 # ── Middleware ────────────────────────────────────────────────────────────────
 app.add_middleware(RequestLoggingMiddleware)
 
@@ -181,7 +192,50 @@ app.add_middleware(
 )
 
 
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    response = await call_next(request)
+    # Only inject security headers on API JSON responses to avoid
+    # Content-Length mismatch on static files and SSE streams
+    ct = response.headers.get("content-type", "")
+    is_api = request.url.path.startswith("/api/")
+    if is_api and "text/event-stream" not in ct:
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "SAMEORIGIN"
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    return response
+
+
 # ── Health check ──────────────────────────────────────────────────────────────
+@app.get("/api/db-status", tags=["System"])
+async def db_status():
+    """Diagnostic: shows DB connection, version, and all table names."""
+    from database.db import engine, DATABASE_URL
+    from sqlalchemy import inspect as sa_inspect, text
+    result = {
+        "database_url": DATABASE_URL[:60] + "..." if len(DATABASE_URL) > 60 else DATABASE_URL,
+        "db_type": "sql_server" if DATABASE_URL.startswith("mssql") else "sqlite",
+        "connected": False,
+        "server_version": None,
+        "tables": [],
+        "error": None,
+    }
+    try:
+        with engine.connect() as conn:
+            if DATABASE_URL.startswith("mssql"):
+                result["server_version"] = conn.execute(text("SELECT @@VERSION")).scalar()[:80]
+            else:
+                result["server_version"] = "SQLite"
+            result["connected"] = True
+        inspector = sa_inspect(engine)
+        result["tables"] = sorted(inspector.get_table_names())
+        result["table_count"] = len(result["tables"])
+    except Exception as e:
+        result["error"] = str(e)
+    return result
+
+
 @app.get("/api/health", tags=["System"])
 async def health():
     return {
@@ -190,6 +244,13 @@ async def health():
         "version": "1.0.0",
         "organisation": "INEOS Trading & Shipping",
     }
+
+
+@app.get("/api/health/db", tags=["System"])
+async def health_db():
+    from database.db import test_db_connection
+    result = test_db_connection()
+    return {"database": result}
 
 
 # ── API routers ───────────────────────────────────────────────────────────────
