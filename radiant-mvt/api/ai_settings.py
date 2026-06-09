@@ -25,28 +25,21 @@ class AIProviderUpdate(BaseModel):
 
 
 def _get_provider(db: Session) -> str:
-    from sqlalchemy import text
     try:
-        row = db.execute(text("SELECT value FROM app_config WHERE [key]='ai_provider'")).fetchone()
-        return row[0] if row else "local"
+        row = db.get(AppConfig, "ai_provider")
+        return row.value if row and row.value else "local"
     except Exception:
-        return "claude"
+        return "local"
 
 
 def _upsert_provider(db: Session, provider: str):
     """DB-agnostic upsert for app_config ai_provider."""
-    from sqlalchemy import text
-    try:
-        # Try SQL Server MERGE first
-        db.execute(text("""
-            MERGE app_config AS target
-            USING (SELECT :k AS [key], :v AS value) AS src ON target.[key] = src.[key]
-            WHEN MATCHED THEN UPDATE SET value = src.value
-            WHEN NOT MATCHED THEN INSERT ([key], value) VALUES (src.[key], src.value);
-        """), {"k": "ai_provider", "v": provider})
-    except Exception:
-        # Fall back to SQLite INSERT OR REPLACE
-        db.execute(text("INSERT OR REPLACE INTO app_config (key, value) VALUES ('ai_provider', :v)"), {"v": provider})
+    row = db.get(AppConfig, "ai_provider")
+    if row is None:
+        row = AppConfig(key="ai_provider", value=provider, description="Active AI provider")
+        db.add(row)
+    else:
+        row.value = provider
     db.commit()
 
 

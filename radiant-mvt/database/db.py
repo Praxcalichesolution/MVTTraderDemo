@@ -1,12 +1,16 @@
-from sqlalchemy import create_engine, event, text
+from sqlalchemy import create_engine, event, text, inspect as sa_inspect
 from sqlalchemy.orm import sessionmaker, DeclarativeBase
 from sqlalchemy.pool import StaticPool
+import logging
 import os
+import time
 from dotenv import load_dotenv
 
 load_dotenv()
 
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./radiant_mvt.db")
+SLOW_QUERY_MS = float(os.getenv("SQL_SLOW_QUERY_MS", "250"))
+sql_logger = logging.getLogger("radiant_mvt.sql")
 
 
 class Base(DeclarativeBase):
@@ -22,6 +26,7 @@ def _create_engine():
             max_overflow=20,
             pool_timeout=30,
             pool_recycle=1800,
+            pool_pre_ping=True,
             echo=False,
         )
     else:
@@ -47,7 +52,45 @@ def set_sqlite_pragma(dbapi_connection, connection_record):
         cursor.close()
 
 
+@event.listens_for(engine, "before_cursor_execute")
+def before_cursor_execute(conn, cursor, statement, parameters, context, executemany):
+    conn.info.setdefault("query_start_time", []).append(time.perf_counter())
+
+
+@event.listens_for(engine, "after_cursor_execute")
+def after_cursor_execute(conn, cursor, statement, parameters, context, executemany):
+    try:
+        started = conn.info["query_start_time"].pop(-1)
+    except Exception:
+        return
+    elapsed_ms = (time.perf_counter() - started) * 1000
+    if elapsed_ms >= SLOW_QUERY_MS:
+        compact_sql = " ".join(statement.split())
+        sql_logger.warning(
+            "Slow SQL %.1fms rows=%s sql=%s",
+            elapsed_ms,
+            cursor.rowcount,
+            compact_sql[:500],
+        )
+
+
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+
+def get_database_dialect(bind=None) -> str:
+    target = bind or engine
+    try:
+        return target.dialect.name.lower()
+    except Exception:
+        return "unknown"
+
+
+def is_sql_server(bind=None) -> bool:
+    return get_database_dialect(bind).startswith("mssql")
+
+
+def is_sqlite(bind=None) -> bool:
+    return get_database_dialect(bind) == "sqlite"
 
 
 def get_active_ai_connector(db):
@@ -92,7 +135,7 @@ def init_db():
         _log.warning("Base.metadata.create_all failed: %s", e)
 
     # Run legacy schema.sql only for SQLite (it has SQLite-specific syntax)
-    if DATABASE_URL.startswith("sqlite"):
+    if is_sqlite():
         schema_path = "database/schema.sql"
         if os.path.exists(schema_path):
             with open(schema_path, "r") as f:
@@ -116,7 +159,7 @@ def run_migrations():
     """
     import logging as _logging
     _log = _logging.getLogger(__name__)
-    from sqlalchemy import inspect as sa_inspect, text as sa_text
+    from sqlalchemy import text as sa_text
 
     # Column migrations: (table, column, sql_server_type, sqlite_type)
     migrations = [
@@ -139,7 +182,7 @@ def run_migrations():
         ('decision_queue', 'reasoning_generated_at',   'DATETIME2',    'DATETIME'),
     ]
 
-    is_mssql = DATABASE_URL.startswith("mssql")
+    is_mssql = is_sql_server()
 
     try:
         inspector = sa_inspect(engine)
@@ -202,4 +245,3 @@ def run_migrations():
         _log.info("run_migrations() complete")
     except Exception as e:
         _log.warning("run_migrations() error: %s", e)
-

@@ -89,39 +89,51 @@ def _build_scheduler():
 def _refresh_decision_deadlines():
     """Ensure decision queue always has future deadlines — critical for demo."""
     try:
-        import sqlite3
+        from database.db import SessionLocal
+        from database.models import DecisionQueue
         from datetime import datetime, timedelta
-        db_url = os.getenv("DATABASE_URL", "sqlite:////tmp/radiant_mvt.db")
-        db_path = db_url.replace("sqlite:///", "").replace("sqlite:////", "/")
-        if not db_path.startswith("/"): db_path = "/tmp/radiant_mvt.db"
-        conn = sqlite3.connect(db_path)
+        db = SessionLocal()
         now = datetime.now()
         # Update or insert the 3 core demo decisions
         decisions = [
             (1, "Review Urals hedge coverage before OPEC+ announcement",
              "Urals net long 80,000 bbl. OPEC+ meeting in 2 hours. Hedge ratio at 61%.",
              "$2.4M at risk if spread moves", 2400000, "Critical",
-             (now + timedelta(hours=2, minutes=15)).isoformat()),
+             now + timedelta(hours=2, minutes=15)),
             (2, "JS Ineos Innovation delay — choose response option",
              "Dragon vessel delayed 14 hours. Three options costed. Terminal at Rafnes needs decision.",
              "Voyage economics impact $480K", 480000, "High",
-             (now + timedelta(hours=3, minutes=45)).isoformat()),
+             now + timedelta(hours=3, minutes=45)),
             (3, "Vitol trade confirmation outstanding — RMVT-0234",
              "Verbal trade agreed this morning. Written confirmation not sent. Counterparty deadline approaching.",
              "Counterparty dispute risk if missed", 0, "Medium",
-             (now + timedelta(hours=6, minutes=30)).isoformat()),
+             now + timedelta(hours=6, minutes=30)),
         ]
         for d in decisions:
-            existing = conn.execute("SELECT id FROM decision_queue WHERE id=?", (d[0],)).fetchone()
+            existing = db.query(DecisionQueue).filter(DecisionQueue.id == d[0]).first()
             if existing:
-                conn.execute("UPDATE decision_queue SET title=?,description=?,impact_description=?,potential_impact=?,urgency=?,deadline=?,status='Pending' WHERE id=?",
-                    (d[1], d[2], d[3], d[4], d[5], d[6], d[0]))
+                existing.title = d[1]
+                existing.description = d[2]
+                existing.impact_description = d[3]
+                existing.potential_impact = d[4]
+                existing.urgency = d[5]
+                existing.deadline = d[6]
+                existing.status = "Pending"
             else:
-                conn.execute("INSERT INTO decision_queue (id,title,description,impact_description,potential_impact,urgency,deadline,user_id,status) VALUES (?,?,?,?,?,?,?,1,'Pending')",
-                    (d[0], d[1], d[2], d[3], d[4], d[5], d[6]))
-        conn.commit()
-        conn.close()
-    except Exception as e:
+                db.add(DecisionQueue(
+                    id=d[0],
+                    title=d[1],
+                    description=d[2],
+                    impact_description=d[3],
+                    potential_impact=d[4],
+                    urgency=d[5],
+                    deadline=d[6],
+                    user_id=1,
+                    status="Pending",
+                ))
+        db.commit()
+        db.close()
+    except Exception:
         pass
 
 
@@ -271,6 +283,7 @@ from api.ai_settings   import router as ai_settings_router
 from api.market_intelligence import router as market_intel_router
 from api.configuration import router as configuration_router
 from api.news          import router as news_router
+from api.dashboard     import router as dashboard_router
 
 app.include_router(auth_router,           prefix="/api/auth",           tags=["Auth"])
 app.include_router(users_router,          prefix="/api/users",          tags=["Users"])
@@ -289,6 +302,7 @@ app.include_router(ai_settings_router,    prefix="/api/ai-settings",    tags=["A
 app.include_router(market_intel_router,   prefix="/api/market",         tags=["Market Intelligence"])
 app.include_router(configuration_router,  prefix="/api/configuration",  tags=["Configuration"])
 app.include_router(news_router,           prefix="/api/news",           tags=["News"])
+app.include_router(dashboard_router,      prefix="/api/dashboard",      tags=["Dashboard"])
 
 
 # ── Additional route aliases ─────────────────────────────────────────────────

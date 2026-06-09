@@ -4,6 +4,7 @@ INEOS Trading & Shipping — Radiant-MVT
 """
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
+from sqlalchemy.orm import joinedload
 from sqlalchemy import func, text
 from database.db import get_db
 from api.auth import get_current_user
@@ -22,7 +23,7 @@ async def get_positions(
     current_user = Depends(get_current_user)
 ):
     """All open positions, optionally filtered by book or commodity."""
-    query = db.query(Position)
+    query = db.query(Position).options(joinedload(Position.book))
     if commodity:
         query = query.filter(Position.commodity == commodity)
     if book:
@@ -31,10 +32,9 @@ async def get_positions(
     positions = query.all()
     result = []
     for p in positions:
-        book_obj = db.query(Book).filter(Book.id == p.book_id).first()
         result.append({
             "id": p.id,
-            "book": book_obj.name if book_obj else "Unknown",
+            "book": p.book.name if p.book else "Unknown",
             "book_id": p.book_id,
             "commodity": p.commodity,
             "region": p.region,
@@ -59,7 +59,7 @@ async def get_position_summary(
     current_user = Depends(get_current_user)
 ):
     """Aggregated P&L summary by book and commodity."""
-    positions = db.query(Position).all()
+    positions = db.query(Position).options(joinedload(Position.book)).all()
     books_active = db.query(Book).filter(Book.is_active == 1).all()
 
     total_mtm_pnl = sum(p.mtm_pnl or 0 for p in positions)
@@ -68,15 +68,28 @@ async def get_position_summary(
 
     by_book: dict = {}
     for p in positions:
-        book_obj = db.query(Book).filter(Book.id == p.book_id).first()
-        bname = book_obj.name if book_obj else "Unknown"
+        bname = p.book.name if p.book else "Unknown"
         if bname not in by_book:
-            by_book[bname] = {"book": bname, "total_pnl": 0.0, "commodities": {}}
+            by_book[bname] = {
+                "book": bname,
+                "name": bname,
+                "total_pnl": 0.0,
+                "pnl": 0.0,
+                "size": "$0M",
+                "pct": 0,
+                "commodities": {},
+            }
         by_book[bname]["total_pnl"] += p.mtm_pnl or 0
+        by_book[bname]["pnl"] += p.mtm_pnl or 0
         cname = p.commodity or "Unknown"
         by_book[bname]["commodities"][cname] = (
             by_book[bname]["commodities"].get(cname, 0) + (p.mtm_pnl or 0)
         )
+
+    total_abs_pnl = sum(abs(item["total_pnl"]) for item in by_book.values()) or 1
+    for item in by_book.values():
+        item["size"] = f"${abs(item['total_pnl']) / 1_000_000:.1f}M"
+        item["pct"] = round(item["total_pnl"] / total_abs_pnl * 100)
 
     return {
         "total_mtm_pnl": round(total_mtm_pnl, 2),
@@ -85,6 +98,7 @@ async def get_position_summary(
         "var_utilisation_pct": round(total_var / var_limit * 100, 1) if var_limit else 0,
         "active_books": len(books_active),
         "open_positions": len(positions),
+        "books": list(by_book.values()),
         "by_book": list(by_book.values()),
         "as_of": datetime.utcnow().isoformat(),
     }

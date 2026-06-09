@@ -5,15 +5,15 @@ import json
 import logging
 import os
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Iterable
 
 import anthropic
 import httpx
 from dotenv import load_dotenv
-from sqlalchemy import text
 
 from database.db import SessionLocal
+from database.models import AgentRun, MarketData, MarketIntelligence, MarketWatchlist, News
 
 load_dotenv()
 
@@ -26,15 +26,6 @@ MODEL = os.getenv("ANTHROPIC_MODEL", "claude-sonnet-4-6")
 
 def _json_dumps(value) -> str:
     return json.dumps(value, ensure_ascii=True)
-
-
-def _json_loads(value, default):
-    if not value:
-        return default
-    try:
-        return json.loads(value)
-    except Exception:
-        return default
 
 
 def _pct_change(current: float | None, previous: float | None) -> float | None:
@@ -79,8 +70,14 @@ def _partial_analysis(error: str, change_24h: float | None) -> dict:
     }
 
 
-def _build_prompt(commodity: str, price: float | None, change_24h: float | None,
-                  trend_5d: float, trend_30d: float, news_items: list[dict]) -> str:
+def _build_prompt(
+    commodity: str,
+    price: float | None,
+    change_24h: float | None,
+    trend_5d: float,
+    trend_30d: float,
+    news_items: list[dict],
+) -> str:
     news_text = "\n".join(
         f"- {item.get('headline', '')} ({item.get('source') or 'Unknown'}): {item.get('summary') or ''}"
         for item in news_items
@@ -129,55 +126,54 @@ def _call_claude(prompt: str) -> dict:
 def _active_commodities(db, commodities: Iterable[str] | None = None) -> list[str]:
     if commodities:
         return list(dict.fromkeys(c.strip() for c in commodities if c and c.strip()))
-    rows = db.execute(text("""
-        SELECT DISTINCT commodity
-        FROM market_watchlist
-        WHERE is_active = 1
-        ORDER BY display_order ASC, commodity ASC
-    """)).fetchall()
+    rows = (
+        db.query(MarketWatchlist)
+        .filter(MarketWatchlist.is_active == 1)
+        .order_by(MarketWatchlist.display_order.asc(), MarketWatchlist.commodity.asc())
+        .all()
+    )
     watchlist = [row.commodity for row in rows]
     return watchlist or DEFAULT_COMMODITIES
 
 
 def _latest_price(db, commodity: str):
-    return db.execute(text("""
-        SELECT price, change_pct_1d, timestamp
-        FROM market_data
-        WHERE commodity = :commodity
-        ORDER BY timestamp DESC
-        LIMIT 1
-    """), {"commodity": commodity}).fetchone()
+    return (
+        db.query(MarketData)
+        .filter(MarketData.commodity == commodity)
+        .order_by(MarketData.timestamp.desc())
+        .first()
+    )
 
 
 def _historical_price(db, commodity: str, days: int):
-    return db.execute(text(f"""
-        SELECT price, timestamp
-        FROM market_data
-        WHERE commodity = :commodity
-          AND timestamp <= datetime('now', '-{days} days')
-        ORDER BY timestamp DESC
-        LIMIT 1
-    """), {"commodity": commodity}).fetchone()
+    cutoff = datetime.utcnow() - timedelta(days=days)
+    return (
+        db.query(MarketData)
+        .filter(MarketData.commodity == commodity, MarketData.timestamp <= cutoff)
+        .order_by(MarketData.timestamp.desc())
+        .first()
+    )
 
 
 def _recent_price_at_offset(db, commodity: str, offset: int):
-    return db.execute(text("""
-        SELECT price, timestamp
-        FROM market_data
-        WHERE commodity = :commodity
-        ORDER BY timestamp DESC
-        LIMIT 1 OFFSET :offset
-    """), {"commodity": commodity, "offset": offset}).fetchone()
+    return (
+        db.query(MarketData)
+        .filter(MarketData.commodity == commodity)
+        .order_by(MarketData.timestamp.desc())
+        .offset(offset)
+        .limit(1)
+        .first()
+    )
 
 
 def _latest_news(db, commodity: str) -> list[dict]:
-    rows = db.execute(text("""
-        SELECT headline, source, published_at, summary, market_impact, relevance_score
-        FROM news
-        WHERE commodities_tagged LIKE :tag
-        ORDER BY published_at DESC, ingested_at DESC
-        LIMIT 5
-    """), {"tag": f"%{commodity}%"}).fetchall()
+    rows = (
+        db.query(News)
+        .filter(News.commodities_tagged.ilike(f"%{commodity}%"))
+        .order_by(News.published_at.desc(), News.ingested_at.desc())
+        .limit(5)
+        .all()
+    )
     return [
         {
             "headline": row.headline,
@@ -191,39 +187,37 @@ def _latest_news(db, commodity: str) -> list[dict]:
     ]
 
 
-def _insert_analysis(db, commodity: str, analysis: dict, price: float | None,
-                     change_24h: float | None, trend_5d: float, trend_30d: float,
-                     news_items: list[dict], run_id: int):
-    db.execute(text("""
-        INSERT INTO market_intelligence (
-            commodity, analysis_datetime, outlook, outlook_score, key_drivers,
-            key_risks, price_at_analysis, change_24h, trend_5d, trend_30d,
-            news_count_analysed, top_news, opportunity_flag,
-            opportunity_description, agent_run_id, created_at
-        ) VALUES (
-            :commodity, :analysis_datetime, :outlook, :outlook_score, :key_drivers,
-            :key_risks, :price_at_analysis, :change_24h, :trend_5d, :trend_30d,
-            :news_count_analysed, :top_news, :opportunity_flag,
-            :opportunity_description, :agent_run_id, :created_at
+def _insert_analysis(
+    db,
+    commodity: str,
+    analysis: dict,
+    price: float | None,
+    change_24h: float | None,
+    trend_5d: float,
+    trend_30d: float,
+    news_items: list[dict],
+    run_id: int | None,
+):
+    db.add(
+        MarketIntelligence(
+            commodity=commodity,
+            analysis_datetime=datetime.utcnow(),
+            outlook=analysis["outlook"],
+            outlook_score=analysis["score"],
+            key_drivers=_json_dumps(analysis["key_drivers"]),
+            key_risks=_json_dumps(analysis["key_risks"]),
+            price_at_analysis=price,
+            change_24h=change_24h,
+            trend_5d=trend_5d,
+            trend_30d=trend_30d,
+            news_count_analysed=len(news_items),
+            top_news=_json_dumps(news_items),
+            opportunity_flag=1 if analysis["opportunity_flag"] else 0,
+            opportunity_description=analysis.get("opportunity_description"),
+            agent_run_id=run_id,
+            created_at=datetime.utcnow(),
         )
-    """), {
-        "commodity": commodity,
-        "analysis_datetime": datetime.utcnow().isoformat(),
-        "outlook": analysis["outlook"],
-        "outlook_score": analysis["score"],
-        "key_drivers": _json_dumps(analysis["key_drivers"]),
-        "key_risks": _json_dumps(analysis["key_risks"]),
-        "price_at_analysis": price,
-        "change_24h": change_24h,
-        "trend_5d": trend_5d,
-        "trend_30d": trend_30d,
-        "news_count_analysed": len(news_items),
-        "top_news": _json_dumps(news_items),
-        "opportunity_flag": 1 if analysis["opportunity_flag"] else 0,
-        "opportunity_description": analysis.get("opportunity_description"),
-        "agent_run_id": run_id,
-        "created_at": datetime.utcnow().isoformat(),
-    })
+    )
 
 
 async def run_market_intelligence_agent(commodities: Iterable[str] | None = None):
@@ -232,7 +226,7 @@ async def run_market_intelligence_agent(commodities: Iterable[str] | None = None
     """
     started = time.perf_counter()
     db = SessionLocal()
-    run_id = None
+    run: AgentRun | None = None
     notes: list[str] = []
     commodities_analysed = 0
     news_items_read = 0
@@ -241,15 +235,19 @@ async def run_market_intelligence_agent(commodities: Iterable[str] | None = None
     status = "success"
 
     try:
-        run_result = db.execute(text("""
-            INSERT INTO agent_runs (
-                run_datetime, agent_name, commodities_analysed, duration_seconds,
-                news_items_read, analyses_produced, opportunities_found, status, notes
-            ) VALUES (
-                :run_datetime, :agent_name, 0, 0, 0, 0, 0, 'running', NULL
-            )
-        """), {"run_datetime": datetime.utcnow().isoformat(), "agent_name": AGENT_NAME})
-        run_id = run_result.lastrowid
+        run = AgentRun(
+            run_datetime=datetime.utcnow(),
+            agent_name=AGENT_NAME,
+            commodities_analysed=0,
+            duration_seconds=0,
+            news_items_read=0,
+            analyses_produced=0,
+            opportunities_found=0,
+            status="running",
+            notes=None,
+        )
+        db.add(run)
+        db.flush()
         db.commit()
 
         for commodity in _active_commodities(db, commodities):
@@ -258,8 +256,9 @@ async def run_market_intelligence_agent(commodities: Iterable[str] | None = None
                 if latest is None:
                     notes.append(f"{commodity}: no market_data price available")
                     analysis = _partial_analysis("no latest market price available", None)
-                    _insert_analysis(db, commodity, analysis, None, None, 0.0, 0.0, [], run_id)
+                    _insert_analysis(db, commodity, analysis, None, None, 0.0, 0.0, [], run.id)
                     analyses_produced += 1
+                    db.commit()
                     continue
 
                 price = float(latest.price)
@@ -285,7 +284,7 @@ async def run_market_intelligence_agent(commodities: Iterable[str] | None = None
                     notes.append(f"{commodity}: Claude failed: {str(exc)[:220]}")
                     analysis = _partial_analysis(str(exc), change_24h)
 
-                _insert_analysis(db, commodity, analysis, price, change_24h, trend_5d, trend_30d, news_items, run_id)
+                _insert_analysis(db, commodity, analysis, price, change_24h, trend_5d, trend_30d, news_items, run.id)
                 commodities_analysed += 1
                 analyses_produced += 1
                 if analysis["opportunity_flag"]:
@@ -304,36 +303,25 @@ async def run_market_intelligence_agent(commodities: Iterable[str] | None = None
         logger.exception("[market_intelligence] Run failed: %s", exc)
     finally:
         duration = round(time.perf_counter() - started, 3)
-        if run_id is not None:
+        if run is not None:
             try:
-                db.execute(text("""
-                    UPDATE agent_runs
-                    SET commodities_analysed = :commodities_analysed,
-                        duration_seconds = :duration_seconds,
-                        news_items_read = :news_items_read,
-                        analyses_produced = :analyses_produced,
-                        opportunities_found = :opportunities_found,
-                        status = :status,
-                        notes = :notes
-                    WHERE id = :run_id
-                """), {
-                    "commodities_analysed": commodities_analysed,
-                    "duration_seconds": duration,
-                    "news_items_read": news_items_read,
-                    "analyses_produced": analyses_produced,
-                    "opportunities_found": opportunities_found,
-                    "status": status,
-                    "notes": "; ".join(notes) if notes else None,
-                    "run_id": run_id,
-                })
-                db.commit()
+                managed_run = db.query(AgentRun).filter(AgentRun.id == run.id).first()
+                if managed_run:
+                    managed_run.commodities_analysed = commodities_analysed
+                    managed_run.duration_seconds = duration
+                    managed_run.news_items_read = news_items_read
+                    managed_run.analyses_produced = analyses_produced
+                    managed_run.opportunities_found = opportunities_found
+                    managed_run.status = status
+                    managed_run.notes = "; ".join(notes) if notes else None
+                    db.commit()
             except Exception:
                 db.rollback()
                 logger.exception("[market_intelligence] Failed to update run log")
         db.close()
 
     return {
-        "run_id": run_id,
+        "run_id": run.id if run else None,
         "status": status,
         "commodities_analysed": commodities_analysed,
         "analyses_produced": analyses_produced,

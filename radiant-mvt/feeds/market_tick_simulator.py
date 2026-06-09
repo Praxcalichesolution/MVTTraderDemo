@@ -8,9 +8,9 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from database.db import SessionLocal
-from sqlalchemy import text
 from datetime import datetime
 import logging
+from database.models import MarketData
 
 logger = logging.getLogger(__name__)
 
@@ -32,12 +32,14 @@ async def start_tick_feed():
     db = SessionLocal()
     try:
         for commodity, params in COMMODITIES.items():
-            last = db.execute(text("""
-                SELECT price FROM market_data WHERE commodity=:c
-                ORDER BY timestamp DESC LIMIT 1
-            """), {"c": commodity}).fetchone()
+            last = (
+                db.query(MarketData)
+                .filter(MarketData.commodity == commodity)
+                .order_by(MarketData.timestamp.desc())
+                .first()
+            )
 
-            base_price = last[0] if last else params["base"]
+            base_price = last.price if last else params["base"]
 
             move_pct = random.gauss(0, params["vol"])
             new_price = base_price * (1 + move_pct)
@@ -47,14 +49,14 @@ async def start_tick_feed():
                 new_price = params["base"] * (1 + random.uniform(-0.02, 0.02))
                 change = new_price - base_price
 
-            db.execute(text("""
-                INSERT INTO market_data (commodity, price, change_1d, change_pct_1d, source, timestamp)
-                VALUES (:c, :p, :ch, :chp, 'tick', :ts)
-            """), {
-                "c": commodity, "p": round(new_price, 4),
-                "ch": round(change, 4), "chp": round(move_pct * 100, 4),
-                "ts": datetime.now().isoformat()
-            })
+            db.add(MarketData(
+                commodity=commodity,
+                price=round(new_price, 4),
+                change_1d=round(change, 4),
+                change_pct_1d=round(move_pct * 100, 4),
+                source="tick",
+                timestamp=datetime.utcnow(),
+            ))
 
         db.commit()
         logger.info("Tick simulator: updated all commodity prices")

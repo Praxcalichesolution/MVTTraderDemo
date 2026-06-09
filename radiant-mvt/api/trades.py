@@ -4,6 +4,7 @@ INEOS Trading & Shipping — Radiant-MVT
 """
 from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.orm import Session
+from sqlalchemy.orm import joinedload
 from typing import Optional
 from database.db import get_db
 from api.auth import get_current_user
@@ -25,7 +26,10 @@ async def get_trades(
     current_user = Depends(get_current_user),
 ):
     """Full trade blotter with filtering and pagination."""
-    query = db.query(Trade)
+    query = db.query(Trade).options(
+        joinedload(Trade.book),
+        joinedload(Trade.counterparty),
+    )
     if book_id:
         query = query.filter(Trade.book_id == book_id)
     if commodity:
@@ -44,14 +48,12 @@ async def get_trades(
 
     result = []
     for t in trades:
-        book_obj = db.query(Book).filter(Book.id == t.book_id).first()
-        cp = db.query(Counterparty).filter(Counterparty.id == t.counterparty_id).first()
         result.append({
             "id": t.id,
             "trade_ref": t.trade_ref,
-            "book": book_obj.name if book_obj else None,
+            "book": t.book.name if t.book else None,
             "book_id": t.book_id,
-            "counterparty": cp.name if cp else None,
+            "counterparty": t.counterparty.name if t.counterparty else None,
             "counterparty_id": t.counterparty_id,
             "commodity": t.commodity,
             "trade_type": t.trade_type,
@@ -116,14 +118,11 @@ async def get_trade(
     if not trade:
         raise HTTPException(status_code=404, detail="Trade not found")
 
-    book_obj = db.query(Book).filter(Book.id == trade.book_id).first()
-    cp = db.query(Counterparty).filter(Counterparty.id == trade.counterparty_id).first()
-
     return {
         "id": trade.id,
         "trade_ref": trade.trade_ref,
-        "book": book_obj.name if book_obj else None,
-        "counterparty": cp.name if cp else None,
+        "book": trade.book.name if trade.book else None,
+        "counterparty": trade.counterparty.name if trade.counterparty else None,
         "commodity": trade.commodity,
         "trade_type": trade.trade_type,
         "direction": trade.direction,

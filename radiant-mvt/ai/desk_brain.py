@@ -1,43 +1,52 @@
-import sys, os
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from ai.client import ai_client
+import os
+import sys
 from typing import AsyncGenerator
-from sqlalchemy.orm import Session
-from sqlalchemy import text
 
-SYSTEM_PROMPT = """You are the Radiant-MVT Desk Brain — the institutional memory of the INEOS Trading & Shipping desk.
+from sqlalchemy import func
+from sqlalchemy.orm import Session
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from ai.client import ai_client
+from database.models import DeskDecision
+
+SYSTEM_PROMPT = """You are the Radiant-MVT Desk Brain - the institutional memory of the INEOS Trading & Shipping desk.
 You have access to every trade decision, rationale, outcome, and lesson from the past 3 years.
 Answer questions about historical desk decisions with the precision of a trader who was there.
 Use specific dates, P&L numbers, and lessons. This is the knowledge that would have walked out the door."""
 
 
-async def query_desk_brain(db: Session, query: str, current_setup: dict = None) -> AsyncGenerator[str, None]:
-    """Query institutional memory"""
-
+async def query_desk_brain(
+    db: Session,
+    query: str,
+    current_setup: dict = None,
+) -> AsyncGenerator[str, None]:
+    """Query institutional memory."""
     q = query.lower()
-    commodity_filter = ""
-    if 'brent' in q or 'urals' in q or 'crude' in q:
-        commodity_filter = "AND commodity IN ('Brent', 'Urals', 'WTI')"
-    elif 'ethane' in q:
-        commodity_filter = "AND commodity = 'Ethane'"
 
-    decisions = db.execute(text(f"""
-        SELECT decision_date, commodity, strategy_type, structure_description,
-               pnl_realised, outcome, lessons_learned, failure_mode,
-               entry_price, exit_price, hold_days, market_context
-        FROM desk_decisions
-        WHERE 1=1 {commodity_filter}
-        ORDER BY ABS(pnl_realised) DESC
-        LIMIT 10
-    """)).fetchall()
+    decisions_query = db.query(DeskDecision)
+    if "brent" in q or "urals" in q or "crude" in q:
+        decisions_query = decisions_query.filter(DeskDecision.commodity.in_(["Brent", "Urals", "WTI"]))
+    elif "ethane" in q:
+        decisions_query = decisions_query.filter(DeskDecision.commodity == "Ethane")
+
+    decisions = (
+        decisions_query
+        .order_by(func.abs(DeskDecision.pnl_realised).desc())
+        .limit(10)
+        .all()
+    )
 
     decisions_text = ""
-    for d in decisions:
-        decisions_text += f"\n{d[0]} | {d[1]} | {d[2]} | PnL: ${d[4]:,.0f} | {d[5]}"
-        if d[6]:
-            decisions_text += f" | Lesson: {d[6]}"
-        if d[7]:
-            decisions_text += f" | FAILED BECAUSE: {d[7]}"
+    for decision in decisions:
+        decisions_text += (
+            f"\n{decision.decision_date} | {decision.commodity} | {decision.strategy_type} | "
+            f"PnL: ${decision.pnl_realised or 0:,.0f} | {decision.outcome}"
+        )
+        if decision.lessons_learned:
+            decisions_text += f" | Lesson: {decision.lessons_learned}"
+        if decision.failure_mode:
+            decisions_text += f" | FAILED BECAUSE: {decision.failure_mode}"
 
     current_context = ""
     if current_setup:

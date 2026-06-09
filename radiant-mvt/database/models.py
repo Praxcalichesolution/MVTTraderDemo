@@ -594,3 +594,61 @@ class ExternalConnector(Base):
 
     def __repr__(self):
         return f"<ExternalConnector id={self.id} name={self.name} type={self.connector_type}>"
+
+
+class MarketIntelligence(Base):
+    __tablename__ = "market_intelligence"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    commodity = Column(Text, nullable=False)
+    analysis_datetime = Column(DateTime, server_default=func.now())
+    outlook = Column(Text, nullable=False)
+    outlook_score = Column(Real, default=50)
+    key_drivers = Column(Text)
+    key_risks = Column(Text)
+    price_at_analysis = Column(Real)
+    change_24h = Column(Real)
+    trend_5d = Column(Real)
+    trend_30d = Column(Real)
+    news_count_analysed = Column(Integer, default=0)
+    top_news = Column(Text)
+    opportunity_flag = Column(Integer, default=0)
+    opportunity_description = Column(Text)
+    agent_run_id = Column(Integer)
+    created_at = Column(DateTime, server_default=func.now())
+
+    def __repr__(self):
+        return f"<MarketIntelligence id={self.id} commodity={self.commodity} outlook={self.outlook}>"
+
+
+class AgentRun(Base):
+    __tablename__ = "agent_runs"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    run_datetime = Column(DateTime, server_default=func.now())
+    agent_name = Column(Text, nullable=False)
+    commodities_analysed = Column(Integer, default=0)
+    duration_seconds = Column(Real, default=0)
+    news_items_read = Column(Integer, default=0)
+    analyses_produced = Column(Integer, default=0)
+    opportunities_found = Column(Integer, default=0)
+    status = Column(Text, default="running")
+    notes = Column(Text)
+
+    def __repr__(self):
+        return f"<AgentRun id={self.id} agent={self.agent_name} status={self.status}>"
+
+
+class MarketWatchlist(Base):
+    __tablename__ = "market_watchlist"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    commodity = Column(Text, nullable=False)
+    alert_threshold_pct = Column(Real, default=2.0)
+    is_active = Column(Integer, default=1)
+    display_order = Column(Integer, default=0)
+    created_at = Column(DateTime, server_default=func.now())
+
+    def __repr__(self):
+        return f"<MarketWatchlist id={self.id} user_id={self.user_id} commodity={self.commodity}>"

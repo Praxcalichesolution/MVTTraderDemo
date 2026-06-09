@@ -222,7 +222,7 @@ SCREENS['dashboard'] = async function(main) {
     + '<div class="screen-header" style="margin-bottom:10px">'
     + '<div><div class="screen-title">&#128202; Trader Dashboard</div><div class="screen-subtitle">Live book overview — ' + dateStr + '</div></div>'
     + '<div class="screen-actions">'
-    + '<select class="form-select" style="width:130px" id="dash-book-filter"><option value="">All Books</option><option>Crude</option><option>NGL/Ethane</option><option>Naphtha</option><option>Carbon</option></select>'
+    + '<select class="form-select" style="width:130px" id="dash-book-filter" onchange="onDashboardBookFilterChange()"><option value="">All Books</option><option>Crude</option><option>NGL/Ethane</option><option>Naphtha</option><option>Carbon</option></select>'
     + '<button class="btn btn-secondary btn-sm" onclick="loadDashboardData()">&#8635; Refresh</button>'
     + '</div></div>'
 
@@ -333,16 +333,18 @@ SCREENS['dashboard'] = async function(main) {
 };
 
 window.loadDashboardData = async function() {
-  const [summary, trades, alerts, news] = await Promise.all([
-    apiCall('/positions/summary'), apiCall('/trades/?limit=20'),
-    apiCall('/alerts/'), apiCall('/market/news?limit=10')
-  ]);
-  renderBooks(summary);
-  renderBlotter(trades);
-  renderAlerts(alerts);
-  renderNews(news);
-  renderHeatMap();
+  var selectedFilter = document.getElementById('dash-book-filter')?.value || '';
+  const dashboard = await apiCall('/dashboard/summary?book_filter=' + encodeURIComponent(selectedFilter)).catch(() => null);
+  renderBooks(dashboard && dashboard.summary ? dashboard.summary : null);
+  renderBlotter(dashboard && dashboard.trades ? { trades: dashboard.trades } : null);
+  renderAlerts(dashboard && dashboard.alerts ? dashboard.alerts : null);
+  renderNews(dashboard && dashboard.news ? dashboard.news : null);
+  renderHeatMap(dashboard && dashboard.heatmap ? dashboard.heatmap : null);
   setTimeout(renderIntradayChart, 80);
+};
+
+window.onDashboardBookFilterChange = function() {
+  loadDashboardData();
 };
 
 function renderBooks(data) {
@@ -381,8 +383,9 @@ function renderBooks(data) {
 
 window.reloadBlotter = async function(count) {
   count = parseInt(count) || 20;
-  const data = await apiCall('/trades/?limit=' + count).catch(() => null);
-  renderBlotter(data, count);
+  var selectedFilter = document.getElementById('dash-book-filter')?.value || '';
+  const data = await apiCall('/dashboard/summary?trade_limit=' + count + '&book_filter=' + encodeURIComponent(selectedFilter)).catch(() => null);
+  renderBlotter(data && data.trades ? { trades: data.trades } : null, count);
 };
 
 function renderBlotter(data, rowLimit) {
@@ -627,7 +630,7 @@ function renderIntradayChart() {
   });
 }
 
-function renderHeatMap() {
+function renderHeatMapLegacy() {
   var el = document.getElementById('heat-map-grid');
   if (!el) return;
 
@@ -673,6 +676,88 @@ function renderHeatMap() {
       }
       var label = val !== 0 ? (val > 0 ? '+' : '') + '$' + (abs >= 1 ? abs.toFixed(0) : val.toFixed(0)) + 'M' : '—';
       html += '<td style="text-align:center;padding:4px 6px;background:' + bg + ';border-radius:5px;color:' + fc + ';font-weight:700;min-width:60px;cursor:' + (val !== 0 ? 'pointer' : 'default') + '" onclick="showPositionDetail(\'' + c + '\',\'' + r + '\')">' + label + '</td>';
+    });
+    html += '</tr>';
+  });
+
+  html += '</tbody></table>'
+    + '<div style="display:flex;gap:16px;margin-top:8px;font-size:10px;color:#9CA3AF">'
+    + '<span><span style="display:inline-block;width:10px;height:10px;background:rgba(37,99,235,0.6);border-radius:2px;margin-right:4px"></span>Long position</span>'
+    + '<span><span style="display:inline-block;width:10px;height:10px;background:rgba(220,38,38,0.6);border-radius:2px;margin-right:4px"></span>Short position</span>'
+    + '<span><span style="display:inline-block;width:10px;height:10px;background:#F9FAFB;border:1px solid #E5E7EB;border-radius:2px;margin-right:4px"></span>Flat</span>'
+    + '</div></div>';
+
+  el.innerHTML = html;
+}
+
+function renderHeatMap(data) {
+  var el = document.getElementById('heat-map-grid');
+  if (!el) return;
+
+  var commodities = (data && data.commodities && data.commodities.length)
+    ? data.commodities
+    : ['Brent','Urals','WTI','Ethane','NGLs','EUA'];
+  var regions = (data && data.regions && data.regions.length)
+    ? data.regions
+    : ['NW Europe','Med','US Gulf','Asia'];
+  var matrix = (data && data.matrix) || {
+    'Brent': {
+      'NW Europe': { pnl_m: 214, quantity: 120000, unit: 'bbl' },
+      'US Gulf': { pnl_m: -118, quantity: -80000, unit: 'bbl' }
+    },
+    'Urals': {
+      'Med': { pnl_m: 62, quantity: 45000, unit: 'bbl' }
+    },
+    'WTI': {
+      'US Gulf': { pnl_m: -118, quantity: -76000, unit: 'bbl' }
+    },
+    'Ethane': {
+      'NW Europe': { pnl_m: 27, quantity: 5000, unit: 'MT' },
+      'Asia': { pnl_m: 8, quantity: 2400, unit: 'MT' }
+    },
+    'NGLs': {
+      'NW Europe': { pnl_m: 2, quantity: 12000, unit: 'bbl' }
+    },
+    'EUA': {
+      'NW Europe': { pnl_m: 25, quantity: 1800, unit: 'tCO2e' }
+    }
+  };
+
+  var html = '<div style="overflow-x:auto">'
+    + '<table style="width:100%;border-collapse:separate;border-spacing:3px;font-size:11px">'
+    + '<thead><tr><th style="text-align:left;padding:3px 4px;color:#9CA3AF;font-weight:600;font-size:10px"></th>'
+    + regions.map(function(r){ return '<th style="text-align:center;padding:3px 6px;color:#9CA3AF;font-weight:600;font-size:10px;white-space:nowrap">'+r+'</th>'; }).join('')
+    + '</tr></thead><tbody>';
+
+  commodities.forEach(function(c) {
+    html += '<tr><td style="padding:3px 4px;font-weight:600;color:#374151;white-space:nowrap">' + c + '</td>';
+    regions.forEach(function(r) {
+      var cell = (matrix[c] && matrix[c][r]) || { pnl_m: 0, quantity: 0, unit: 'bbl' };
+      var val = Number(cell.pnl_m || 0);
+      var qty = Number(cell.quantity || 0);
+      var abs = Math.abs(val);
+      var intensity = Math.min(abs / 250, 1);
+      var bg, fc;
+      if (val > 0) {
+        bg = 'rgba(37,99,235,' + (0.12 + intensity * 0.55) + ')';
+        fc = intensity > 0.5 ? '#fff' : '#1e40af';
+      } else if (val < 0) {
+        bg = 'rgba(220,38,38,' + (0.12 + intensity * 0.55) + ')';
+        fc = intensity > 0.5 ? '#fff' : '#991b1b';
+      } else {
+        bg = '#F9FAFB';
+        fc = '#6B7280';
+      }
+      var pnlLabel = val !== 0
+        ? (val > 0 ? '+' : '-') + '$' + Math.abs(val).toFixed(Math.abs(val) >= 10 ? 0 : 1) + 'M'
+        : '—';
+      var qtyLabel = qty !== 0
+        ? (qty > 0 ? '+' : '-') + Math.abs(qty).toLocaleString(undefined, { maximumFractionDigits: Math.abs(qty) >= 100 ? 0 : 1 }) + ' ' + (cell.unit || '')
+        : '—';
+      html += '<td style="text-align:center;padding:6px 6px;background:' + bg + ';border-radius:5px;color:' + fc + ';font-weight:700;min-width:74px;cursor:' + ((val !== 0 || qty !== 0) ? 'pointer' : 'default') + '" onclick="showPositionDetail(\'' + c + '\',\'' + r + '\')">'
+        + '<div>' + pnlLabel + '</div>'
+        + '<div style="font-size:10px;font-weight:600;opacity:' + (qty !== 0 ? '0.9' : '0.45') + ';margin-top:2px">' + qtyLabel + '</div>'
+        + '</td>';
     });
     html += '</tr>';
   });
@@ -3340,5 +3425,3 @@ window.deleteFeed = async function(id) {
   if (r.ok) loadAllConnectors();
   else alert('Delete failed');
 };
-
-

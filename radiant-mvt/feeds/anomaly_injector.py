@@ -6,8 +6,8 @@ Creates alerts and optionally marks trades as anomalous.
 import logging
 import random
 from datetime import datetime, timedelta
-from sqlalchemy import text
 from database.db import SessionLocal
+from database.models import Alert
 
 logger = logging.getLogger(__name__)
 
@@ -121,32 +121,31 @@ async def inject_random_anomaly(force: bool = False):
     logger.info("[anomaly_injector] Injecting anomaly: %s", template["title"])
     db = SessionLocal()
     try:
-        # Avoid exact duplicate alerts within the last 30 minutes
-        existing = db.execute(
-            text("""
-                SELECT id FROM alerts
-                WHERE title = :title
-                  AND created_at > datetime('now', '-30 minutes')
-            """),
-            {"title": template["title"]},
-        ).fetchone()
+        existing = (
+            db.query(Alert)
+            .filter(
+                Alert.title == template["title"],
+                Alert.created_at > (datetime.utcnow() - timedelta(minutes=30)),
+            )
+            .first()
+        )
 
         if existing:
             logger.debug("[anomaly_injector] Duplicate alert suppressed.")
             return
 
-        db.execute(
-            text("""
-                INSERT INTO alerts
-                    (alert_type, severity, title, description,
-                     estimated_impact, ai_explanation, ai_draft_action,
-                     status, created_at)
-                VALUES
-                    (:alert_type, :severity, :title, :description,
-                     :estimated_impact, :ai_explanation, :ai_draft_action,
-                     'Open', CURRENT_TIMESTAMP)
-            """),
-            template,
+        db.add(
+            Alert(
+                alert_type=template["alert_type"],
+                severity=template["severity"],
+                title=template["title"],
+                description=template["description"],
+                estimated_impact=template["estimated_impact"],
+                ai_explanation=template["ai_explanation"],
+                ai_draft_action=template["ai_draft_action"],
+                status="Open",
+                created_at=datetime.utcnow(),
+            )
         )
         db.commit()
         logger.info("[anomaly_injector] Alert created: %s", template["title"])
