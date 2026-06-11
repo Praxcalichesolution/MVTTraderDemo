@@ -23,6 +23,8 @@ FILTER_COMMODITIES = {
     "Carbon": {"EUA", "Carbon"},
 }
 
+ETHANE_MT_TO_BBL = 72.37
+
 
 def _filter_def(book_filter: str | None) -> tuple[set[str], str]:
     normalized = (book_filter or "").strip()
@@ -147,6 +149,18 @@ def _serialize_news(news_items: list[News]) -> list[dict]:
     ]
 
 
+def _barrel_equivalent(commodity: str | None, quantity: float | None, unit: str | None) -> float | None:
+    qty = quantity or 0.0
+    normalized_unit = (unit or "").strip().lower()
+    normalized_commodity = (commodity or "").strip()
+
+    if normalized_unit in {"bbl", "barrel", "barrels"}:
+        return qty
+    if normalized_unit == "mt" and normalized_commodity in {"Ethane", "NGLs"}:
+        return qty * ETHANE_MT_TO_BBL
+    return None
+
+
 def _build_heatmap(positions: list[Position]) -> dict:
     preferred_order = ["Brent", "Urals", "WTI", "Ethane", "NGLs", "EUA", "Naphtha"]
     region_order = ["NW Europe", "Med", "US Gulf", "Asia", "Global"]
@@ -158,11 +172,21 @@ def _build_heatmap(positions: list[Position]) -> dict:
         commodity_row = matrix.setdefault(commodity, {})
         bucket = commodity_row.setdefault(
             region,
-            {"pnl_m": 0.0, "quantity": 0.0, "unit": position.volume_unit or "bbl"},
+            {
+                "pnl_m": 0.0,
+                "quantity": 0.0,
+                "unit": position.volume_unit or "bbl",
+                "quantity_bbl": 0.0,
+                "quantity_bbl_available": False,
+            },
         )
         bucket["pnl_m"] += (position.mtm_pnl or 0) / 1_000_000
         bucket["quantity"] += position.net_volume or 0
         bucket["unit"] = position.volume_unit or bucket["unit"]
+        quantity_bbl = _barrel_equivalent(position.commodity, position.net_volume, position.volume_unit)
+        if quantity_bbl is not None:
+            bucket["quantity_bbl"] += quantity_bbl
+            bucket["quantity_bbl_available"] = True
 
     commodities = [c for c in preferred_order if c in matrix] + sorted(c for c in matrix if c not in preferred_order)
     regions = [r for r in region_order if any(r in row for row in matrix.values())]

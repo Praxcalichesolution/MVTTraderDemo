@@ -14,6 +14,7 @@ INEOS Trading & Shipping — Radiant-MVT
 import logging
 import random
 from datetime import datetime
+import requests
 from sqlalchemy import text
 from database.db import SessionLocal
 
@@ -80,72 +81,86 @@ def _simulate_tick(commodity: str) -> dict:
     }
 
 
-def _try_yfinance() -> dict:
+def _fetch_yahoo_chart_quote(ticker: str) -> dict | None:
     """
-    Attempt to pull real prices from yfinance.
+    Pull quote data directly from Yahoo Finance's chart endpoint.
+    This avoids the broken pandas/yfinance dependency chain in this environment.
+    """
+    url = f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}"
+    response = requests.get(
+        url,
+        params={"range": "5d", "interval": "1d", "includePrePost": "false"},
+        timeout=12,
+        headers={"User-Agent": "Mozilla/5.0"},
+    )
+    response.raise_for_status()
+    payload = response.json()
+    chart = payload.get("chart") or {}
+    result = (chart.get("result") or [None])[0]
+    if not result:
+        return None
+
+    meta = result.get("meta") or {}
+    indicators = result.get("indicators") or {}
+    quote = (indicators.get("quote") or [{}])[0]
+    closes = [v for v in (quote.get("close") or []) if v is not None]
+
+    price = meta.get("regularMarketPrice")
+    prev_close = meta.get("chartPreviousClose") or meta.get("previousClose")
+    if price is None and closes:
+        price = closes[-1]
+    if prev_close is None and len(closes) >= 2:
+        prev_close = closes[-2]
+    if price is None:
+        return None
+
+    high = meta.get("regularMarketDayHigh")
+    low = meta.get("regularMarketDayLow")
+    if high is None and closes:
+        high = max(closes)
+    if low is None and closes:
+        low = min(closes)
+
+    return {
+        "price": float(price),
+        "previous_close": float(prev_close) if prev_close is not None else float(price),
+        "high": float(high) if high is not None else None,
+        "low": float(low) if low is not None else None,
+    }
+
+
+def _try_live_prices() -> dict:
+    """
+    Attempt to pull real prices from Yahoo Finance's public chart API.
     Returns dict of {commodity: {price, change_1d, change_pct_1d}} or empty dict on failure.
     """
-    try:
-        import yfinance as yf
-        all_tickers = list(TICKER_MAP.values()) + list(FOREX_MAP.values())
-        data = yf.download(all_tickers, period="5d", interval="1d",
-                           progress=False, auto_adjust=True)
-        if data is None or data.empty:
-            return {}
+    result = {}
 
-        result = {}
-        close = data.get("Close", data)  # handle both dict and MultiIndex
+    for commodity, ticker in {**TICKER_MAP, **FOREX_MAP}.items():
+        try:
+            quote = _fetch_yahoo_chart_quote(ticker)
+            if not quote:
+                continue
 
-        for commodity, ticker in TICKER_MAP.items():
-            try:
-                if hasattr(close, "columns") and ticker in close.columns:
-                    series = close[ticker].dropna()
-                elif hasattr(close, "name"):
-                    series = close.dropna()
-                else:
-                    continue
-                if len(series) < 1:
-                    continue
-                price = float(series.iloc[-1])
-                prev = float(series.iloc[-2]) if len(series) >= 2 else price
-                change = round(price - prev, 4)
-                change_pct = round((change / prev) * 100, 4) if prev else 0
-                result[commodity] = {
-                    "price": round(price, 4),
-                    "price_unit": PRICE_UNITS.get(commodity, "USD/bbl"),
-                    "change_1d": change,
-                    "change_pct_1d": change_pct,
-                    "high_1d": round(price * 1.005, 4),
-                    "low_1d": round(price * 0.995, 4),
-                    "source": "yfinance",
-                }
-            except Exception as e:
-                logger.debug("yfinance parse failed for %s/%s: %s", commodity, ticker, e)
+            is_fx = commodity in FOREX_MAP
+            digits = 6 if is_fx else 4
+            price = round(quote["price"], digits)
+            prev = quote["previous_close"] if quote["previous_close"] else quote["price"]
+            change = round(price - prev, digits)
+            change_pct = round((change / prev) * 100, 4) if prev else 0
+            result[commodity] = {
+                "price": price,
+                "price_unit": PRICE_UNITS.get(commodity, "USD/bbl"),
+                "change_1d": change,
+                "change_pct_1d": change_pct,
+                "high_1d": round(quote["high"], digits) if quote["high"] is not None else None,
+                "low_1d": round(quote["low"], digits) if quote["low"] is not None else None,
+                "source": "yahoo",
+            }
+        except Exception as exc:
+            logger.debug("Yahoo chart fetch failed for %s/%s: %s", commodity, ticker, exc)
 
-        for pair, ticker in FOREX_MAP.items():
-            try:
-                if hasattr(close, "columns") and ticker in close.columns:
-                    series = close[ticker].dropna()
-                    if len(series) >= 1:
-                        result[pair] = {
-                            "price": round(float(series.iloc[-1]), 6),
-                            "price_unit": "rate",
-                            "change_1d": 0,
-                            "change_pct_1d": 0,
-                            "high_1d": None,
-                            "low_1d": None,
-                            "source": "yfinance",
-                        }
-            except Exception as e:
-                logger.debug("yfinance FX parse failed for %s: %s", pair, e)
-
-        return result
-    except ImportError:
-        logger.warning("yfinance not installed; using simulated prices")
-        return {}
-    except Exception as e:
-        logger.warning("yfinance fetch failed: %s", e)
-        return {}
+    return result
 
 
 async def fetch_and_store_market_data():
@@ -156,7 +171,7 @@ async def fetch_and_store_market_data():
     logger.info("[market_data] Fetching market prices …")
     db = SessionLocal()
     try:
-        live = _try_yfinance()
+        live = _try_live_prices()
         ts = datetime.utcnow().isoformat()
         stored = 0
 
@@ -186,7 +201,7 @@ async def fetch_and_store_market_data():
         db.commit()
         live_count = len(live)
         logger.info(
-            "[market_data] Stored %d ticks (%d live from yfinance, %d simulated).",
+            "[market_data] Stored %d ticks (%d live from Yahoo, %d simulated).",
             stored, live_count, stored - live_count
         )
     except Exception as exc:
