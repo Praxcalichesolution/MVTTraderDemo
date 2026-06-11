@@ -137,7 +137,8 @@ CREATE TABLE market_data (
     volume FLOAT,
     timestamp DATETIME2 DEFAULT GETDATE()
 );
-CREATE INDEX IF NOT EXISTS idx_market_data_ts ON market_data(commodity, timestamp DESC);
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'idx_market_data_ts' AND object_id = OBJECT_ID('market_data'))
+CREATE INDEX idx_market_data_ts ON market_data(commodity, timestamp DESC);
 
 IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='forward_curves' AND xtype='U')
 CREATE TABLE forward_curves (
@@ -327,8 +328,11 @@ CREATE TABLE decision_queue (
     related_vessel_id INT REFERENCES vessels(id),
     related_alert_id INT REFERENCES alerts(id),
     status NVARCHAR(50) DEFAULT 'Pending',
+    snooze_until DATETIME2,
     created_at DATETIME2 DEFAULT GETDATE(),
-    completed_at DATETIME2
+    completed_at DATETIME2,
+    reasoning_text NVARCHAR(MAX),
+    reasoning_generated_at DATETIME2
 );
 
 IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='regulatory_filings' AND xtype='U')
@@ -379,3 +383,58 @@ CREATE TABLE external_connectors (
     created_at DATETIME2 DEFAULT GETDATE(),
     updated_at DATETIME2 DEFAULT GETDATE()
 );
+
+IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='market_intelligence' AND xtype='U')
+CREATE TABLE market_intelligence (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    commodity NVARCHAR(255) NOT NULL,
+    analysis_datetime DATETIME2 DEFAULT GETDATE(),
+    outlook NVARCHAR(50) NOT NULL,
+    outlook_score FLOAT DEFAULT 50,
+    key_drivers NVARCHAR(MAX),
+    key_risks NVARCHAR(MAX),
+    price_at_analysis FLOAT,
+    change_24h FLOAT,
+    trend_5d FLOAT,
+    trend_30d FLOAT,
+    news_count_analysed INT DEFAULT 0,
+    top_news NVARCHAR(MAX),
+    opportunity_flag INT DEFAULT 0,
+    opportunity_description NVARCHAR(MAX),
+    agent_run_id INT,
+    created_at DATETIME2 DEFAULT GETDATE()
+);
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'idx_market_intelligence_latest' AND object_id = OBJECT_ID('market_intelligence'))
+CREATE INDEX idx_market_intelligence_latest ON market_intelligence(commodity, analysis_datetime DESC);
+
+IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='agent_runs' AND xtype='U')
+CREATE TABLE agent_runs (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    run_datetime DATETIME2 DEFAULT GETDATE(),
+    agent_name NVARCHAR(255) NOT NULL,
+    commodities_analysed INT DEFAULT 0,
+    duration_seconds FLOAT DEFAULT 0,
+    news_items_read INT DEFAULT 0,
+    analyses_produced INT DEFAULT 0,
+    opportunities_found INT DEFAULT 0,
+    status NVARCHAR(50) DEFAULT 'running',
+    notes NVARCHAR(MAX)
+);
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'idx_agent_runs_datetime' AND object_id = OBJECT_ID('agent_runs'))
+CREATE INDEX idx_agent_runs_datetime ON agent_runs(run_datetime DESC);
+
+IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='market_watchlist' AND xtype='U')
+CREATE TABLE market_watchlist (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    user_id INT NOT NULL REFERENCES users(id),
+    commodity NVARCHAR(255) NOT NULL,
+    alert_threshold_pct FLOAT DEFAULT 2.0,
+    is_active INT DEFAULT 1,
+    display_order INT DEFAULT 0,
+    created_at DATETIME2 DEFAULT GETDATE()
+);
+
+IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'idx_market_watchlist_user' AND object_id = OBJECT_ID('market_watchlist'))
+CREATE INDEX idx_market_watchlist_user ON market_watchlist(user_id, is_active, display_order);

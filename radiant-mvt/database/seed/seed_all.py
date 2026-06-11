@@ -198,15 +198,13 @@ if __name__ == "__main__":
 
 def seed_monthly_actuals_if_empty():
     """Seed monthly_actuals and performance_targets if empty."""
-    import sqlite3, random as _random, os
+    import random as _random
     _random.seed(42)
-    from database.db import engine
-    db_url = str(engine.url)
-    db_path = db_url.replace("sqlite:///", "").replace("sqlite://", "")
-    if not os.path.isabs(db_path):
-        db_path = os.path.join(os.getcwd(), db_path.lstrip("./"))
-    conn = sqlite3.connect(db_path)
-    count = conn.execute('SELECT COUNT(*) FROM monthly_actuals').fetchone()[0]
+    from database.db import SessionLocal
+    from database.models import MonthlyActual, PerformanceTarget
+
+    db = SessionLocal()
+    count = db.query(MonthlyActual).count()
     if count == 0:
         seasonal = [0.07, 0.08, 0.09, 0.085, 0.09, 0.095, 0.085, 0.08, 0.085, 0.09, 0.085, 0.08]
         targets = {2024: 32000000, 2025: 34000000, 2026: 36000000}
@@ -219,22 +217,32 @@ def seed_monthly_actuals_if_empty():
                 pnl = budget * mult
                 trades = _random.randint(55, 120)
                 wins = int(trades * _random.uniform(0.58, 0.72))
-                conn.execute(
-                    '''INSERT INTO monthly_actuals
-                    (year, month, book_id, trader_id, pnl, volume_traded, trades_count, win_count, loss_count, best_trade_pnl, worst_trade_pnl, var_avg)
-                    VALUES (?,?,1,1,?,?,?,?,?,?,?,?)''',
-                    (year, month, round(pnl, 0), _random.uniform(2e6, 8e6),
-                     trades, wins, trades - wins,
-                     _random.uniform(200000, 1200000), _random.uniform(-400000, -50000),
-                     _random.uniform(1.2e6, 3.5e6))
-                )
-        conn.execute('DELETE FROM performance_targets')
+                db.add(MonthlyActual(
+                    year=year,
+                    month=month,
+                    book_id=1,
+                    trader_id=1,
+                    pnl=round(pnl, 0),
+                    volume_traded=_random.uniform(2e6, 8e6),
+                    trades_count=trades,
+                    win_count=wins,
+                    loss_count=trades - wins,
+                    best_trade_pnl=_random.uniform(200000, 1200000),
+                    worst_trade_pnl=_random.uniform(-400000, -50000),
+                    var_avg=_random.uniform(1.2e6, 3.5e6),
+                ))
+        db.query(PerformanceTarget).delete()
         for year, target in targets.items():
-            conn.execute(
-                '''INSERT INTO performance_targets (year, book_id, trader_id, annual_target, q1_target, q2_target, q3_target, q4_target)
-                VALUES (?,1,1,?,?,?,?,?)''',
-                (year, target, target * 0.24, target * 0.26, target * 0.25, target * 0.25)
-            )
-        conn.commit()
+            db.add(PerformanceTarget(
+                year=year,
+                book_id=1,
+                trader_id=1,
+                annual_target=target,
+                q1_target=target * 0.24,
+                q2_target=target * 0.26,
+                q3_target=target * 0.25,
+                q4_target=target * 0.25,
+            ))
+        db.commit()
         logger.info("Seeded monthly_actuals and performance_targets")
-    conn.close()
+    db.close()

@@ -14,8 +14,8 @@ ai:
   system_prompt_prefix: "You are Radiant, an AI trading intelligence assistant for INEOS Trading & Shipping."
 
 database:
-  url: sqlite:///./radiant_mvt.db
-  wal_mode: true
+  url: mssql+pyodbc://USERNAME:PASSWORD@localhost:1433/MVT_Trader?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes
+  wal_mode: false
   timeout: 30
   pool_size: 10
 

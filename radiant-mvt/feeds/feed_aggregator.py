@@ -15,6 +15,7 @@ import httpx
 from sqlalchemy import text
 
 from database.db import SessionLocal
+from database.models import ExternalConnector, News
 
 logger = logging.getLogger(__name__)
 
@@ -216,31 +217,33 @@ def _store_articles(db, articles: list[dict]) -> list[int]:
     inserted_ids = []
     for art in articles:
         try:
-            # Deduplicate by headline (last 24h)
-            dup = db.execute(text(
-                "SELECT id FROM news WHERE headline = :h "
-                "AND ingested_at > :cutoff LIMIT 1"
-            ), {
-                "h": art["headline"],
-                "cutoff": (datetime.utcnow() - timedelta(hours=24)).isoformat()
-            }).fetchone()
+            dup = (
+                db.query(News)
+                .filter(
+                    News.headline == art["headline"],
+                    News.ingested_at > (datetime.utcnow() - timedelta(hours=24)),
+                )
+                .first()
+            )
             if dup:
                 continue
-            result = db.execute(text("""
-                INSERT INTO news
-                    (headline, source, url, published_at, summary, body,
-                     sentiment_score, commodities_tagged, regions_tagged,
-                     market_impact, relevance_score, ingested_at)
-                VALUES
-                    (:headline, :source, :url, :published_at, :summary, :body,
-                     :sentiment_score, :commodities_tagged, :regions_tagged,
-                     :market_impact, :relevance_score, :ingested_at)
-            """), {k: art.get(k) for k in [
-                "headline", "source", "url", "published_at", "summary", "body",
-                "sentiment_score", "commodities_tagged", "regions_tagged",
-                "market_impact", "relevance_score", "ingested_at"
-            ]})
-            inserted_ids.append(result.lastrowid)
+            news_item = News(
+                headline=art.get("headline"),
+                source=art.get("source"),
+                url=art.get("url"),
+                published_at=art.get("published_at"),
+                summary=art.get("summary"),
+                body=art.get("body"),
+                sentiment_score=art.get("sentiment_score"),
+                commodities_tagged=art.get("commodities_tagged"),
+                regions_tagged=art.get("regions_tagged"),
+                market_impact=art.get("market_impact"),
+                relevance_score=art.get("relevance_score"),
+                ingested_at=art.get("ingested_at") or datetime.utcnow(),
+            )
+            db.add(news_item)
+            db.flush()
+            inserted_ids.append(news_item.id)
         except Exception as exc:
             logger.warning("[feed_aggregator] Insert failed: %s", exc)
     if inserted_ids:
@@ -285,12 +288,26 @@ def _mark_poll_error(db, connector_id: int, error: str):
 def get_active_news_connectors(db) -> list[dict]:
     """Return all active news connectors as dicts."""
     try:
-        rows = db.execute(text("""
-            SELECT id, name, connector_type, provider, host_url, api_key, extra_config
-            FROM external_connectors
-            WHERE is_active = 1 AND connector_type = 'news'
-        """)).fetchall()
-        return [dict(r._mapping) for r in rows]
+        rows = (
+            db.query(ExternalConnector)
+            .filter(
+                ExternalConnector.is_active == 1,
+                ExternalConnector.connector_type == "news",
+            )
+            .all()
+        )
+        return [
+            {
+                "id": row.id,
+                "name": row.name,
+                "connector_type": row.connector_type,
+                "provider": row.provider,
+                "host_url": row.host_url,
+                "api_key": row.api_key,
+                "extra_config": row.extra_config,
+            }
+            for row in rows
+        ]
     except Exception:
         return []
 
@@ -385,16 +402,14 @@ def get_relevant_news_for_decision(db, decision_title: str,
                 keywords.add(tag.strip().lower())
 
         # Fetch recent high-relevance articles
-        cutoff = (datetime.utcnow() - timedelta(hours=48)).isoformat()
-        rows = db.execute(text("""
-            SELECT id, headline, source, url, published_at, summary,
-                   sentiment_score, market_impact, relevance_score,
-                   commodities_tagged, ai_summary
-            FROM news
-            WHERE ingested_at > :cutoff
-            ORDER BY relevance_score DESC, ingested_at DESC
-            LIMIT 30
-        """), {"cutoff": cutoff}).fetchall()
+        cutoff = datetime.utcnow() - timedelta(hours=48)
+        rows = (
+            db.query(News)
+            .filter(News.ingested_at > cutoff)
+            .order_by(News.relevance_score.desc(), News.ingested_at.desc())
+            .limit(30)
+            .all()
+        )
 
         # Score each article for relevance to this decision
         scored = []

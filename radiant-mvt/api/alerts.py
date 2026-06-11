@@ -4,6 +4,7 @@ INEOS Trading & Shipping — Radiant-MVT
 """
 from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlalchemy.orm import Session
+from sqlalchemy.orm import joinedload
 from typing import Optional
 from database.db import get_db
 from api.auth import get_current_user
@@ -23,7 +24,7 @@ async def get_alerts(
     current_user = Depends(get_current_user)
 ):
     """Active alerts, ordered by severity and creation time."""
-    query = db.query(Alert)
+    query = db.query(Alert).options(joinedload(Alert.affected_trade))
     if status:
         query = query.filter(Alert.status == status)
     if severity:
@@ -34,10 +35,6 @@ async def get_alerts(
 
     result = []
     for a in alerts:
-        trade_ref = None
-        if a.affected_trade_id:
-            t = db.query(Trade).filter(Trade.id == a.affected_trade_id).first()
-            trade_ref = t.trade_ref if t else None
         result.append({
             "id": a.id,
             "alert_type": a.alert_type,
@@ -46,7 +43,7 @@ async def get_alerts(
             "description": a.description,
             "affected_book": a.affected_book,
             "affected_trade_id": a.affected_trade_id,
-            "trade_ref": trade_ref,
+            "trade_ref": a.affected_trade.trade_ref if a.affected_trade else None,
             "estimated_impact": a.estimated_impact,
             "ai_explanation": a.ai_explanation,
             "ai_draft_action": a.ai_draft_action,

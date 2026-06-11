@@ -214,107 +214,142 @@ window.showDecisionReasoning = async function(decisionId, title) {
 };
 
 /* ── SCREEN 2: DASHBOARD ── */
-SCREENS['dashboard'] = async function(main) {
-  var dateStr = new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'short'});
-  main.innerHTML = '<div class="screen" style="padding:12px 14px">'
+const DASHBOARD_LAYOUT_KEY = 'radiant_dashboard_layout_v2';
+const DASHBOARD_TILE_ORDER = ['kpis','book-pnl','top-performer','intraday','heatmaps','alerts','news','blotter'];
+const DASHBOARD_TILE_META = {
+  'kpis': { label: 'KPI Strip', span: 12 },
+  'book-pnl': { label: 'Book P&L', span: 4 },
+  'top-performer': { label: 'Top Performer', span: 4 },
+  'intraday': { label: 'Intraday P&L', span: 4 },
+  'heatmaps': { label: 'Position Heat Maps', span: 8 },
+  'alerts': { label: 'AI Alerts', span: 4 },
+  'news': { label: 'Market News', span: 4 },
+  'blotter': { label: 'Trade Blotter', span: 12 }
+};
 
-    /* ── Header ── */
-    + '<div class="screen-header" style="margin-bottom:10px">'
-    + '<div><div class="screen-title">&#128202; Trader Dashboard</div><div class="screen-subtitle">Live book overview — ' + dateStr + '</div></div>'
-    + '<div class="screen-actions">'
-    + '<select class="form-select" style="width:130px" id="dash-book-filter"><option value="">All Books</option><option>Crude</option><option>NGL/Ethane</option><option>Naphtha</option><option>Carbon</option></select>'
-    + '<button class="btn btn-secondary btn-sm" onclick="loadDashboardData()">&#8635; Refresh</button>'
-    + '</div></div>'
+function normalizeDashboardLayout(state) {
+  state = state || {};
+  var order = Array.isArray(state.order) ? state.order.slice() : DASHBOARD_TILE_ORDER.slice();
+  var hidden = Array.isArray(state.hidden) ? state.hidden.slice() : [];
+  DASHBOARD_TILE_ORDER.forEach(function(id) {
+    if (!order.includes(id)) order.push(id);
+  });
+  order = order.filter(function(id, index) {
+    return DASHBOARD_TILE_META[id] && order.indexOf(id) === index;
+  });
+  hidden = hidden.filter(function(id, index) {
+    return DASHBOARD_TILE_META[id] && hidden.indexOf(id) === index;
+  });
+  return { order: order, hidden: hidden };
+}
 
-    /* ── KPI STRIP ── */
-    + '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:10px">'
-    + '<div style="background:linear-gradient(135deg,#0066CC,#0052A3);border-radius:10px;padding:12px 14px;color:white">'
-    + '<div style="font-size:10px;opacity:.75;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Today\'s P&amp;L</div>'
-    + '<div style="font-size:22px;font-weight:800;letter-spacing:-.5px" id="kpi-pnl">+$2.1M</div>'
-    + '<div style="font-size:11px;opacity:.8;margin-top:2px">&#9650; +$184K vs yesterday</div>'
-    + '</div>'
-    + '<div style="background:linear-gradient(135deg,#16A34A,#15803D);border-radius:10px;padding:12px 14px;color:white">'
-    + '<div style="font-size:10px;opacity:.75;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">YTD Performance</div>'
-    + '<div style="font-size:22px;font-weight:800;letter-spacing:-.5px">+$47.3M</div>'
-    + '<div style="font-size:11px;opacity:.8;margin-top:2px">&#9650; 94% of $50M budget</div>'
-    + '</div>'
-    + '<div style="background:white;border:1px solid #E5E7EB;border-radius:10px;padding:12px 14px">'
-    + '<div style="font-size:10px;color:#6B7280;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">VaR Utilisation</div>'
-    + '<div style="font-size:22px;font-weight:800;color:#D97706;letter-spacing:-.5px">62%</div>'
-    + '<div style="background:#FEF3C7;border-radius:4px;height:5px;margin-top:6px"><div style="background:#D97706;height:5px;border-radius:4px;width:62%"></div></div>'
-    + '</div>'
-    + '<div style="background:white;border:1px solid #E5E7EB;border-radius:10px;padding:12px 14px">'
-    + '<div style="font-size:10px;color:#6B7280;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Open Positions</div>'
-    + '<div style="font-size:22px;font-weight:800;color:#374151;letter-spacing:-.5px">6</div>'
-    + '<div style="font-size:11px;color:#6B7280;margin-top:2px">847 trades YTD</div>'
-    + '</div>'
-    + '<div style="background:white;border:1px solid #E5E7EB;border-radius:10px;padding:12px 14px">'
-    + '<div style="font-size:10px;color:#6B7280;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Active Decisions</div>'
-    + '<div style="font-size:22px;font-weight:800;color:#DC2626;letter-spacing:-.5px">3</div>'
-    + '<div style="font-size:11px;color:#DC2626;margin-top:2px">&#9888; 1 expires in 2h</div>'
-    + '</div>'
-    + '</div>'
+function getDashboardLayoutState() {
+  try {
+    return normalizeDashboardLayout(JSON.parse(localStorage.getItem(DASHBOARD_LAYOUT_KEY) || '{}'));
+  } catch (e) {
+    return normalizeDashboardLayout({});
+  }
+}
 
-    /* ── MAIN GRID: 3 columns ── */
-    + '<div style="display:grid;grid-template-columns:26% 1fr 28%;gap:10px;margin-bottom:10px">'
+function saveDashboardLayoutState(state) {
+  var normalized = normalizeDashboardLayout(state);
+  localStorage.setItem(DASHBOARD_LAYOUT_KEY, JSON.stringify(normalized));
+  return normalized;
+}
 
-    /* col 1 — Book P&L */
-    + '<div style="display:flex;flex-direction:column;gap:8px">'
-    + '<div class="card" style="padding:14px">'
-    + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">'
-    + '<span style="font-size:13px;font-weight:700;color:#374151">Book P&amp;L</span>'
-    + '<span class="badge badge-info" id="dash-pnl-time">Today</span>'
-    + '</div>'
-    + '<div style="font-size:32px;font-weight:800;color:#16A34A;letter-spacing:-1px;margin:6px 0 2px" id="total-pnl-val">+$2.1M</div>'
-    + '<div style="font-size:11px;color:#6B7280;margin-bottom:12px">&#9650; $184K from open (unrealised)</div>'
-    + '<div id="book-cards"></div>'
-    + '</div>'
-    + '<div class="card" style="padding:12px;background:linear-gradient(135deg,#F0F7FF,#EFF6FF)">'
-    + '<div style="font-size:11px;font-weight:700;color:#1e40af;margin-bottom:8px">&#127942; Top Performer Today</div>'
-    + '<div style="font-size:15px;font-weight:700;color:#111827">Crude &amp; Condensate</div>'
-    + '<div style="font-size:22px;font-weight:800;color:#16A34A;margin:3px 0">+$1.24M</div>'
-    + '<div style="font-size:11px;color:#6B7280">Brent long 120kbbl · avg entry $82.20 · now $96.97</div>'
-    + '</div>'
-    + '</div>'
-
-    /* col 2 — Chart + Heat map */
-    + '<div style="display:flex;flex-direction:column;gap:8px">'
-    + '<div class="card" style="padding:12px">'
-    + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'
-    + '<span style="font-size:13px;font-weight:700;color:#374151">Intraday P&amp;L</span>'
-    + '<span style="display:flex;gap:6px;align-items:center"><span style="width:8px;height:8px;background:#16A34A;border-radius:50%;animation:delayPulse 1.5s infinite"></span><span class="badge badge-info">Live</span></span>'
-    + '</div>'
-    + '<div style="position:relative;height:160px"><canvas id="intraday-chart"></canvas></div>'
-    + '</div>'
-    + '<div class="card" style="padding:12px">'
-    + '<div style="font-size:13px;font-weight:700;color:#374151;margin-bottom:4px">&#128200; Position Heat Map <span style="font-size:11px;font-weight:400;color:#9CA3AF">Commodity × Region</span></div>'
-    + '<div style="font-size:11px;color:#9CA3AF;margin-bottom:8px">Values in bbl (quantity). P&amp;L shown separately.</div>'
-    + '<div id="heat-map-grid"></div>'
-    + '</div>'
-    + '</div>'
-
-    /* col 3 — Alerts + News */
-    + '<div style="display:flex;flex-direction:column;gap:8px">'
-    + '<div class="card" style="padding:0;overflow:hidden">'
-    + '<div style="padding:10px 12px 8px;border-bottom:1px solid #F1F5F9;display:flex;justify-content:space-between;align-items:center">'
-    + '<span style="font-size:13px;font-weight:700;color:#374151">&#128276; AI Alerts</span>'
-    + '<span style="font-size:11px;background:#FEF2F2;color:#DC2626;padding:2px 8px;border-radius:20px;font-weight:700">2 Active</span>'
-    + '</div>'
-    + '<div id="dash-alerts" style="padding:8px 12px 10px;max-height:175px;overflow-y:auto"></div>'
-    + '</div>'
-    + '<div class="card" style="padding:0;overflow:hidden;flex:1">'
-    + '<div style="padding:10px 12px 8px;border-bottom:1px solid #F1F5F9;display:flex;justify-content:space-between;align-items:center">'
-    + '<span style="font-size:13px;font-weight:700;color:#374151">&#128240; Market News</span>'
-    + '<span style="font-size:11px;color:#9CA3AF">Jun 4, 2026</span>'
-    + '</div>'
-    + '<div id="dash-news" style="padding:4px 12px 8px;max-height:230px;overflow-y:auto"></div>'
-    + '</div>'
-    + '</div>'
-
-    + '</div>' /* end 3-col grid */
-
-    /* ── TRADE BLOTTER ── */
-    + '<div class="card" style="padding:0;overflow:hidden">'
+function getDashboardTileBody(id) {
+  if (id === 'kpis') {
+    return '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px">'
+      + '<div style="background:linear-gradient(135deg,#0066CC,#0052A3);border-radius:10px;padding:12px 14px;color:white">'
+      + '<div style="font-size:10px;opacity:.75;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Today\'s P&amp;L</div>'
+      + '<div style="font-size:22px;font-weight:800;letter-spacing:-.5px" id="kpi-pnl">+$2.1M</div>'
+      + '<div style="font-size:11px;opacity:.8;margin-top:2px">Live desk total</div>'
+      + '</div>'
+      + '<div style="background:linear-gradient(135deg,#16A34A,#15803D);border-radius:10px;padding:12px 14px;color:white">'
+      + '<div style="font-size:10px;opacity:.75;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">YTD Performance</div>'
+      + '<div style="font-size:22px;font-weight:800;letter-spacing:-.5px">+$47.3M</div>'
+      + '<div style="font-size:11px;opacity:.8;margin-top:2px">&#9650; 94% of $50M budget</div>'
+      + '</div>'
+      + '<div style="background:white;border:1px solid #E5E7EB;border-radius:10px;padding:12px 14px">'
+      + '<div style="font-size:10px;color:#6B7280;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">VaR Utilisation</div>'
+      + '<div style="font-size:22px;font-weight:800;color:#D97706;letter-spacing:-.5px" id="kpi-var-util">62%</div>'
+      + '<div style="background:#FEF3C7;border-radius:4px;height:5px;margin-top:6px"><div id="kpi-var-bar" style="background:#D97706;height:5px;border-radius:4px;width:62%"></div></div>'
+      + '</div>'
+      + '<div style="background:white;border:1px solid #E5E7EB;border-radius:10px;padding:12px 14px">'
+      + '<div style="font-size:10px;color:#6B7280;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Open Positions</div>'
+      + '<div style="font-size:22px;font-weight:800;color:#374151;letter-spacing:-.5px" id="kpi-open-positions">6</div>'
+      + '<div style="font-size:11px;color:#6B7280;margin-top:2px" id="kpi-active-books">Across 4 active books</div>'
+      + '</div>'
+      + '<div style="background:white;border:1px solid #E5E7EB;border-radius:10px;padding:12px 14px">'
+      + '<div style="font-size:10px;color:#6B7280;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Active Decisions</div>'
+      + '<div style="font-size:22px;font-weight:800;color:#DC2626;letter-spacing:-.5px" id="kpi-active-alerts">3</div>'
+      + '<div style="font-size:11px;color:#DC2626;margin-top:2px">Open AI alerts</div>'
+      + '</div>'
+      + '</div>';
+  }
+  if (id === 'book-pnl') {
+    return '<div class="card" style="padding:14px;height:100%">'
+      + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">'
+      + '<span style="font-size:13px;font-weight:700;color:#374151">Book P&amp;L</span>'
+      + '<span class="badge badge-info" id="dash-pnl-time">Today</span>'
+      + '</div>'
+      + '<div style="font-size:32px;font-weight:800;color:#16A34A;letter-spacing:-1px;margin:6px 0 2px" id="total-pnl-val">+$2.1M</div>'
+      + '<div style="font-size:11px;color:#6B7280;margin-bottom:12px">Updated from current open positions</div>'
+      + '<div id="book-cards"></div>'
+      + '</div>';
+  }
+  if (id === 'top-performer') {
+    return '<div class="card" style="padding:12px;background:linear-gradient(135deg,#F0F7FF,#EFF6FF);height:100%">'
+      + '<div style="font-size:11px;font-weight:700;color:#1e40af;margin-bottom:8px">&#127942; Top Performer Today</div>'
+      + '<div style="font-size:15px;font-weight:700;color:#111827">Crude &amp; Condensate</div>'
+      + '<div style="font-size:22px;font-weight:800;color:#16A34A;margin:3px 0">+$1.24M</div>'
+      + '<div style="font-size:11px;color:#6B7280">Brent long 120kbbl | avg entry $82.20 | now $96.97</div>'
+      + '</div>';
+  }
+  if (id === 'intraday') {
+    return '<div class="card" style="padding:12px;height:100%">'
+      + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'
+      + '<span style="font-size:13px;font-weight:700;color:#374151">Intraday P&amp;L</span>'
+      + '<span style="display:flex;gap:6px;align-items:center"><span style="width:8px;height:8px;background:#16A34A;border-radius:50%;animation:delayPulse 1.5s infinite"></span><span class="badge badge-info">Live</span></span>'
+      + '</div>'
+      + '<div style="position:relative;height:220px"><canvas id="intraday-chart"></canvas></div>'
+      + '</div>';
+  }
+  if (id === 'heatmaps') {
+    return '<div class="card" style="padding:12px;height:100%">'
+      + '<div style="font-size:13px;font-weight:700;color:#374151;margin-bottom:4px">&#128200; Position Heat Maps <span style="font-size:11px;font-weight:400;color:#9CA3AF">Commodity x Region</span></div>'
+      + '<div style="font-size:11px;color:#9CA3AF;margin-bottom:10px">These two maps now sit side by side by default, and you can move the whole tile anywhere in the dashboard.</div>'
+      + '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px">'
+      + '<div style="min-width:0">'
+      + '<div style="font-size:11px;font-weight:700;color:#374151;margin-bottom:6px">P&amp;L Heat Map</div>'
+      + '<div id="heat-map-grid-pnl"></div>'
+      + '</div>'
+      + '<div style="min-width:0">'
+      + '<div style="font-size:11px;font-weight:700;color:#374151;margin-bottom:6px">Barrels Heat Map</div>'
+      + '<div id="heat-map-grid-barrels"></div>'
+      + '</div>'
+      + '</div>'
+      + '</div>';
+  }
+  if (id === 'alerts') {
+    return '<div class="card" style="padding:0;overflow:hidden;height:100%">'
+      + '<div style="padding:10px 12px 8px;border-bottom:1px solid #F1F5F9;display:flex;justify-content:space-between;align-items:center">'
+      + '<span style="font-size:13px;font-weight:700;color:#374151">&#128276; AI Alerts</span>'
+      + '<span style="font-size:11px;background:#FEF2F2;color:#DC2626;padding:2px 8px;border-radius:20px;font-weight:700" id="dash-alert-count">2 Active</span>'
+      + '</div>'
+      + '<div id="dash-alerts" style="padding:8px 12px 10px;max-height:260px;overflow-y:auto"></div>'
+      + '</div>';
+  }
+  if (id === 'news') {
+    return '<div class="card" style="padding:0;overflow:hidden;height:100%">'
+      + '<div style="padding:10px 12px 8px;border-bottom:1px solid #F1F5F9;display:flex;justify-content:space-between;align-items:center">'
+      + '<span style="font-size:13px;font-weight:700;color:#374151">&#128240; Market News</span>'
+      + '<span style="font-size:11px;color:#9CA3AF">Jun 4, 2026</span>'
+      + '</div>'
+      + '<div id="dash-news" style="padding:4px 12px 8px;max-height:300px;overflow-y:auto"></div>'
+      + '</div>';
+  }
+  return '<div class="card" style="padding:0;overflow:hidden;height:100%">'
     + '<div style="padding:10px 14px 8px;border-bottom:1px solid #F1F5F9;display:flex;justify-content:space-between;align-items:center;background:#FAFAFA">'
     + '<span style="font-size:13px;font-weight:700;color:#374151">&#128195; Trade Blotter</span>'
     + '<div style="display:flex;align-items:center;gap:12px">'
@@ -322,28 +357,174 @@ SCREENS['dashboard'] = async function(main) {
     + '<span id="blotter-update-time" style="font-size:11px;color:#9CA3AF">Updated just now</span>'
     + '</div>'
     + '</div>'
-    + '<div style="max-height:240px;overflow-y:auto">'
+    + '<div style="max-height:260px;overflow-y:auto">'
     + '<table class="trading-table" style="width:100%"><thead><tr>'
     + '<th>Trade Ref</th><th>Commodity</th><th>Dir</th><th class="right">Volume</th><th class="right">Price</th><th>Counterparty</th><th>Status</th><th>Time</th><th>AI</th>'
     + '</tr></thead><tbody id="blotter-tbody"></tbody></table>'
     + '</div>'
-    + '</div>'
     + '</div>';
+}
+
+function renderDashboardCustomizer() {
+  var layout = getDashboardLayoutState();
+  var panel = document.getElementById('dashboard-customizer');
+  if (!panel) return;
+  panel.innerHTML = DASHBOARD_TILE_ORDER.map(function(id) {
+    var meta = DASHBOARD_TILE_META[id];
+    var hidden = layout.hidden.includes(id);
+    return '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid #E5E7EB">'
+      + '<div><div style="font-size:12px;font-weight:700;color:#111827">' + meta.label + '</div><div style="font-size:11px;color:#6B7280">' + (hidden ? 'Hidden' : 'Visible') + ' · drag visible tiles to reorder</div></div>'
+      + '<button class="btn btn-secondary btn-sm" onclick="toggleDashboardTileVisibility(\'' + id + '\')">' + (hidden ? 'Add Tile' : 'Hide Tile') + '</button>'
+      + '</div>';
+  }).join('');
+}
+
+function renderDashboardTiles() {
+  var layout = getDashboardLayoutState();
+  var grid = document.getElementById('dashboard-grid');
+  if (!grid) return;
+  var visible = layout.order.filter(function(id) { return !layout.hidden.includes(id); });
+  grid.innerHTML = visible.map(function(id) {
+    var meta = DASHBOARD_TILE_META[id];
+    return '<div class="dashboard-tile-shell" draggable="' + (id !== 'kpis') + '" data-tile-id="' + id + '" style="grid-column:span ' + meta.span + '">'
+      + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">'
+      + '<div style="display:flex;align-items:center;gap:8px;color:#64748B;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em">'
+      + '<span class="dashboard-tile-handle" style="cursor:' + (id !== 'kpis' ? 'grab' : 'default') + ';opacity:' + (id !== 'kpis' ? '1' : '.35') + '">&#8645;</span>'
+      + '<span>' + meta.label + '</span>'
+      + '</div>'
+      + '</div>'
+      + getDashboardTileBody(id)
+      + '</div>';
+  }).join('');
+  setupDashboardTileDnD();
+  renderDashboardCustomizer();
+}
+
+function setupDashboardTileDnD() {
+  var grid = document.getElementById('dashboard-grid');
+  if (!grid) return;
+  Array.from(grid.querySelectorAll('.dashboard-tile-shell')).forEach(function(tile) {
+    tile.addEventListener('dragstart', function(event) {
+      var tileId = tile.getAttribute('data-tile-id');
+      if (tileId === 'kpis') {
+        event.preventDefault();
+        return;
+      }
+      tile.style.opacity = '0.5';
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('text/plain', tileId);
+    });
+    tile.addEventListener('dragend', function() {
+      tile.style.opacity = '';
+    });
+    tile.addEventListener('dragover', function(event) {
+      event.preventDefault();
+    });
+    tile.addEventListener('drop', function(event) {
+      event.preventDefault();
+      var sourceId = event.dataTransfer.getData('text/plain');
+      var targetId = tile.getAttribute('data-tile-id');
+      if (!sourceId || !targetId || sourceId === targetId || targetId === 'kpis') return;
+      var layout = getDashboardLayoutState();
+      var sourceIndex = layout.order.indexOf(sourceId);
+      var targetIndex = layout.order.indexOf(targetId);
+      if (sourceIndex === -1 || targetIndex === -1) return;
+      layout.order.splice(sourceIndex, 1);
+      layout.order.splice(targetIndex, 0, sourceId);
+      saveDashboardLayoutState(layout);
+      renderDashboardTiles();
+      loadDashboardData();
+    });
+  });
+}
+
+window.toggleDashboardCustomizer = function() {
+  var panel = document.getElementById('dashboard-customizer-panel');
+  if (!panel) return;
+  var show = panel.style.display === 'none';
+  panel.style.display = show ? 'block' : 'none';
+  if (show) renderDashboardCustomizer();
+};
+
+window.toggleDashboardTileVisibility = function(tileId) {
+  var layout = getDashboardLayoutState();
+  if (layout.hidden.includes(tileId)) {
+    layout.hidden = layout.hidden.filter(function(id) { return id !== tileId; });
+  } else if (tileId !== 'kpis') {
+    layout.hidden.push(tileId);
+  }
+  saveDashboardLayoutState(layout);
+  renderDashboardTiles();
+  loadDashboardData();
+};
+
+window.resetDashboardLayout = function() {
+  saveDashboardLayoutState({ order: DASHBOARD_TILE_ORDER.slice(), hidden: [] });
+  renderDashboardTiles();
+  loadDashboardData();
+};
+
+SCREENS['dashboard'] = async function(main) {
+  var dateStr = new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'short'});
+  main.innerHTML = '<div class="screen" style="padding:12px 14px">'
+    + '<div class="screen-header" style="margin-bottom:10px">'
+    + '<div><div class="screen-title">&#128202; Trader Dashboard</div><div class="screen-subtitle">Live book overview â€” ' + dateStr + '</div></div>'
+    + '<div class="screen-actions" style="display:flex;gap:8px;flex-wrap:wrap">'
+    + '<select class="form-select" style="width:130px" id="dash-book-filter" onchange="onDashboardBookFilterChange()"><option value="">All Books</option><option>Crude</option><option>NGL/Ethane</option><option>Naphtha</option><option>Carbon</option></select>'
+    + '<button class="btn btn-secondary btn-sm" onclick="toggleDashboardCustomizer()">Customize Layout</button>'
+    + '<button class="btn btn-secondary btn-sm" onclick="resetDashboardLayout()">Reset Layout</button>'
+    + '<button class="btn btn-secondary btn-sm" onclick="loadDashboardData()">&#8635; Refresh</button>'
+    + '</div></div>'
+    + '<div id="dashboard-customizer-panel" class="card" style="padding:12px;margin-bottom:12px;display:none">'
+    + '<div style="font-size:13px;font-weight:700;color:#374151;margin-bottom:4px">Dashboard Layout</div>'
+    + '<div style="font-size:11px;color:#6B7280;margin-bottom:8px">Hide or add tiles below. Drag visible tiles by the handle to rearrange the dashboard.</div>'
+    + '<div id="dashboard-customizer"></div>'
+    + '</div>'
+    + '<div id="dashboard-grid" style="display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:12px"></div>'
+    + '</div>';
+  renderDashboardTiles();
   loadDashboardData();
 };
 
 window.loadDashboardData = async function() {
-  const [summary, trades, alerts, news] = await Promise.all([
-    apiCall('/positions/summary'), apiCall('/trades/?limit=20'),
-    apiCall('/alerts/'), apiCall('/market/news?limit=10')
-  ]);
-  renderBooks(summary);
-  renderBlotter(trades);
-  renderAlerts(alerts);
-  renderNews(news);
-  renderHeatMap();
+  var selectedFilter = document.getElementById('dash-book-filter')?.value || '';
+  const dashboard = await apiCall('/dashboard/summary?book_filter=' + encodeURIComponent(selectedFilter)).catch(() => null);
+  renderDashboardSummary(dashboard && dashboard.summary ? dashboard.summary : null, dashboard && dashboard.alerts ? dashboard.alerts : null);
+  renderBooks(dashboard && dashboard.summary ? dashboard.summary : null);
+  renderBlotter(dashboard && dashboard.trades ? { trades: dashboard.trades } : null);
+  renderAlerts(dashboard && dashboard.alerts ? dashboard.alerts : null);
+  renderNews(dashboard && dashboard.news ? dashboard.news : null);
+  renderHeatMap(dashboard && dashboard.heatmap ? dashboard.heatmap : null);
   setTimeout(renderIntradayChart, 80);
 };
+
+window.onDashboardBookFilterChange = function() {
+  loadDashboardData();
+};
+
+function renderDashboardSummary(summary, alerts) {
+  summary = summary || {};
+  alerts = Array.isArray(alerts) ? alerts : [];
+  var totalPnl = Number(summary.total_mtm_pnl || 0);
+  var pnlEl = document.getElementById('kpi-pnl');
+  if (pnlEl) {
+    pnlEl.textContent = (totalPnl >= 0 ? '+$' : '-$') + (Math.abs(totalPnl) / 1e6).toFixed(1) + 'M';
+  }
+  var utilPct = Number(summary.var_utilisation_pct || 0);
+  var utilEl = document.getElementById('kpi-var-util');
+  var utilBar = document.getElementById('kpi-var-bar');
+  if (utilEl) utilEl.textContent = utilPct.toFixed(utilPct >= 10 ? 0 : 1) + '%';
+  if (utilBar) utilBar.style.width = Math.max(0, Math.min(utilPct, 100)) + '%';
+  var openPosEl = document.getElementById('kpi-open-positions');
+  if (openPosEl) openPosEl.textContent = String(summary.open_positions || 0);
+  var activeBooksEl = document.getElementById('kpi-active-books');
+  if (activeBooksEl) activeBooksEl.textContent = 'Across ' + String(summary.active_books || 0) + ' active books';
+  var activeAlerts = alerts.filter(function(alert) { return (alert.status || '').toLowerCase() !== 'resolved'; }).length;
+  var alertKpiEl = document.getElementById('kpi-active-alerts');
+  var alertBadgeEl = document.getElementById('dash-alert-count');
+  if (alertKpiEl) alertKpiEl.textContent = String(activeAlerts);
+  if (alertBadgeEl) alertBadgeEl.textContent = activeAlerts + ' Active';
+}
 
 function renderBooks(data) {
   var books = (data && data.books) || [
@@ -381,8 +562,9 @@ function renderBooks(data) {
 
 window.reloadBlotter = async function(count) {
   count = parseInt(count) || 20;
-  const data = await apiCall('/trades/?limit=' + count).catch(() => null);
-  renderBlotter(data, count);
+  var selectedFilter = document.getElementById('dash-book-filter')?.value || '';
+  const data = await apiCall('/dashboard/summary?trade_limit=' + count + '&book_filter=' + encodeURIComponent(selectedFilter)).catch(() => null);
+  renderBlotter(data && data.trades ? { trades: data.trades } : null, count);
 };
 
 function renderBlotter(data, rowLimit) {
@@ -627,7 +809,7 @@ function renderIntradayChart() {
   });
 }
 
-function renderHeatMap() {
+function renderHeatMapLegacy() {
   var el = document.getElementById('heat-map-grid');
   if (!el) return;
 
@@ -687,6 +869,121 @@ function renderHeatMap() {
   el.innerHTML = html;
 }
 
+function renderHeatMap(data) {
+  var pnlEl = document.getElementById('heat-map-grid-pnl');
+  var barrelEl = document.getElementById('heat-map-grid-barrels');
+  if (!pnlEl && !barrelEl) return;
+
+  var commodities = (data && data.commodities && data.commodities.length)
+    ? data.commodities
+    : ['Brent','Urals','WTI','Ethane','NGLs','EUA'];
+  var regions = (data && data.regions && data.regions.length)
+    ? data.regions
+    : ['NW Europe','Med','US Gulf','Asia'];
+  var matrix = (data && data.matrix) || {
+    'Brent': {
+      'NW Europe': { pnl_m: 214, quantity: 120000, unit: 'bbl', quantity_bbl: 120000, quantity_bbl_available: true },
+      'US Gulf': { pnl_m: -118, quantity: -80000, unit: 'bbl', quantity_bbl: -80000, quantity_bbl_available: true }
+    },
+    'Urals': {
+      'Med': { pnl_m: 62, quantity: 45000, unit: 'bbl', quantity_bbl: 45000, quantity_bbl_available: true }
+    },
+    'WTI': {
+      'US Gulf': { pnl_m: -118, quantity: -76000, unit: 'bbl', quantity_bbl: -76000, quantity_bbl_available: true }
+    },
+    'Ethane': {
+      'NW Europe': { pnl_m: 27, quantity: 5000, unit: 'MT', quantity_bbl: 361850, quantity_bbl_available: true },
+      'Asia': { pnl_m: 8, quantity: 2400, unit: 'MT', quantity_bbl: 173688, quantity_bbl_available: true }
+    },
+    'NGLs': {
+      'NW Europe': { pnl_m: 2, quantity: 12000, unit: 'bbl', quantity_bbl: 12000, quantity_bbl_available: true }
+    },
+    'EUA': {
+      'NW Europe': { pnl_m: 25, quantity: 1800, unit: 'tCO2e', quantity_bbl: 0, quantity_bbl_available: false }
+    }
+  };
+
+  function buildHeatMapTable(metric) {
+    var maxAbs = 0;
+    commodities.forEach(function(c) {
+      regions.forEach(function(r) {
+        var cell = (matrix[c] && matrix[c][r]) || {};
+        var value = metric === 'barrels'
+          ? (cell.quantity_bbl_available ? Number(cell.quantity_bbl || 0) : 0)
+          : Number(cell.pnl_m || 0);
+        maxAbs = Math.max(maxAbs, Math.abs(value));
+      });
+    });
+    maxAbs = maxAbs || 1;
+
+    var html = '<div style="overflow-x:auto">'
+      + '<table style="width:100%;border-collapse:separate;border-spacing:3px;font-size:11px">'
+      + '<thead><tr><th style="text-align:left;padding:3px 4px;color:#9CA3AF;font-weight:600;font-size:10px"></th>'
+      + regions.map(function(r){ return '<th style="text-align:center;padding:3px 6px;color:#9CA3AF;font-weight:600;font-size:10px;white-space:nowrap">'+r+'</th>'; }).join('')
+      + '</tr></thead><tbody>';
+
+    commodities.forEach(function(c) {
+      html += '<tr><td style="padding:3px 4px;font-weight:600;color:#374151;white-space:nowrap">' + c + '</td>';
+      regions.forEach(function(r) {
+        var cell = (matrix[c] && matrix[c][r]) || { pnl_m: 0, quantity: 0, unit: 'bbl', quantity_bbl: 0, quantity_bbl_available: false };
+        var pnlVal = Number(cell.pnl_m || 0);
+        var qtyVal = Number(cell.quantity || 0);
+        var bblVal = Number(cell.quantity_bbl || 0);
+        var hasBbl = !!cell.quantity_bbl_available;
+        var primaryVal = metric === 'barrels'
+          ? (hasBbl ? bblVal : 0)
+          : pnlVal;
+        var intensity = Math.min(Math.abs(primaryVal) / maxAbs, 1);
+        var bg, fc;
+        if (primaryVal > 0) {
+          bg = 'rgba(37,99,235,' + (0.12 + intensity * 0.55) + ')';
+          fc = intensity > 0.5 ? '#fff' : '#1e40af';
+        } else if (primaryVal < 0) {
+          bg = 'rgba(220,38,38,' + (0.12 + intensity * 0.55) + ')';
+          fc = intensity > 0.5 ? '#fff' : '#991b1b';
+        } else {
+          bg = '#F9FAFB';
+          fc = '#6B7280';
+        }
+
+        var pnlLabel = pnlVal !== 0
+          ? (pnlVal > 0 ? '+' : '-') + '$' + Math.abs(pnlVal).toFixed(Math.abs(pnlVal) >= 10 ? 0 : 1) + 'M'
+          : '-';
+        var qtyLabel = qtyVal !== 0
+          ? (qtyVal > 0 ? '+' : '-') + Math.abs(qtyVal).toLocaleString(undefined, { maximumFractionDigits: Math.abs(qtyVal) >= 100 ? 0 : 1 }) + ' ' + (cell.unit || '')
+          : '-';
+        var bblLabel = hasBbl
+          ? (bblVal > 0 ? '+' : (bblVal < 0 ? '-' : '')) + Math.abs(bblVal).toLocaleString(undefined, { maximumFractionDigits: 0 }) + ' bbl'
+          : '-';
+        var primaryLabel = metric === 'barrels' ? bblLabel : pnlLabel;
+        var secondaryLabel = metric === 'barrels' ? qtyLabel : bblLabel;
+        var clickable = metric === 'barrels' ? hasBbl || qtyVal !== 0 : pnlVal !== 0 || qtyVal !== 0;
+
+        html += '<td style="text-align:center;padding:6px 6px;background:' + bg + ';border-radius:5px;color:' + fc + ';font-weight:700;min-width:74px;cursor:' + (clickable ? 'pointer' : 'default') + '" onclick="showPositionDetail(\'' + c + '\',\'' + r + '\')">'
+          + '<div>' + primaryLabel + '</div>'
+          + '<div style="font-size:10px;font-weight:600;opacity:' + (secondaryLabel !== '-' ? '0.9' : '0.45') + ';margin-top:2px">' + secondaryLabel + '</div>'
+          + '</td>';
+      });
+      html += '</tr>';
+    });
+
+    html += '</tbody></table>'
+      + '<div style="display:flex;gap:16px;margin-top:8px;font-size:10px;color:#9CA3AF;flex-wrap:wrap">'
+      + '<span><span style="display:inline-block;width:10px;height:10px;background:rgba(37,99,235,0.6);border-radius:2px;margin-right:4px"></span>Long position</span>'
+      + '<span><span style="display:inline-block;width:10px;height:10px;background:rgba(220,38,38,0.6);border-radius:2px;margin-right:4px"></span>Short position</span>'
+      + '<span><span style="display:inline-block;width:10px;height:10px;background:#F9FAFB;border:1px solid #E5E7EB;border-radius:2px;margin-right:4px"></span>Flat</span>'
+      + (metric === 'barrels'
+        ? '<span>Secondary line shows original unit.</span>'
+        : '<span>Secondary line shows barrel-equivalent exposure.</span>')
+      + '</div></div>';
+
+    return html;
+  }
+
+  if (pnlEl) pnlEl.innerHTML = buildHeatMapTable('pnl');
+  if (barrelEl) barrelEl.innerHTML = buildHeatMapTable('barrels');
+}
+
 window.showPositionDetail = function(commodity, region) {
   showToast('Position Detail', `Loading ${commodity} position for ${region}...`, 'info');
   // Navigate to positions screen with filter
@@ -742,13 +1039,399 @@ function renderNews(data) {
   }).join('');
 };
 
+var marketRefreshPollHandle = null;
+var marketCurveChartRef = null;
+var activeMarketCurve = 'brent';
+var marketCurveScenario = null;
+
+function marketCurveCommodityMap() {
+  return {
+    brent: 'Brent',
+    wti: 'WTI',
+    ethane: 'Ethane',
+    naphtha: 'Naphtha',
+    eua: 'EUA'
+  };
+}
+
+function marketCurveKeyForCommodity(commodity) {
+  var normalized = String(commodity || '').toLowerCase();
+  var reverse = {
+    brent: 'brent',
+    wti: 'wti',
+    ethane: 'ethane',
+    naphtha: 'naphtha',
+    eua: 'eua'
+  };
+  return reverse[normalized] || 'brent';
+}
+
+function clearMarketRefreshPoll() {
+  if (marketRefreshPollHandle) {
+    clearTimeout(marketRefreshPollHandle);
+    marketRefreshPollHandle = null;
+  }
+}
+
+function formatMarketTimestamp(ts) {
+  if (!ts) return 'Not refreshed yet';
+  var dt = new Date(ts);
+  if (isNaN(dt.getTime())) return 'Not refreshed yet';
+  return dt.toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    second: '2-digit'
+  });
+}
+
+function formatMarketAge(ageSeconds) {
+  if (ageSeconds === null || ageSeconds === undefined || isNaN(ageSeconds)) return '';
+  if (ageSeconds < 60) return ageSeconds + 's ago';
+  if (ageSeconds < 3600) return Math.floor(ageSeconds / 60) + 'm ago';
+  return Math.floor(ageSeconds / 3600) + 'h ago';
+}
+
+function formatMarketPrice(price, unit) {
+  var value = Number(price || 0);
+  if ((unit || '').toLowerCase() === 'rate') {
+    return value.toFixed(4);
+  }
+  var decimals = Math.abs(value) >= 100 ? 2 : (Math.abs(value) >= 10 ? 2 : 4);
+  return '$' + value.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+}
+
+function renderMarketRefreshStatus(meta, options) {
+  options = options || {};
+  var statusEl = document.getElementById('market-refresh-status');
+  var noteEl = document.getElementById('market-refresh-note');
+  if (!statusEl && !noteEl) return;
+
+  if (!meta) {
+    if (statusEl) statusEl.innerHTML = '<span class="muted small">Using cached snapshot...</span>';
+    if (noteEl) noteEl.textContent = '';
+    return;
+  }
+
+  var last = meta.last_refreshed_at ? formatMarketTimestamp(meta.last_refreshed_at) : 'No cached snapshot yet';
+  var age = formatMarketAge(meta.age_seconds);
+  var sourceSummary = meta.source_mix
+    ? Object.keys(meta.source_mix).map(function(key) {
+        return key + ': ' + meta.source_mix[key];
+      }).join(' | ')
+    : '';
+  var statusParts = [];
+  if (meta.refresh_in_progress || meta.refresh_triggered) {
+    statusParts.push('<span style="display:inline-flex;align-items:center;gap:6px;color:#1d4ed8;font-weight:700"><span class="loading-spinner" style="width:12px;height:12px;border-width:2px"></span>Refreshing live data</span>');
+  } else if (meta.is_stale) {
+    statusParts.push('<span style="color:#b45309;font-weight:700">Cached snapshot shown</span>');
+  } else {
+    statusParts.push('<span style="color:#15803d;font-weight:700">Live cache ready</span>');
+  }
+  statusParts.push('<span style="color:#64748b">Last refreshed ' + last + (age ? ' (' + age + ')' : '') + '</span>');
+  if (statusEl) statusEl.innerHTML = statusParts.join(' <span style="color:#CBD5E1">|</span> ');
+
+  var noteParts = [];
+  if (meta.cached_row_count !== undefined) noteParts.push((meta.cached_row_count || 0) + ' instruments cached');
+  if (sourceSummary) noteParts.push(sourceSummary);
+  if (options.error) noteParts.push('Showing fallback data while the API is unavailable');
+  if (noteEl) noteEl.textContent = noteParts.join(' | ');
+}
+
+function renderMarketPricesTable(prices) {
+  var el = document.getElementById('live-prices-table');
+  if (!el) return;
+
+  var rows = Array.isArray(prices) && prices.length ? prices : [
+    { commodity: 'Brent', price: 82.40, price_unit: 'USD/bbl', change_pct_1d: 1.2, source: 'cache', timestamp: new Date().toISOString() },
+    { commodity: 'WTI', price: 78.90, price_unit: 'USD/bbl', change_pct_1d: 0.8, source: 'cache', timestamp: new Date().toISOString() },
+    { commodity: 'Urals', price: 74.30, price_unit: 'USD/bbl', change_pct_1d: -0.4, source: 'cache', timestamp: new Date().toISOString() },
+    { commodity: 'Ethane', price: 248.0, price_unit: 'USD/MT', change_pct_1d: 0.6, source: 'cache', timestamp: new Date().toISOString() },
+    { commodity: 'Naphtha', price: 612.0, price_unit: 'USD/MT', change_pct_1d: 1.1, source: 'cache', timestamp: new Date().toISOString() },
+    { commodity: 'EUA', price: 63.2, price_unit: 'EUR/tCO2', change_pct_1d: -0.2, source: 'cache', timestamp: new Date().toISOString() }
+  ];
+
+  el.innerHTML = '<div class="table-container"><table class="trading-table">'
+    + '<thead><tr><th>Commodity</th><th class="right">Price</th><th class="right">24h</th><th>Unit</th><th>Source</th></tr></thead><tbody>'
+    + rows.map(function(row) {
+        var change = Number(row.change_pct_1d || 0);
+        var changeColor = change > 0 ? '#16A34A' : (change < 0 ? '#DC2626' : '#6B7280');
+        var changePrefix = change > 0 ? '+' : '';
+        return '<tr>'
+          + '<td style="font-weight:600">' + (row.commodity || '-') + '</td>'
+          + '<td class="right mono" style="font-weight:700">' + formatMarketPrice(row.price, row.price_unit) + '</td>'
+          + '<td class="right mono" style="color:' + changeColor + '">' + changePrefix + change.toFixed(2) + '%</td>'
+          + '<td>' + (row.price_unit || '-') + '</td>'
+          + '<td><span class="badge badge-info" style="text-transform:none">' + (row.source || 'cache') + '</span></td>'
+          + '</tr>';
+      }).join('')
+    + '</tbody></table></div>';
+}
+
+function renderMarketSpreads(spreads, prices) {
+  var el = document.getElementById('spread-table');
+  if (!el) return;
+
+  var rows = Array.isArray(spreads) && spreads.length ? spreads.slice() : [];
+  if (!rows.length && Array.isArray(prices) && prices.length) {
+    var priceMap = {};
+    prices.forEach(function(row) {
+      priceMap[row.commodity] = Number(row.price || 0);
+    });
+    if (priceMap.Brent && priceMap.WTI) {
+      rows.push({ name: 'Brent / WTI', value: priceMap.Brent - priceMap.WTI, unit: 'USD/bbl' });
+    }
+    if (priceMap.Brent && priceMap.Urals) {
+      rows.push({ name: 'Brent / Urals', value: priceMap.Brent - priceMap.Urals, unit: 'USD/bbl' });
+    }
+    if (priceMap.Naphtha && priceMap.Ethane) {
+      rows.push({ name: 'Naphtha / Ethane', value: priceMap.Naphtha - priceMap.Ethane, unit: 'USD/MT' });
+    }
+  }
+
+  if (!rows.length) {
+    el.innerHTML = '<div class="muted small">Spread snapshot will appear after the first market refresh.</div>';
+    return;
+  }
+
+  el.innerHTML = rows.map(function(row) {
+    var value = Number(row.value || 0);
+    var cls = value >= 0 ? 'positive' : 'negative';
+    var prefix = value >= 0 ? '+' : '-';
+    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #F1F5F9">'
+      + '<div><div style="font-size:13px;font-weight:700;color:#111827">' + row.name + '</div>'
+      + '<div style="font-size:11px;color:#6B7280">Prompt differential</div></div>'
+      + '<div class="' + cls + '" style="font-size:18px;font-weight:800">' + prefix + '$' + Math.abs(value).toFixed(2) + '</div>'
+      + '</div>';
+  }).join('');
+}
+
+function scheduleMarketRefreshPoll(forceRefresh) {
+  clearMarketRefreshPoll();
+  marketRefreshPollHandle = setTimeout(function() {
+    if (document.getElementById('live-prices-table')) {
+      window.loadMarketData({ silent: true, forceRefresh: !!forceRefresh });
+    }
+  }, 3000);
+}
+
+window.loadMarketData = async function(options) {
+  options = options || {};
+  var pricesEl = document.getElementById('live-prices-table');
+  var spreadsEl = document.getElementById('spread-table');
+  if (!pricesEl || !spreadsEl) return;
+
+  if (!options.silent && !pricesEl.dataset.loaded) {
+    pricesEl.innerHTML = '<div class="muted small">Loading cached market snapshot...</div>';
+    spreadsEl.innerHTML = '<div class="muted small">Loading spread snapshot...</div>';
+  }
+
+  var endpoint = '/market/overview';
+  var qs = [];
+  if (options.forceRefresh) qs.push('force_refresh=true');
+  if (qs.length) endpoint += '?' + qs.join('&');
+
+  var overview = await apiCall(endpoint).catch(function() { return null; });
+  var meta = overview && overview.meta ? overview.meta : null;
+  var prices = overview && Array.isArray(overview.prices) ? overview.prices : [];
+  var spreads = overview && Array.isArray(overview.spreads) ? overview.spreads : [];
+
+  if (!overview) {
+    renderMarketPricesTable([]);
+    renderMarketSpreads([], []);
+    renderMarketRefreshStatus({
+      last_refreshed_at: null,
+      age_seconds: null,
+      cached_row_count: 0,
+      source_mix: {},
+      refresh_in_progress: false,
+      refresh_triggered: false,
+      is_stale: true
+    }, { error: true });
+    return;
+  }
+
+  renderMarketPricesTable(prices);
+  renderMarketSpreads(spreads, prices);
+  renderMarketRefreshStatus(meta);
+  pricesEl.dataset.loaded = 'true';
+  spreadsEl.dataset.loaded = 'true';
+
+  if (meta && (meta.refresh_in_progress || meta.refresh_triggered || !prices.length)) {
+    scheduleMarketRefreshPoll(false);
+  } else {
+    clearMarketRefreshPoll();
+  }
+
+  if (options.forceRefresh && meta && meta.refresh_triggered) {
+    showToast('Market refresh started', 'Cached prices are on screen now. Live data is refreshing in the background.', 'info');
+  }
+};
+
+window.loadMarketNews = async function() {
+  var el = document.getElementById('market-news-list');
+  if (!el) return;
+
+  var data = await apiCall('/market/news?limit=6').catch(function() { return null; });
+  var items = Array.isArray(data) ? data : [];
+  if (!items.length) {
+    items = [
+      { headline: 'Brent prompt firms on tighter Atlantic Basin balances', source: 'Reuters', published_at: new Date().toISOString(), market_impact: 'Bullish' },
+      { headline: 'European gas volatility eases after storage injection build', source: 'ICIS', published_at: new Date().toISOString(), market_impact: 'Neutral' },
+      { headline: 'Naphtha cracks widen as petrochemical buying improves', source: 'Argus', published_at: new Date().toISOString(), market_impact: 'Bullish' }
+    ];
+  }
+
+  el.innerHTML = items.slice(0, 6).map(function(item) {
+    var impact = (item.market_impact || 'Neutral').toLowerCase();
+    var color = impact === 'bullish' ? '#16A34A' : (impact === 'bearish' ? '#DC2626' : '#D97706');
+    return '<div style="padding:10px 0;border-bottom:1px solid #F1F5F9">'
+      + '<div style="font-size:13px;font-weight:600;color:#111827;line-height:1.45">' + (item.headline || 'Market update') + '</div>'
+      + '<div style="display:flex;gap:10px;margin-top:4px;font-size:11px;color:#6B7280">'
+      + '<span style="color:' + color + ';font-weight:700">' + (item.market_impact || 'Neutral') + '</span>'
+      + '<span>' + (item.source || 'Market feed') + '</span>'
+      + '<span>' + formatMarketTimestamp(item.published_at) + '</span>'
+      + '</div></div>';
+  }).join('');
+};
+
+window.renderMarketCurveChart = async function(curveKey) {
+  activeMarketCurve = curveKey || activeMarketCurve || 'brent';
+  var canvas = document.getElementById('market-curve-chart');
+  if (!canvas || typeof Chart === 'undefined') return;
+
+  var data = await apiCall('/market/curves').catch(function() { return null; });
+  var commodityMap = marketCurveCommodityMap();
+  var commodity = commodityMap[activeMarketCurve] || 'Brent';
+  var series = data && data[commodity] ? data[commodity] : null;
+  if (!series || !series.length) {
+    var base = {
+      Brent: [82.4, 82.9, 83.2, 83.6, 84.1, 84.4],
+      WTI: [78.9, 79.2, 79.6, 79.8, 80.1, 80.5],
+      Ethane: [248, 251, 255, 258, 262, 265],
+      Naphtha: [612, 618, 624, 629, 635, 642],
+      EUA: [63.2, 63.8, 64.1, 64.7, 65.0, 65.5]
+    }[commodity] || [80, 81, 82, 83, 84, 85];
+    series = base.map(function(price, idx) {
+      return { tenor: 'M+' + (idx + 1), price: price };
+    });
+  }
+
+  var labels = series.map(function(point) { return point.tenor || point.delivery_month; });
+  var basePrices = series.map(function(point) { return Number(point.price || 0); });
+  var datasets = [{
+    label: 'Base Curve',
+    data: basePrices,
+    borderColor: '#2563EB',
+    backgroundColor: 'rgba(37,99,235,0.12)',
+    fill: true,
+    tension: 0.32,
+    borderWidth: 3,
+    pointRadius: 2
+  }];
+
+  if (marketCurveScenario && marketCurveScenario.commodity === commodity) {
+    labels = marketCurveScenario.original_curve.map(function(point) { return point.tenor; });
+    datasets = [{
+      label: 'Current Curve',
+      data: marketCurveScenario.original_curve.map(function(point) { return Number(point.price || point.original_price || 0); }),
+      borderColor: '#2563EB',
+      backgroundColor: 'rgba(37,99,235,0.10)',
+      fill: false,
+      tension: 0.32,
+      borderWidth: 2,
+      pointRadius: 2
+    }, {
+      label: 'What-if Scenario',
+      data: marketCurveScenario.shifted_curve.map(function(point) { return Number(point.shifted_price || 0); }),
+      borderColor: '#F97316',
+      backgroundColor: 'rgba(249,115,22,0.14)',
+      fill: false,
+      tension: 0.32,
+      borderWidth: 3,
+      pointRadius: 3,
+      borderDash: [6, 4]
+    }];
+  }
+
+  if (marketCurveChartRef) marketCurveChartRef.destroy();
+  marketCurveChartRef = new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: datasets
+    },
+    options: {
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: datasets.length > 1 },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) {
+              return (ctx.dataset.label ? ctx.dataset.label + ': ' : '') + '$' + Number(ctx.raw || 0).toFixed(2);
+            }
+          }
+        }
+      },
+      scales: {
+        x: { grid: { display: false } },
+        y: {
+          grid: { color: '#EEF2F7' },
+          ticks: {
+            callback: function(value) { return '$' + Number(value).toFixed(0); }
+          }
+        }
+      }
+    }
+  });
+};
+
+window.switchMarketCurve = function(curveKey, btn) {
+  activeMarketCurve = curveKey || 'brent';
+  document.querySelectorAll('.curve-selector .curve-btn').forEach(function(node) {
+    node.classList.toggle('active', node === btn);
+  });
+  window.renderMarketCurveChart(activeMarketCurve);
+};
+
 window.applyCurveShift = async function() {
   const input = document.getElementById('curve-shift-input')?.value;
   const result = document.getElementById('curve-shift-result');
   if (!input) return;
   if (result) { result.style.display = 'block'; result.textContent = 'Applying shift...'; }
-  const data = await apiCall('/market/curves/shift', { method:'POST', body: JSON.stringify({ instruction: input }) });
-  if (result) result.textContent = data?.result || 'Shift applied. Estimated P&L impact: +$84K on current positions.';
+  const commodityMap = marketCurveCommodityMap();
+  const commodity = commodityMap[activeMarketCurve] || 'Brent';
+  const data = await apiCall('/market/curves/shift', {
+    method:'POST',
+    body: JSON.stringify({ instruction: input, commodity: commodity })
+  });
+  if (!data) {
+    if (result) result.textContent = 'Could not calculate scenario. Please try a shift like "Brent up 3" or "WTI flatten by 1.5".';
+    return;
+  }
+
+  marketCurveScenario = data;
+  activeMarketCurve = marketCurveKeyForCommodity(data.commodity || commodity);
+  document.querySelectorAll('.curve-selector .curve-btn').forEach(function(node) {
+    var buttonText = String(node.textContent || '').trim().toLowerCase();
+    node.classList.toggle('active', buttonText === activeMarketCurve);
+  });
+  await window.renderMarketCurveChart(activeMarketCurve);
+
+  if (result) {
+    var pnl = Number(data.indicative_pnl_per_1000bbl || 0);
+    var avgDelta = Number(data.avg_price_delta || 0);
+    var structure = String(data.shift_type || 'parallel');
+    result.innerHTML = '<div style="background:#FFF7ED;border:1px solid #FED7AA;border-radius:8px;padding:10px 12px">'
+      + '<div style="font-weight:700;color:#9A3412;margin-bottom:4px">What-if scenario applied to chart</div>'
+      + '<div style="font-size:12px;color:#7C2D12;line-height:1.5">'
+      + (data.result || 'Scenario applied.') + '<br>'
+      + 'Average curve move: <strong>' + (avgDelta >= 0 ? '+' : '') + avgDelta.toFixed(2) + '</strong> USD<br>'
+      + 'Indicative P&amp;L: <strong>' + (pnl >= 0 ? '+' : '') + '$' + Math.abs(pnl).toLocaleString() + '</strong> per 1,000 bbl<br>'
+      + 'Scenario type: <strong>' + structure + '</strong>'
+      + '</div></div>';
+  }
 };
 
 /* ── SCREEN 8: VESSELS & LOGISTICS ── */
@@ -2887,15 +3570,19 @@ window.investigateShortfall = investigateShortfall;
 SCREENS['market'] = async function(main) {
   main.innerHTML = `<div class="screen">
     <div class="screen-header">
-      <div><div class="screen-title">📉 Market Data & Curves</div><div class="screen-subtitle">Live prices · Forward curves · Spread analysis · Curve shifter</div></div>
+      <div><div class="screen-title">📉 Market Data & Curves</div><div class="screen-subtitle">Cached snapshot first · live refresh in background · forward curves · spread analysis</div></div>
       <div class="screen-actions">
-        <button class="btn btn-secondary btn-sm" onclick="loadMarketData()">⟳ Refresh Prices</button>
+        <div style="text-align:right">
+          <div id="market-refresh-status" class="muted small" style="margin-bottom:6px">Loading cached market snapshot...</div>
+          <button class="btn btn-secondary btn-sm" onclick="window.loadMarketData && window.loadMarketData({ forceRefresh: true })">⟳ Refresh Prices</button>
+        </div>
       </div>
     </div>
     <div class="grid-2" style="gap:16px">
       <div>
         <div class="chart-card" style="margin-bottom:14px">
           <div class="chart-title">Live Prices</div>
+          <div id="market-refresh-note" class="muted small" style="margin-bottom:10px">Checking cache health...</div>
           <div id="live-prices-table"><div class="muted small">Loading...</div></div>
         </div>
         <div class="chart-card">
@@ -2907,8 +3594,8 @@ SCREENS['market'] = async function(main) {
           <label class="form-label">Shift instruction</label>
           <input type="text" id="curve-shift-input" placeholder="e.g. Shift Brent prompt up $3..." 
             style="border:1px solid #E5E7EB;border-radius:7px;padding:9px 12px;font-size:13px;width:100%;margin-bottom:8px"
-            onkeydown="if(event.key==='Enter') applyCurveShift()">
-          <button class="btn btn-primary w-full" onclick="applyCurveShift()">Apply Shift & Recalculate</button>
+            onkeydown="if(event.key==='Enter' && window.applyCurveShift){ window.applyCurveShift() }">
+          <button class="btn btn-primary w-full" onclick="window.applyCurveShift && window.applyCurveShift()">Apply Shift & Recalculate</button>
           <div id="curve-shift-result" style="margin-top:10px;font-size:13px;color:#374151"></div>
         </div>
       </div>
@@ -2916,11 +3603,11 @@ SCREENS['market'] = async function(main) {
         <div class="chart-card" style="margin-bottom:14px">
           <div class="chart-title">Forward Curve
             <div class="curve-selector">
-              <button class="curve-btn active" onclick="switchMarketCurve('brent',this)">Brent</button>
-              <button class="curve-btn" onclick="switchMarketCurve('wti',this)">WTI</button>
-              <button class="curve-btn" onclick="switchMarketCurve('ethane',this)">Ethane</button>
-              <button class="curve-btn" onclick="switchMarketCurve('naphtha',this)">Naphtha</button>
-              <button class="curve-btn" onclick="switchMarketCurve('eua',this)">EUA</button>
+              <button class="curve-btn active" onclick="window.switchMarketCurve && window.switchMarketCurve('brent',this)">Brent</button>
+              <button class="curve-btn" onclick="window.switchMarketCurve && window.switchMarketCurve('wti',this)">WTI</button>
+              <button class="curve-btn" onclick="window.switchMarketCurve && window.switchMarketCurve('ethane',this)">Ethane</button>
+              <button class="curve-btn" onclick="window.switchMarketCurve && window.switchMarketCurve('naphtha',this)">Naphtha</button>
+              <button class="curve-btn" onclick="window.switchMarketCurve && window.switchMarketCurve('eua',this)">EUA</button>
             </div>
           </div>
           <div style="height:220px"><canvas id="market-curve-chart"></canvas></div>
@@ -3064,7 +3751,7 @@ SCREENS['configuration'] = async function(main) {
           <div>
             <div style="font-size:14px;font-weight:700;color:#f1f5f9">AI Model Connections</div>
             <div style="font-size:12px;color:#64748b;margin-top:2px">
-              Local LM Studio or OpenAI-compatible endpoints. Switch active model in the header toggle.
+              Configure both External LLMs like Claude and local endpoints like LM Studio or Ollama, then test each connection here.
             </div>
           </div>
           <button class="btn btn-primary btn-sm" onclick="openAddFeedModal('ai_model')">+ Add AI Model</button>
@@ -3141,7 +3828,7 @@ window.openAddFeedModal = function(type) {
   var providerOpts = {
     news: ['RSS Feed','NewsAPI','MarketWatch RSS','Reuters RSS','Bloomberg RSS','OilPrice RSS','Custom'],
     market_data: ['Yahoo Finance (free)','AlphaVantage','Bloomberg B-PIPE','Platts/Argus','ICE','Custom'],
-    ai_model: ['LM Studio','Ollama','Custom OpenAI-compatible'],
+    ai_model: ['Claude API (External)','LM Studio','Ollama','Custom OpenAI-compatible'],
     etrm: ['RightAngle','Endur/Allegro','SAP','Custom']
   };
   var hints = {
@@ -3152,6 +3839,7 @@ window.openAddFeedModal = function(type) {
     'MarketWatch RSS': 'URL: https://feeds.marketwatch.com/marketwatch/topstories',
     'Reuters RSS': 'URL: https://www.reutersagency.com/feed/?best-topics=energy',
     'OilPrice RSS': 'URL: https://oilprice.com/rss/main',
+    'Claude API (External)': 'Uses your saved connector key or ANTHROPIC_API_KEY from .env',
     'LM Studio': 'URL: http://127.0.0.1:1234/v1 — no key needed',
   };
   var titleMap = {news:'Add News Feed', market_data:'Add Market Data Source', ai_model:'Add AI Model', etrm:'Add ETRM Connection'};
@@ -3168,6 +3856,7 @@ window.openAddFeedModal = function(type) {
       'MarketWatch RSS': 'https://feeds.marketwatch.com/marketwatch/topstories',
       'Reuters RSS': 'https://www.reutersagency.com/feed/?best-topics=energy',
       'OilPrice RSS': 'https://oilprice.com/rss/main',
+      'Claude API (External)': 'https://api.anthropic.com',
       'LM Studio': 'http://127.0.0.1:1234/v1',
       'NewsAPI': 'https://newsapi.org/v2/everything',
       'AlphaVantage': 'https://www.alphavantage.co/query',
@@ -3194,7 +3883,7 @@ window.saveNewFeed = async function() {
     'RSS Feed': 'rss', 'MarketWatch RSS': 'MarketWatch', 'Reuters RSS': 'Reuters',
     'OilPrice RSS': 'OilPrice', 'Bloomberg RSS': 'Bloomberg',
     'NewsAPI': 'NewsAPI', 'AlphaVantage': 'AlphaVantage',
-    'Yahoo Finance (free)': 'Yahoo', 'LM Studio': 'LMStudio',
+    'Yahoo Finance (free)': 'Yahoo', 'Claude API (External)': 'Anthropic', 'LM Studio': 'LMStudio',
     'Ollama': 'Ollama', 'Custom OpenAI-compatible': 'Custom',
     'RightAngle': 'RightAngle', 'Endur/Allegro': 'Endur',
   };
@@ -3239,11 +3928,14 @@ function _renderConnectorCard(c) {
   // Article count hint for news
   var extraInfo = '';
   var statusLabel = c.last_status || 'Not Tested';
+  if ((c.provider || '').toLowerCase() === 'anthropic') {
+    extraInfo += '<div style="font-size:11px;color:#94a3b8;margin-top:4px">Uses saved connector key or falls back to ANTHROPIC_API_KEY from .env.</div>';
+  }
   if (statusLabel.startsWith('OK —')) { extraInfo = '<div style="font-size:11px;color:#16a34a;margin-top:4px">' + statusLabel.replace('OK — ','✓ ') + '</div>'; statusLabel = 'OK'; }
 
   // Show API key input for providers that need it
   var keyRow = '';
-  if (['newsapi','alphavantage','bloomberg'].includes((c.provider||'').toLowerCase())) {
+  if (['newsapi','alphavantage','bloomberg','anthropic','claude','custom'].includes((c.provider||'').toLowerCase())) {
     keyRow = '<div style="display:flex;gap:6px;margin-top:8px">'
       + '<input id="key-' + c.id + '" type="password" class="form-input" style="flex:1;font-size:12px;padding:4px 8px" placeholder="' + (c.api_key ? '•••••••• (saved)' : 'Enter API key') + '">'
       + '<button class="btn btn-secondary btn-sm" style="font-size:11px" onclick="saveFeedKey(' + c.id + ')">Save Key</button>'
@@ -3321,10 +4013,15 @@ window.testFeed = async function(id) {
   var btn = document.getElementById('test-' + id);
   if (btn) { btn.textContent='⟳'; btn.disabled=true; }
   try {
-    await fetch('/api/configuration/connectors/' + id + '/test', {
+    var r = await fetch('/api/configuration/connectors/' + id + '/test', {
       method:'POST', headers:{'Authorization':'Bearer '+token}
     });
+    var data = await r.json();
+    if (!r.ok) throw new Error(data?.message || 'Connector test failed');
     loadAllConnectors();
+    if (typeof showToast === 'function') {
+      showToast('Connector Test', data?.message || data?.status || 'Test complete', (data?.status || '').toLowerCase() === 'ok' ? 'success' : 'info');
+    }
   } catch(e) {
     if (btn) { btn.textContent='⚡ Test'; btn.disabled=false; }
     alert('Test failed: ' + e.message);
@@ -3340,5 +4037,3 @@ window.deleteFeed = async function(id) {
   if (r.ok) loadAllConnectors();
   else alert('Delete failed');
 };
-
-

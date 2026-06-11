@@ -2,10 +2,12 @@
 Configuration API routes for market watch setup.
 """
 import json
+import os
 from datetime import datetime
 
 import requests
 from fastapi import APIRouter, Depends, HTTPException, Query
+from dotenv import load_dotenv
 from sqlalchemy.orm import Session
 
 from api.auth import get_current_user
@@ -23,6 +25,7 @@ from database.db import get_db
 from database.models import ExternalConnector
 
 router = APIRouter()
+load_dotenv()
 
 
 DEMO_CONNECTORS = [
@@ -67,6 +70,13 @@ DEMO_CONNECTORS = [
         "provider": "LMStudio",
         "host_url": "http://127.0.0.1:1234/v1",
         "last_status": "Not tested",
+    },
+    {
+        "name": "Claude API (External)",
+        "connector_type": "ai_model",
+        "provider": "Anthropic",
+        "host_url": "https://api.anthropic.com",
+        "last_status": "Uses ANTHROPIC_API_KEY or saved key",
     },
 ]
 
@@ -143,6 +153,27 @@ def _run_connector_test(connector: ExternalConnector) -> tuple[str, str | None]:
     host_url = (connector.host_url or "").rstrip("/")
     provider = (connector.provider or "").lower()
     api_key = connector.api_key or ""
+
+    if connector.connector_type == "ai_model" and provider in {"anthropic", "claude"}:
+        effective_key = api_key or os.getenv("ANTHROPIC_API_KEY", "").strip()
+        if not effective_key or effective_key.startswith("your_") or effective_key.startswith("sk-placeholder"):
+            return "API key required", "Set ANTHROPIC_API_KEY in .env or save a Claude API key on this connector"
+        try:
+            import anthropic
+
+            model = os.getenv("ANTHROPIC_MODEL", "claude-sonnet-4-6")
+            client = anthropic.Anthropic(api_key=effective_key)
+            response = client.messages.create(
+                model=model,
+                max_tokens=24,
+                messages=[{"role": "user", "content": "Reply with exactly: CONNECTED"}],
+            )
+            reply = ""
+            if getattr(response, "content", None):
+                reply = getattr(response.content[0], "text", "") or ""
+            return "OK", f"Claude connected · model {model} · reply: {reply or 'CONNECTED'}"
+        except Exception as exc:
+            return "Error", str(exc)[:180]
 
     # ── AI Model (LM Studio / OpenAI-compatible) ──────────────────────────────
     if connector.connector_type == "ai_model":

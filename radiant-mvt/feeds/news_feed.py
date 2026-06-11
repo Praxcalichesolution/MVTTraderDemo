@@ -12,6 +12,7 @@ import httpx
 from sqlalchemy import text
 
 from database.db import SessionLocal
+from database.models import News
 
 logger = logging.getLogger(__name__)
 
@@ -68,20 +69,23 @@ async def fetch_and_store_news():
         seed_news_if_empty(db)
         articles = _fetch_from_rss() or _fetch_from_api() or _generate_simulated()
         for article in articles[:10]:
-            result = db.execute(
-                text("""
-                    INSERT INTO news
-                        (headline, source, url, published_at, summary, body,
-                         sentiment_score, commodities_tagged, regions_tagged,
-                         market_impact, relevance_score, ingested_at)
-                    VALUES
-                        (:headline, :source, :url, :published_at, :summary, :body,
-                         :sentiment_score, :commodities_tagged, :regions_tagged,
-                         :market_impact, :relevance_score, :ingested_at)
-                """),
-                article,
+            news_item = News(
+                headline=article.get("headline"),
+                source=article.get("source"),
+                url=article.get("url"),
+                published_at=article.get("published_at"),
+                summary=article.get("summary"),
+                body=article.get("body"),
+                sentiment_score=article.get("sentiment_score"),
+                commodities_tagged=article.get("commodities_tagged"),
+                regions_tagged=article.get("regions_tagged"),
+                market_impact=article.get("market_impact"),
+                relevance_score=article.get("relevance_score"),
+                ingested_at=article.get("ingested_at"),
             )
-            inserted_ids.append(result.lastrowid)
+            db.add(news_item)
+            db.flush()
+            inserted_ids.append(news_item.id)
         db.commit()
         logger.info("[news_feed] Inserted %d articles.", len(inserted_ids))
 
@@ -107,16 +111,7 @@ def seed_news_if_empty(db=None) -> int:
             return 0
         inserted = 0
         for article in _seed_articles():
-            db.execute(text("""
-                INSERT INTO news
-                    (headline, source, url, published_at, summary, body,
-                     sentiment_score, commodities_tagged, regions_tagged,
-                     counterparties_tagged, market_impact, relevance_score, ingested_at)
-                VALUES
-                    (:headline, :source, :url, :published_at, :summary, :body,
-                     :sentiment_score, :commodities_tagged, :regions_tagged,
-                     :counterparties_tagged, :market_impact, :relevance_score, :ingested_at)
-            """), article)
+            db.add(News(**article))
             inserted += 1
         db.commit()
         logger.info("[news_feed] Seeded %d news items.", inserted)
