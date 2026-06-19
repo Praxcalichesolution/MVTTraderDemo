@@ -14,7 +14,6 @@ try:
 except Exception:
     pass
 
-import os
 import anthropic
 from typing import AsyncGenerator
 from dotenv import load_dotenv
@@ -33,31 +32,36 @@ def get_client():
     return anthropic.Anthropic(api_key=api_key, http_client=http_client)
 
 
-async def generate_claude(system_prompt: str, user_prompt: str, stream: bool = True) -> AsyncGenerator[str, None]:
+async def generate_claude(
+    system_prompt: str,
+    user_prompt: str,
+    stream: bool = True,
+    model: str | None = None,
+    max_tokens: int = 1500,
+    temperature: float | None = None,
+) -> AsyncGenerator[str, None]:
     client = get_client()
     if not client:
         yield "[Claude API key not configured]"
         return
+    target_model = model or MODEL
+    base_payload = {
+        "model": target_model,
+        "max_tokens": max_tokens,
+        "system": system_prompt,
+        "messages": [{"role": "user", "content": user_prompt}],
+    }
+    if temperature is not None:
+        base_payload["temperature"] = temperature
     try:
         # Try streaming first
         try:
-            with client.messages.stream(
-                model=MODEL,
-                max_tokens=1500,
-                system=system_prompt,
-                messages=[{"role": "user", "content": user_prompt}]
-            ) as s:
+            with client.messages.stream(**base_payload) as s:
                 for text in s.text_stream:
                     yield text
         except AttributeError:
             # Fallback for older anthropic versions - use create with stream=True
-            response = client.messages.create(
-                model=MODEL,
-                max_tokens=1500,
-                system=system_prompt,
-                messages=[{"role": "user", "content": user_prompt}],
-                stream=True
-            )
+            response = client.messages.create(**{**base_payload, "stream": True})
             for event in response:
                 if hasattr(event, 'delta') and hasattr(event.delta, 'text'):
                     yield event.delta.text

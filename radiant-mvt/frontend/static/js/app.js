@@ -2,15 +2,94 @@
    Radiant-MVT™ — app.js  Main Application Controller
    ============================================================ */
 
-// API always on port 8000 regardless of which port the frontend is served from
-const API_BASE = window.location.origin + '/api';
-let authToken = localStorage.getItem('radiant_token');
-let currentRole = localStorage.getItem('radiant_role') || 'trader';
-let currentScreen = 'decision-queue';
-let aiProvider = localStorage.getItem('radiant_ai_provider') || 'local';
+const APP_CONFIG = window.__APP_MODE__ || {};
+const APP_ID = APP_CONFIG.id || 'trader';
+const API_BASE = APP_CONFIG.api_base || 'http://localhost:8000/api';
+const STORAGE_PREFIX = APP_CONFIG.storage_prefix || `radiant_${APP_ID}`;
+const STORAGE_KEYS = {
+  token: `${STORAGE_PREFIX}_token`,
+  role: `${STORAGE_PREFIX}_role`,
+  user: `${STORAGE_PREFIX}_user`,
+  aiProvider: `${STORAGE_PREFIX}_ai_provider`,
+  theme: `${STORAGE_PREFIX}_theme`,
+  navCollapsed: `${STORAGE_PREFIX}_nav_collapsed`,
+  mpCollapsed: `${STORAGE_PREFIX}_mp_collapsed`,
+  dashboardLayout: `${STORAGE_PREFIX}_dashboard_layout_v2`
+};
+
+function storageGet(key) {
+  return localStorage.getItem(key);
+}
+
+function storageSet(key, value) {
+  localStorage.setItem(key, value);
+}
+
+function storageRemove(key) {
+  localStorage.removeItem(key);
+}
+
+const THEME_STORAGE_KEY = STORAGE_KEYS.theme;
+let authToken = storageGet(STORAGE_KEYS.token);
+let currentRole = storageGet(STORAGE_KEYS.role) || ((APP_CONFIG.allowed_roles || [])[0] || 'trader');
+let currentScreen = APP_CONFIG.default_screen || 'decision-queue';
+let aiProvider = storageGet(STORAGE_KEYS.aiProvider) || 'local';
+let currentTheme = storageGet(THEME_STORAGE_KEY) === 'dark' ? 'dark' : 'light';
 let copilotOpen = false;
 let priceUpdateInterval = null;
 let tickerData = {};
+let selectedEntityContext = null;
+let appGuideCache = null;
+let docsSelectedScreen = APP_CONFIG.default_screen || 'decision-queue';
+let docsNavigationTarget = null;
+
+const SCREEN_DISPLAY_NAMES = {
+  'decision-queue': 'Decision Queue',
+  'dashboard': 'Dashboard',
+  'positions': 'Positions & Risk',
+  'ai': 'AI Intelligence',
+  'performance': 'Performance & Analytics',
+  'decision-intelligence': 'Decision Intelligence',
+  'market': 'Market Data & Curves',
+  'vessels': 'Vessels & Logistics',
+  'comms': 'Communications Hub',
+  'compliance': 'Compliance & Audit',
+  'documentation': 'Help Center',
+  'ai-studio': 'AI Studio',
+  'configuration': 'External Systems Configuration',
+  'boardroom': 'Boardroom View',
+  'admin': 'Admin / Demo Control'
+};
+
+Object.entries(APP_CONFIG.screen_meta || {}).forEach(([key, meta]) => {
+  if (meta && meta.label) SCREEN_DISPLAY_NAMES[key] = meta.label;
+});
+
+const DOCUMENTATION_GROUPS = APP_CONFIG.documentation_groups || [
+  { key: 'trading', label: 'Trading Workspace', screens: ['decision-queue', 'dashboard', 'positions'] },
+  { key: 'intelligence', label: 'AI & Analytics', screens: ['ai', 'performance', 'decision-intelligence'] },
+  { key: 'operations', label: 'Operations', screens: ['market', 'vessels', 'comms', 'compliance'] },
+  { key: 'platform', label: 'Platform Tools', screens: ['documentation', 'ai-studio', 'configuration'] },
+  { key: 'leadership', label: 'Leadership & Admin', screens: ['boardroom', 'admin'] }
+];
+
+const PAGE_HELP_PROMPTS = {
+  'decision-queue': 'Explain how to work through the Decision Queue and what to do first.',
+  'dashboard': 'Explain what this dashboard is showing and what I should look at first.',
+  'positions': 'Explain how to use the Positions & Risk screen and where the biggest exposure is.',
+  'ai': 'Explain the AI Intelligence screen and which tools I can run from here.',
+  'performance': 'Explain the Performance & Analytics page and how to investigate shortfall.',
+  'decision-intelligence': 'Explain the Decision Intelligence page and how to use forensics and Desk Brain.',
+  'market': 'Explain the Market Data & Curves page and how to run a curve scenario.',
+  'vessels': 'Explain the Vessels & Logistics page and how delays affect trading decisions.',
+  'comms': 'Explain the Communications Hub and how to work through priority emails.',
+  'compliance': 'Explain the Compliance & Audit page and what the key controls are.',
+  'documentation': 'Explain how to use the Help Center workspace.',
+  'ai-studio': 'Explain the AI Studio page and how to manage agents safely.',
+  'configuration': 'Explain the connector configuration page and how to test integrations.',
+  'boardroom': 'Explain the Boardroom view and what executives should focus on.',
+  'admin': 'Explain the Admin / Demo Control page and what scenarios I can run.'
+};
 
 const TICKER_LABELS = {
   trader:    ['Alpha Captured','Leakage Prevented','Risks Flagged','Book Currency'],
@@ -29,6 +108,9 @@ const CONCIERGE_CONTEXT = {
   'vessels':          { text: 'JS Ineos Innovation <strong>14h delayed</strong> at Rafnes. Cargo impact on hedge position flagged.', actions: ['View Impact','Options'] },
   'comms':            { text: '<strong>8 emails</strong> need action. Vitol confirmation outstanding — draft reply ready to send.', actions: ['Priority Inbox','Send Drafts'] },
   'compliance':       { text: 'All regulatory filings <strong>up to date</strong>. Next EMIR deadline in 3 days.', actions: ['View Status','EMIR Filing'] },
+  'documentation':    { text: 'Browse the Help Center, jump to any screen, and let Radiant AI perform supported tasks for you.', actions: ['Open Screen','Ask AI'] },
+  'ai-studio':        { text: 'Control prompts, model settings, user context, and agent guardrails from one enterprise AI workspace.', actions: ['Test Chat Copilot','Review Profiles'] },
+  'configuration':    { text: 'Manage external feeds, AI providers, and ETRM connectors from one control centre.', actions: ['Load Connectors','Test Connector'] },
   'boardroom':        { text: 'Desk P&L tracking at <strong>82% of annual target</strong>. Top-quartile uplift potential: $38.4M.', actions: ['Executive Summary','Drill Down'] },
   'admin':            { text: 'System healthy. All feeds active. <strong>6 demo scenarios</strong> available.', actions: ['Run Scenario','System Check'] }
 };
@@ -44,9 +126,117 @@ const COPILOT_SUGGESTIONS = {
   'vessels':          ["Will Innovation delay affect my hedge?","What's my ethane exposure today?","Voyage economics for Hermod"],
   'comms':            ["Draft reply to Vitol","Summarise my inbox","What needs action today?"],
   'compliance':       ["Am I EMIR compliant?","When is my next filing?","Show audit trail"],
+  'documentation':    ["Show me where connectors are configured","How do I use the Decision Queue?","Open the Help Center"],
+  'ai-studio':        ["What context does Chat Copilot see?","Test the Daily Briefing agent","How should I tune this prompt safely?"],
+  'configuration':    ["Show me connector health","Test the LM Studio connector","Where do I update API keys?"],
   'boardroom':        ["Executive summary for board","Top-quartile analysis","Compare books"],
   'admin':            ["Trigger Urals scenario","Test AI connection","Show system status"]
 };
+
+if (APP_ID === 'risk') {
+  PAGE_HELP_PROMPTS['dashboard'] = 'Explain the risk dashboard, the key limit signals, and where oversight attention is needed first.';
+  PAGE_HELP_PROMPTS['ai'] = 'Explain the AI Intelligence screen from a risk oversight perspective.';
+  PAGE_HELP_PROMPTS['compliance'] = 'Explain the Compliance & Audit page and the highest-priority controls for the risk team.';
+  CONCIERGE_CONTEXT['dashboard'] = { text: '<strong>Desk VaR</strong> is running at 62% of limit. Two exposure concentrations need review before the morning control call.', actions: ['Top Exposure','Open Controls'] };
+  CONCIERGE_CONTEXT['positions'] = { text: 'Largest concentration remains <strong>Crude long $214M</strong>. Hedge coverage and board-limit headroom are both within tolerance.', actions: ['Stress Desk','Hedge Review'] };
+  CONCIERGE_CONTEXT['market'] = { text: '<strong>Spread moves</strong> in Brent, Urals, and EUA are driving today\'s risk sensitivity changes.', actions: ['Curve Analysis','View Drivers'] };
+  CONCIERGE_CONTEXT['ai'] = { text: 'Radiant AI has surfaced <strong>two control insights</strong> and <strong>one concentration anomaly</strong> since 06:00.', actions: ['Review Alerts','Run Scenario'] };
+  CONCIERGE_CONTEXT['compliance'] = { text: 'All core filings are <strong>on track</strong>. One audit trail exception needs same-day review.', actions: ['View Status','Audit Trail'] };
+  COPILOT_SUGGESTIONS['dashboard'] = ['What is the biggest limit risk right now?','Summarize desk exposures','Which control should I review first?'];
+  COPILOT_SUGGESTIONS['ai'] = ['What concentration anomalies did you find?','Show me the top control insight','Run a stress review'];
+  COPILOT_SUGGESTIONS['compliance'] = ['Show today\'s exceptions','What filings are due next?','Open the audit trail'];
+}
+
+function getAllowedScreens() {
+  return Array.isArray(APP_CONFIG.allowed_screens) ? APP_CONFIG.allowed_screens : [];
+}
+
+function getAppMode() {
+  return APP_CONFIG;
+}
+
+function currentAppId() {
+  return APP_ID;
+}
+
+function isScreenAllowed(screen) {
+  return getAllowedScreens().includes(screen);
+}
+
+function resolveScreen(screen) {
+  if (isScreenAllowed(screen)) return screen;
+  if (APP_CONFIG.screen_fallbacks && APP_CONFIG.screen_fallbacks[screen]) return APP_CONFIG.screen_fallbacks[screen];
+  return APP_CONFIG.default_screen || 'decision-queue';
+}
+
+function roleAllowsItem(item) {
+  return !item.roles || item.roles.includes(currentRole);
+}
+
+function getNavItemDescriptor(entry) {
+  const key = typeof entry === 'string' ? entry : entry.screen;
+  const meta = (APP_CONFIG.screen_meta || {})[key] || {};
+  return {
+    key,
+    label: meta.label || SCREEN_DISPLAY_NAMES[key] || key,
+    icon: meta.icon || '',
+    roles: typeof entry === 'string' ? null : (entry.roles || null)
+  };
+}
+
+function renderNav() {
+  const nav = document.getElementById('nav-inner');
+  if (!nav) return;
+  const sections = Array.isArray(APP_CONFIG.nav_sections) ? APP_CONFIG.nav_sections : [];
+  let html = sections.map(section => {
+    const items = (section.items || [])
+      .map(getNavItemDescriptor)
+      .filter(item => item && isScreenAllowed(item.key) && roleAllowsItem(item));
+    if (!items.length) return '';
+    return `
+      <div class="nav-section">${escapeHtml(section.label)}</div>
+      ${items.map(item => `
+        <a class="nav-item" data-screen="${escapeHtml(item.key)}" onclick="navigateTo('${item.key}')">
+          <span class="ni">${escapeHtml(item.icon || '')}</span><span class="nl">${escapeHtml(item.label)}</span>
+        </a>
+      `).join('')}
+    `;
+  }).join('');
+  if (!html.trim()) {
+    const fallbackItems = getAllowedScreens()
+      .map(key => getNavItemDescriptor(key))
+      .filter(item => item && roleAllowsItem(item));
+    html = fallbackItems.length ? `
+      <div class="nav-section">${escapeHtml(APP_CONFIG.primary_nav_heading || 'Workspace')}</div>
+      ${fallbackItems.map(item => `
+        <a class="nav-item" data-screen="${escapeHtml(item.key)}" onclick="navigateTo('${item.key}')">
+          <span class="ni">${escapeHtml(item.icon || '')}</span><span class="nl">${escapeHtml(item.label)}</span>
+        </a>
+      `).join('')}
+    ` : '';
+  }
+  nav.innerHTML = html;
+}
+
+function applyAppBranding() {
+  const fallbackTitle = APP_ID === 'risk' ? 'Radiant - Risk' : 'Radiant - Trader';
+  document.title = APP_CONFIG.browser_title || APP_CONFIG.title || fallbackTitle;
+  document.getElementById('login-brand').textContent = APP_CONFIG.title || fallbackTitle;
+  document.getElementById('topbar-brand').textContent = APP_CONFIG.title || fallbackTitle;
+  document.getElementById('login-tagline').innerHTML = escapeHtml(APP_CONFIG.tagline || 'Decision intelligence workspace');
+  document.getElementById('login-btn').textContent = APP_CONFIG.login_button || 'Sign In';
+  document.getElementById('login-email').value = APP_CONFIG.login_default_email || '';
+  document.getElementById('login-password').value = APP_CONFIG.login_default_password || '';
+  document.getElementById('login-hint').innerHTML = `<code>${escapeHtml(APP_CONFIG.login_hint || '')}</code>`;
+  document.getElementById('nav-ver').textContent = `${APP_CONFIG.title || fallbackTitle} v2.1`;
+  document.body.dataset.app = APP_ID;
+  (APP_CONFIG.topbar_kpis || []).forEach((kpi, index) => {
+    const labelEl = document.getElementById(`tb-kpi-label-${index + 1}`);
+    if (labelEl) labelEl.textContent = kpi.label || labelEl.textContent;
+    const kpiCard = document.getElementById(`tb-kpi-${index + 1}`);
+    if (kpiCard && kpi.screen) kpiCard.setAttribute('onclick', `navigateTo('${kpi.screen}')`);
+  });
+}
 
 /* ── API Helper ── */
 async function apiCall(endpoint, options = {}) {
@@ -74,35 +264,263 @@ async function apiCall(endpoint, options = {}) {
 /* ── Auth ── */
 async function login(email, password) {
   try {
-    const response = await fetch(`${API_BASE}/auth/login`, { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({email, password}) });
+    const response = await fetch(`${API_BASE}/auth/login`, {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({email, password, app: APP_ID})
+    });
     if (!response.ok) throw new Error('Invalid credentials');
     const data = await response.json();
     authToken = data.access_token;
-    localStorage.setItem('radiant_token', authToken);
+    storageSet(STORAGE_KEYS.token, authToken);
     let me = null;
     try { me = await apiCall('/auth/me'); } catch(e) {}
     if (me) {
-      currentRole = me.role || 'trader';
-      localStorage.setItem('radiant_role', currentRole);
-      localStorage.setItem('radiant_user', JSON.stringify(me));
+      if (Array.isArray(me.allowed_apps) && !me.allowed_apps.includes(APP_ID)) {
+        throw new Error(`This account cannot access the ${APP_ID} workspace`);
+      }
+      currentRole = me.role || currentRole;
+      storageSet(STORAGE_KEYS.role, currentRole);
+      storageSet(STORAGE_KEYS.user, JSON.stringify(me));
     }
     return true;
   } catch (e) {
+    console.warn('Login failed', e.message);
     return false;
   }
 }
 
 function logout() {
   authToken = null;
-  localStorage.removeItem('radiant_token');
-  localStorage.removeItem('radiant_role');
-  localStorage.removeItem('radiant_user');
+  storageRemove(STORAGE_KEYS.token);
+  storageRemove(STORAGE_KEYS.role);
+  storageRemove(STORAGE_KEYS.user);
   window.location.hash = '';
   showLoginScreen();
 }
 
 function getCurrentUser() {
-  try { return JSON.parse(localStorage.getItem('radiant_user') || '{}'); } catch { return {}; }
+  try { return JSON.parse(storageGet(STORAGE_KEYS.user) || '{}'); } catch { return {}; }
+}
+
+function countdownStr(deadline) {
+  const target = new Date(deadline);
+  const diffMs = target.getTime() - Date.now();
+  if (Number.isNaN(target.getTime())) return '—';
+  if (diffMs <= 0) return 'due';
+  const totalMinutes = Math.floor(diffMs / 60000);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  if (hours <= 0) return `${minutes}m`;
+  return `${hours}h ${minutes}m`;
+}
+
+function setSelectedEntity(entity) {
+  selectedEntityContext = entity && entity.type ? entity : null;
+}
+
+function getSelectedEntity() {
+  return selectedEntityContext;
+}
+
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function escapeJsArg(value) {
+  return JSON.stringify(String(value ?? '')).replace(/"/g, '&quot;');
+}
+
+function screenDisplayName(screenKey) {
+  return SCREEN_DISPLAY_NAMES[screenKey] || screenKey || 'this page';
+}
+
+function getScreenHelpPrompt(screenKey) {
+  return PAGE_HELP_PROMPTS[screenKey] || `Explain the ${screenDisplayName(screenKey)} page and how to use it.`;
+}
+
+async function loadAppGuide(force = false) {
+  if (appGuideCache && !force) return appGuideCache;
+  let guide = await apiCall('/chat/app-guide');
+  if (!guide || !Array.isArray(guide.screens) || guide.screens.length === 0) {
+    try {
+      const response = await fetch(`/static/data/app-guide.json?v=1781034000`, { cache: 'no-store' });
+      if (response.ok) {
+        guide = await response.json();
+      }
+    } catch (err) {
+      console.warn('App guide fallback load failed', err);
+    }
+  }
+  if (!guide || !Array.isArray(guide.screens) || guide.screens.length === 0) {
+    appGuideCache = {
+      overview: 'Radiant-MVT brings trading, intelligence, operations, and admin workflows into one AI-assisted workspace.',
+      screens: DOCUMENTATION_GROUPS.flatMap(group => group.screens.map(key => ({
+        key,
+        title: screenDisplayName(key),
+        summary: `Help Center content for ${screenDisplayName(key)} is temporarily unavailable.`,
+        features: ['Reconnect to the guide service or refresh the app to load full Help Center content.'],
+        tasks: ['Open the screen and use the Help button for page-level guidance.'],
+        sections: []
+      }))),
+      byKey: {}
+    };
+    appGuideCache.byKey = Object.fromEntries(appGuideCache.screens.map(screen => [screen.key, screen]));
+    return appGuideCache;
+  }
+  const screens = Array.isArray(guide.screens) ? guide.screens : [];
+  const byKey = Object.fromEntries(screens.map(screen => [screen.key, screen]));
+  appGuideCache = { ...guide, screens, byKey };
+  return appGuideCache;
+}
+
+function getManualScreen(screenKey) {
+  const guide = appGuideCache || { screens: [], byKey: {} };
+  return guide.byKey?.[screenKey] || guide.screens.find(screen => screen.key === screenKey) || null;
+}
+
+function getDocumentationGroupsData() {
+  const guide = appGuideCache || { screens: [], byKey: {} };
+  const byKey = guide.byKey || Object.fromEntries((guide.screens || []).map(screen => [screen.key, screen]));
+  return DOCUMENTATION_GROUPS.map(group => ({
+    ...group,
+    items: group.screens.map(key => byKey[key]).filter(item => item && isScreenAllowed(item.key))
+  })).filter(group => group.items.length > 0);
+}
+
+function setDocumentationFocus(screenKey) {
+  if (screenKey) docsSelectedScreen = resolveScreen(screenKey);
+  docsNavigationTarget = resolveScreen(docsSelectedScreen || currentScreen || APP_CONFIG.default_screen || 'decision-queue');
+  if (currentScreen === 'documentation' && typeof window.renderDocumentationScreen === 'function') {
+    window.renderDocumentationScreen(docsNavigationTarget);
+    scheduleScreenEnhancements('documentation');
+    docsNavigationTarget = null;
+    return;
+  }
+  navigateTo('documentation');
+}
+
+function promptCopilotForTask(screenKey, taskLabel) {
+  const manual = getManualScreen(screenKey);
+  const prompt = manual
+    ? `Take me to ${manual.title} and help me ${taskLabel.toLowerCase()}. If this can be done in the app, do it for me.`
+    : `Help me ${taskLabel.toLowerCase()}. If this can be done in the app, do it for me.`;
+  openCopilot();
+  sendCopilotMessage(prompt);
+}
+
+function closePageHelp() {
+  document.getElementById('page-help-modal')?.remove();
+}
+
+async function openPageHelp(screenKey = currentScreen) {
+  await loadAppGuide();
+  const manual = getManualScreen(screenKey) || getManualScreen(currentScreen);
+  if (!manual) {
+    showToast('Help', 'Help Center content is not available for this screen yet.', 'warning');
+    return;
+  }
+
+  closePageHelp();
+
+  const modal = document.createElement('div');
+  modal.id = 'page-help-modal';
+  const manualKeyArg = escapeJsArg(manual.key);
+  const explainPromptArg = escapeJsArg(getScreenHelpPrompt(manual.key));
+  const features = (manual.features || []).map(item => `<li>${escapeHtml(item)}</li>`).join('');
+  const tasks = (manual.tasks || []).map(task => `
+    <div class="page-help-task">
+      <div class="page-help-task-copy">
+        <div class="page-help-task-title">${escapeHtml(task)}</div>
+        <div class="page-help-task-meta">Radiant AI can guide you here or perform supported actions directly.</div>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="promptCopilotForTask(${manualKeyArg}, ${escapeJsArg(task)})">Ask AI</button>
+    </div>
+  `).join('');
+  modal.innerHTML = `
+    <div class="page-help-backdrop" onclick="closePageHelp()"></div>
+    <div class="page-help-card" role="dialog" aria-modal="true" aria-label="${escapeHtml(manual.title)} help">
+      <div class="page-help-header">
+        <div>
+          <div class="page-help-eyebrow">Page Help</div>
+          <div class="page-help-title">${escapeHtml(manual.title)}</div>
+          <div class="page-help-summary">${escapeHtml(manual.summary || '')}</div>
+        </div>
+        <button class="page-help-close" onclick="closePageHelp()">×</button>
+      </div>
+      <div class="page-help-body">
+        <div class="page-help-section">
+          <div class="page-help-section-title">What this page does</div>
+          <ul class="page-help-list">${features || '<li>Help Center content for this page is loading.</li>'}</ul>
+        </div>
+        <div class="page-help-section">
+          <div class="page-help-section-title">Common things you can ask Radiant AI to do</div>
+          <div class="page-help-task-list">${tasks || '<div class="secondary small">Ask Radiant AI how to use this page.</div>'}</div>
+        </div>
+      </div>
+      <div class="page-help-actions">
+        <button class="btn btn-secondary btn-sm" onclick="closePageHelp(); setDocumentationFocus(${manualKeyArg})">Open Help Center</button>
+        <button class="btn btn-secondary btn-sm" onclick="closePageHelp(); openCopilot(); sendCopilotMessage(${explainPromptArg})">Explain in Chat</button>
+        <button class="btn btn-primary btn-sm" onclick="closePageHelp()">Close</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+}
+
+function ensurePageHelpButton(screenKey) {
+  const header = document.querySelector('#main .screen .screen-header');
+  if (!header) return;
+  let actions = header.querySelector('.screen-actions');
+  if (!actions) {
+    actions = document.createElement('div');
+    actions.className = 'screen-actions';
+    header.appendChild(actions);
+  }
+  let helpBtn = actions.querySelector('.page-help-btn');
+  if (!helpBtn) {
+    helpBtn = document.createElement('button');
+    helpBtn.className = 'btn btn-secondary btn-sm page-help-btn';
+    actions.appendChild(helpBtn);
+  }
+  helpBtn.type = 'button';
+  helpBtn.innerHTML = '<span class="page-help-btn-icon">?</span><span>Help</span>';
+  helpBtn.title = `Explain ${screenDisplayName(screenKey)}`;
+  helpBtn.onclick = () => openPageHelp(screenKey);
+}
+
+function decorateAssistableActions() {
+  const root = document.getElementById('main');
+  if (!root) return;
+  root.querySelectorAll('button.btn, .email-row, .comms-action-row, .scenario-btn, .agent-card, .connector-card, [onclick]').forEach(node => {
+    if (!(node instanceof HTMLElement)) return;
+    if (node.classList.contains('page-help-btn')) return;
+    if (node.dataset.agentDecorated === '1') return;
+    if (node.closest('#page-help-modal')) return;
+    if (node.closest('.help-center-screen') && !node.closest('.docs-action-card')) return;
+    const text = (node.textContent || '').trim().toLowerCase();
+    if (!text || text === '×' || text === 'x') return;
+    node.dataset.agentDecorated = '1';
+    node.classList.add('agent-assistable');
+    if (!node.getAttribute('title')) {
+      node.setAttribute('title', 'Radiant AI can help with this action');
+    }
+  });
+}
+
+function scheduleScreenEnhancements(screenKey) {
+  [60, 260, 900].forEach(delay => {
+    window.setTimeout(() => {
+      if (currentScreen !== screenKey) return;
+      ensurePageHelpButton(screenKey);
+      decorateAssistableActions();
+    }, delay);
+  });
 }
 
 /* ── Toast ── */
@@ -119,6 +537,16 @@ function showToast(title, msg, type = 'info', duration = 4000) {
 
 /* ── Routing ── */
 function navigateTo(screen) {
+  screen = resolveScreen(screen);
+  const previousScreen = currentScreen;
+  if (screen === 'documentation') {
+    if (docsNavigationTarget) {
+      docsSelectedScreen = docsNavigationTarget;
+      docsNavigationTarget = null;
+    } else if (previousScreen && previousScreen !== 'documentation') {
+      docsSelectedScreen = resolveScreen(previousScreen);
+    }
+  }
   currentScreen = screen;
   window.location.hash = screen;
   document.querySelectorAll('.nav-item').forEach(el => {
@@ -130,11 +558,20 @@ function navigateTo(screen) {
 }
 
 function loadScreen(screen) {
+  screen = resolveScreen(screen);
   const main = document.getElementById('main');
   if (!main) return;
   main.innerHTML = `<div class="flex-center" style="height:200px"><span class="loading-spinner"></span></div>`;
   const fn = SCREENS[screen];
-  if (fn) fn(main);
+  if (fn) {
+    Promise.resolve(fn(main))
+      .catch(err => {
+        console.warn('Screen render failed', screen, err);
+        main.innerHTML = `<div class="screen"><div class="screen-header"><div class="screen-title">Unable to load ${escapeHtml(screenDisplayName(screen))}</div></div><div class="card">Please try again.</div></div>`;
+      })
+      .finally(() => scheduleScreenEnhancements(screen));
+    return;
+  }
   else main.innerHTML = `<div class="screen"><div class="screen-header"><div class="screen-title">404 — Screen not found</div></div></div>`;
 }
 
@@ -154,16 +591,9 @@ function updateCopilotContext(screen) {
   const banner = document.getElementById('copilot-context-banner');
   const suggestionsEl = document.getElementById('copilot-suggestions');
   if (banner) {
-    const screenNames = {
-      'decision-queue': 'Decision Queue', 'dashboard': 'Dashboard',
-      'positions': 'Positions & Risk', 'ai': 'AI Intelligence',
-      'performance': 'Performance', 'decision-intelligence': 'Decision Intel',
-      'market': 'Market Data', 'vessels': 'Vessels',
-      'comms': 'Communications', 'compliance': 'Compliance',
-      'boardroom': 'Boardroom', 'admin': 'Admin'
-    };
-    const name = screenNames[screen] || screen;
-    banner.innerHTML = `You're viewing <strong>${name}</strong>. Ask me anything about your positions, market, or decisions.`;
+    const name = screenDisplayName(screen);
+    const workspaceLabel = APP_CONFIG.title || 'Radiant';
+    banner.innerHTML = `You're viewing <strong>${name}</strong> in <strong>${workspaceLabel}</strong>. Ask me anything about your positions, market, decisions, or controls.`;
   }
   if (suggestionsEl) {
     const suggs = COPILOT_SUGGESTIONS[screen] || [];
@@ -260,7 +690,14 @@ async function sendCopilotMessage(text) {
     const response = await fetch(`${API_BASE}/chat/message`, {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: text, screen_context: currentScreen, provider: aiProvider })
+      body: JSON.stringify({
+        message: text,
+        screen_context: currentScreen,
+        provider: aiProvider,
+        selected_entity_type: selectedEntityContext?.type || null,
+        selected_entity_id: selectedEntityContext?.id || null,
+        selected_entity_label: selectedEntityContext?.label || null
+      })
     });
     if (!response.ok) throw new Error('Chat error');
     const msgs = document.getElementById('copilot-messages');
@@ -351,19 +788,89 @@ function getDemoAIText(endpoint) {
 }
 
 /* ── Chart.js defaults ── */
+function getThemeVar(name) {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+
+function updateThemeToggleUI() {
+  const toggle = document.getElementById('theme-toggle');
+  const label = document.getElementById('theme-toggle-label');
+  if (!toggle || !label) return;
+  const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
+  const nextLabel = nextTheme === 'dark' ? 'Dark mode' : 'Light mode';
+  label.textContent = nextLabel;
+  toggle.title = `Switch to ${nextLabel.toLowerCase()}`;
+  toggle.setAttribute('aria-label', `Switch to ${nextLabel.toLowerCase()}`);
+}
+
+function syncChartTheme() {
+  if (typeof Chart === 'undefined') return;
+  const chartText = getThemeVar('--chart-text') || '#94A3B8';
+  const chartGrid = getThemeVar('--chart-grid') || '#F1F5F9';
+  const charts = new Set();
+
+  document.querySelectorAll('canvas').forEach(canvas => {
+    const chart =
+      (typeof Chart.getChart === 'function' ? Chart.getChart(canvas) : null) ||
+      canvas._chartInstance ||
+      canvas._phChart;
+    if (chart) charts.add(chart);
+  });
+
+  charts.forEach(chart => {
+    chart.options = chart.options || {};
+    chart.options.plugins = chart.options.plugins || {};
+    if (chart.options.plugins.legend && chart.options.plugins.legend.labels) {
+      chart.options.plugins.legend.labels.color = chartText;
+    }
+    if (chart.options.plugins.tooltip) {
+      chart.options.plugins.tooltip.backgroundColor = getThemeVar('--chart-tooltip-bg') || '#111827';
+      chart.options.plugins.tooltip.borderColor = getThemeVar('--chart-tooltip-border') || '#2A3F60';
+      chart.options.plugins.tooltip.titleColor = getThemeVar('--chart-tooltip-title') || '#E8EDF5';
+      chart.options.plugins.tooltip.bodyColor = getThemeVar('--chart-tooltip-body') || '#8A9BB5';
+    }
+    if (chart.options.scales) {
+      Object.values(chart.options.scales).forEach(scale => {
+        if (!scale) return;
+        if (scale.grid) scale.grid.color = chartGrid;
+        if (scale.ticks) scale.ticks.color = chartText;
+        if (scale.border) scale.border.color = chartGrid;
+      });
+    }
+    chart.update('none');
+  });
+}
+
+function applyTheme(theme, persist = true) {
+  currentTheme = theme === 'dark' ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', currentTheme);
+  if (persist) {
+    storageSet(THEME_STORAGE_KEY, currentTheme);
+  }
+  updateThemeToggleUI();
+  applyChartDefaults();
+  syncChartTheme();
+}
+
+function toggleTheme() {
+  const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
+  applyTheme(nextTheme);
+  showToast('Theme', `${nextTheme === 'dark' ? 'Dark' : 'Light'} mode enabled`, 'success', 2200);
+}
+
 function applyChartDefaults() {
   if (typeof Chart === 'undefined') return;
-  Chart.defaults.color = '#8A9BB5';
-  Chart.defaults.borderColor = '#1E2D45';
-  Chart.defaults.font.family = "'Inter', sans-serif";
+  Chart.defaults.color = getThemeVar('--chart-text') || '#8A9BB5';
+  Chart.defaults.borderColor = getThemeVar('--chart-grid') || '#1E2D45';
+  Chart.defaults.font.family = getThemeVar('--font') || "'Inter', sans-serif";
   Chart.defaults.font.size = 11;
-  Chart.defaults.plugins.legend.labels.color = '#8A9BB5';
+  Chart.defaults.plugins.legend.labels.color = getThemeVar('--chart-text') || '#8A9BB5';
   Chart.defaults.plugins.legend.labels.boxWidth = 10;
-  Chart.defaults.plugins.tooltip.backgroundColor = '#111827';
-  Chart.defaults.plugins.tooltip.borderColor = '#2A3F60';
+  Chart.defaults.plugins.tooltip.backgroundColor = getThemeVar('--chart-tooltip-bg') || '#111827';
+  Chart.defaults.plugins.tooltip.borderColor = getThemeVar('--chart-tooltip-border') || '#2A3F60';
   Chart.defaults.plugins.tooltip.borderWidth = 1;
-  Chart.defaults.plugins.tooltip.titleColor = '#E8EDF5';
-  Chart.defaults.plugins.tooltip.bodyColor = '#8A9BB5';
+  Chart.defaults.plugins.tooltip.titleColor = getThemeVar('--chart-tooltip-title') || '#E8EDF5';
+  Chart.defaults.plugins.tooltip.bodyColor = getThemeVar('--chart-tooltip-body') || '#8A9BB5';
 }
 
 /* ── Number animation ── */
@@ -395,20 +902,21 @@ function initApp() {
   if (!authToken) { showLoginScreen(); return; }
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app-shell').style.display = 'grid';
+  applyAppBranding();
+  renderNav();
   applyChartDefaults();
   const user = getCurrentUser();
   const nameEl = document.getElementById('user-name-display');
   const roleEl = document.getElementById('user-role-display');
   const avatarEl = document.getElementById('user-avatar');
-  if (nameEl) nameEl.textContent = user.full_name || user.username || 'Trader';
+  if (nameEl) nameEl.textContent = user.full_name || user.username || (APP_ID === 'risk' ? 'Risk Analyst' : 'Trader');
   if (roleEl) roleEl.textContent = user.role || currentRole;
   if (avatarEl) avatarEl.textContent = (user.full_name || 'T').charAt(0).toUpperCase();
-  applyRoleVisibility();
   initTicker();
   priceUpdateInterval = setInterval(refreshTicker, 60000);
   populateMarketPanel();
   setInterval(populateMarketPanel, 60000);
-  const hash = window.location.hash.replace('#', '') || 'decision-queue';
+  const hash = resolveScreen(window.location.hash.replace('#', '') || APP_CONFIG.default_screen || 'decision-queue');
   navigateTo(hash);
   updateConciergeBar(hash);
   // Sync AI provider from backend (non-blocking)
@@ -933,7 +1441,7 @@ window.timeAgo = timeAgo;
 const SCREENS = {};
 
 window.addEventListener('hashchange', () => {
-  const screen = window.location.hash.replace('#', '');
+  const screen = resolveScreen(window.location.hash.replace('#', ''));
   if (screen && SCREENS[screen]) { currentScreen = screen; loadScreen(screen); updateConciergeBar(screen); updateCopilotContext(screen); document.querySelectorAll('.nav-item').forEach(el => el.classList.toggle('active', el.dataset.screen === screen)); }
 });
 
@@ -941,7 +1449,7 @@ function toggleNav() {
   const shell = document.getElementById('app-shell');
   if (!shell) return;
   const collapsed = shell.classList.toggle('nav-collapsed');
-  localStorage.setItem('nav_collapsed', collapsed ? '1' : '0');
+  storageSet(STORAGE_KEYS.navCollapsed, collapsed ? '1' : '0');
 }
 
 function toggleMarketPanel() {
@@ -952,16 +1460,19 @@ function toggleMarketPanel() {
   const collapsed = shell.classList.toggle('mp-collapsed');
   if (tab) tab.style.display = collapsed ? 'block' : 'none';
   if (btn) btn.textContent = collapsed ? '◀' : '▶';
-  localStorage.setItem('mp_collapsed', collapsed ? '1' : '0');
+  storageSet(STORAGE_KEYS.mpCollapsed, collapsed ? '1' : '0');
 }
 window.toggleMarketPanel = toggleMarketPanel;
 
 window.addEventListener('DOMContentLoaded', () => {
+  applyAppBranding();
+  renderNav();
+  applyTheme(currentTheme, false);
   // Restore collapsed states before login check so grid is correct after initApp
-  if (localStorage.getItem('nav_collapsed') === '1') {
+  if (storageGet(STORAGE_KEYS.navCollapsed) === '1') {
     document.getElementById('app-shell')?.classList.add('nav-collapsed');
   }
-  if (localStorage.getItem('mp_collapsed') === '1') {
+  if (storageGet(STORAGE_KEYS.mpCollapsed) === '1') {
     document.getElementById('app-shell')?.classList.add('mp-collapsed');
     const tab = document.getElementById('market-tab');
     if (tab) tab.style.display = 'block';
@@ -973,6 +1484,7 @@ window.addEventListener('DOMContentLoaded', () => {
 function showLoginScreen() {
   const ls = document.getElementById('login-screen');
   const shell = document.getElementById('app-shell');
+  applyAppBranding();
   if (ls) ls.style.display = 'flex';
   if (shell) shell.style.display = 'none';
 }
@@ -987,11 +1499,37 @@ window.showToast = showToast;
 window.streamToElement = streamToElement;
 window.toggleNav = toggleNav;
 window.animateNumber = animateNumber;
+window.countdownStr = countdownStr;
+window.setSelectedEntity = setSelectedEntity;
+window.getSelectedEntity = getSelectedEntity;
+window.loadAppGuide = loadAppGuide;
+window.getManualScreen = getManualScreen;
+window.getDocumentationGroupsData = getDocumentationGroupsData;
+window.setDocumentationFocus = setDocumentationFocus;
+window.openDocumentationScreen = setDocumentationFocus;
+window.getDocumentationSelectedScreen = () => docsSelectedScreen;
+window.setDocumentationSelectedScreen = (screenKey) => { docsSelectedScreen = screenKey || docsSelectedScreen; };
+window.promptCopilotForTask = promptCopilotForTask;
+window.openPageHelp = openPageHelp;
+window.closePageHelp = closePageHelp;
+window.screenDisplayName = screenDisplayName;
+window.escapeHtml = escapeHtml;
+window.escapeJsArg = escapeJsArg;
+window.PAGE_HELP_PROMPTS = PAGE_HELP_PROMPTS;
+window.SCREEN_DISPLAY_NAMES = SCREEN_DISPLAY_NAMES;
+window.COPILOT_SUGGESTIONS = COPILOT_SUGGESTIONS;
 window.SCREENS = SCREENS;
 window.API_BASE = API_BASE;
 window.authToken = () => authToken;
 window.currentRole = () => currentRole;
+window.currentAppId = currentAppId;
+window.getAppMode = getAppMode;
+window.appStorageGet = storageGet;
+window.appStorageSet = storageSet;
+window.appStorageKeys = STORAGE_KEYS;
 window.aiProvider = () => aiProvider;
+window.toggleTheme = toggleTheme;
+window.currentTheme = () => currentTheme;
 
 /* ── AI Provider Toggle ─────────────────────────────────────────── */
 function applyProviderUI(provider) {
@@ -1017,7 +1555,7 @@ window.switchAIProvider = async function(provider) {
   try {
     await apiCall(`/ai/switch/${provider}`, { method: 'POST' });
     aiProvider = provider;
-    localStorage.setItem('radiant_ai_provider', provider);
+    storageSet(STORAGE_KEYS.aiProvider, provider);
     applyProviderUI(provider);
 
     // Test connection after switch
@@ -1044,7 +1582,7 @@ async function syncAIProviderFromBackend() {
     const data = await apiCall('/ai/provider').catch(() => null);
     if (data && data.provider && data.provider !== aiProvider) {
       aiProvider = data.provider;
-      localStorage.setItem('radiant_ai_provider', aiProvider);
+      storageSet(STORAGE_KEYS.aiProvider, aiProvider);
       applyProviderUI(aiProvider);
     }
   } catch(e) { /* ignore */ }
@@ -1794,6 +2332,165 @@ function inlineMarkdown(text) {
     .replace(/</g, (m, offset, str) => str[offset+1] === '/' || /^<[a-z]/.test(str.slice(offset)) ? m : '&lt;');
 }
 
+function copilotDelay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function copilotCurveKeyForCommodity(commodity) {
+  const map = { Brent: 'brent', WTI: 'wti', Urals: 'brent', Ethane: 'ethane', Naphtha: 'naphtha', EUA: 'eua', HH: 'brent' };
+  return map[commodity] || 'brent';
+}
+
+async function ensureCopilotScreen(screen) {
+  if (!screen) return;
+  if (currentScreen !== screen) {
+    navigateTo(screen);
+    await copilotDelay(220);
+  } else {
+    await copilotDelay(120);
+  }
+}
+
+async function executeCopilotAction(action) {
+  if (!action || !action.id) return;
+  const params = action.params || {};
+
+  switch (action.id) {
+    case 'navigate':
+      await ensureCopilotScreen(params.screen);
+      break;
+    case 'generate_decision_briefing':
+      await ensureCopilotScreen('decision-queue');
+      window.generateDecisionBriefing && await window.generateDecisionBriefing();
+      break;
+    case 'load_market_data':
+      await ensureCopilotScreen('market');
+      window.loadMarketData && await window.loadMarketData({ forceRefresh: !!params.force_refresh });
+      break;
+    case 'switch_market_curve': {
+      await ensureCopilotScreen('market');
+      const commodity = params.commodity || 'Brent';
+      const curveKey = copilotCurveKeyForCommodity(commodity);
+      const btn = Array.from(document.querySelectorAll('.curve-selector .curve-btn')).find(node =>
+        String(node.textContent || '').trim().toLowerCase() === curveKey
+      );
+      if (window.switchMarketCurve) window.switchMarketCurve(curveKey, btn || null);
+      break;
+    }
+    case 'apply_curve_shift': {
+      await ensureCopilotScreen('market');
+      if (params.commodity && window.switchMarketCurve) {
+        const curveKey = copilotCurveKeyForCommodity(params.commodity);
+        const btn = Array.from(document.querySelectorAll('.curve-selector .curve-btn')).find(node =>
+          String(node.textContent || '').trim().toLowerCase() === curveKey
+        );
+        window.switchMarketCurve(curveKey, btn || null);
+        await copilotDelay(80);
+      }
+      const input = document.getElementById('curve-shift-input');
+      if (input) input.value = params.instruction || '';
+      window.applyCurveShift && await window.applyCurveShift();
+      break;
+    }
+    case 'run_hedge_advisor':
+      await ensureCopilotScreen('ai');
+      if (params.position) {
+        const select = document.getElementById('hedge-position');
+        if (select) select.value = params.position;
+      }
+      window.runHedgeAdvisor && await window.runHedgeAdvisor();
+      break;
+    case 'run_pre_mortem':
+      await ensureCopilotScreen('ai');
+      window.runPreMortem && await window.runPreMortem();
+      break;
+    case 'generate_forecast_narrative':
+      await ensureCopilotScreen('ai');
+      if (params.commodity) {
+        const select = document.getElementById('forecast-commodity');
+        if (select) select.value = params.commodity;
+      }
+      window.renderForecastChart && window.renderForecastChart();
+      window.generateForecastNarrative && await window.generateForecastNarrative();
+      break;
+    case 'run_forensics':
+      await ensureCopilotScreen('decision-intelligence');
+      window.runForensics && await window.runForensics();
+      break;
+    case 'run_desk_brain':
+      await ensureCopilotScreen('decision-intelligence');
+      if (params.query) {
+        const input = document.getElementById('desk-brain-query');
+        if (input) input.value = params.query;
+      }
+      window.runDeskBrain && await window.runDeskBrain();
+      break;
+    case 'open_email':
+      await ensureCopilotScreen('comms');
+      window.openEmail && window.openEmail(Number(params.email_id));
+      break;
+    case 'send_email_reply':
+      await ensureCopilotScreen('comms');
+      window.openEmail && window.openEmail(Number(params.email_id));
+      await copilotDelay(80);
+      window.sendEmailReply && window.sendEmailReply(Number(params.email_id));
+      break;
+    case 'mark_email_actioned':
+      await ensureCopilotScreen('comms');
+      window.openEmail && window.openEmail(Number(params.email_id));
+      await copilotDelay(80);
+      window.markEmailActioned && await window.markEmailActioned(Number(params.email_id));
+      break;
+    case 'complete_decision':
+      await ensureCopilotScreen('decision-queue');
+      await apiCall(`/decisions/${Number(params.decision_id)}/complete`, { method: 'POST', body: '{}' });
+      window.loadDecisionQueue && await window.loadDecisionQueue();
+      showToast('Decision Updated', 'Decision marked complete.', 'success');
+      break;
+    case 'snooze_decision':
+      await ensureCopilotScreen('decision-queue');
+      await apiCall(`/decisions/${Number(params.decision_id)}/snooze?minutes=${Number(params.minutes || 30)}`, { method: 'POST', body: '{}' });
+      window.loadDecisionQueue && await window.loadDecisionQueue();
+      showToast('Decision Updated', `Decision snoozed for ${Number(params.minutes || 30)} minutes.`, 'success');
+      break;
+    case 'acknowledge_alert':
+      await apiCall(`/alerts/${Number(params.alert_id)}/acknowledge`, { method: 'POST', body: '{}' });
+      showToast('Alert Updated', 'Alert acknowledged.', 'success');
+      break;
+    case 'resolve_alert':
+      await apiCall(`/alerts/${Number(params.alert_id)}/resolve`, { method: 'POST', body: '{}' });
+      showToast('Alert Updated', 'Alert resolved.', 'success');
+      break;
+    case 'test_connector':
+      await ensureCopilotScreen('configuration');
+      window.loadAllConnectors && await window.loadAllConnectors();
+      await copilotDelay(100);
+      window.testFeed && await window.testFeed(Number(params.connector_id));
+      break;
+    case 'switch_ai_provider':
+      window.switchAIProvider && await window.switchAIProvider(params.provider || 'local');
+      break;
+    case 'trigger_scenario':
+      await ensureCopilotScreen('admin');
+      window.triggerScenario && await window.triggerScenario(params.scenario_key, params.scenario_name || params.scenario_key);
+      break;
+    default:
+      console.warn('Unknown copilot action', action);
+  }
+}
+
+window.executeCopilotPlan = async function(plan) {
+  const actions = Array.isArray(plan?.actions) ? plan.actions : [];
+  for (const action of actions) {
+    try {
+      await executeCopilotAction(action);
+    } catch (err) {
+      console.warn('Copilot action failed', action, err);
+      showToast('Copilot Action', `Unable to complete "${action.label || action.id}".`, 'warning');
+    }
+  }
+};
+
 // Override appendCopilotMessage to render markdown
 const _origAppendCopilotMsg = window.appendCopilotMessage;
 window.appendCopilotMessage = function(role, text) {
@@ -1837,7 +2534,13 @@ window.sendCopilotMessage = async function(text) {
     const response = await fetch(`${API_BASE}/chat/message`, {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: text, screen_context: currentScreen })
+      body: JSON.stringify({
+        message: text,
+        screen_context: currentScreen,
+        selected_entity_type: selectedEntityContext?.type || null,
+        selected_entity_id: selectedEntityContext?.id || null,
+        selected_entity_label: selectedEntityContext?.label || null
+      })
     });
     typingDiv.remove();
     if (!response.ok) throw new Error(`Chat error ${response.status}`);
@@ -1849,6 +2552,7 @@ window.sendCopilotMessage = async function(text) {
     bubble.className = 'cp-bubble';
     responseDiv.appendChild(bubble);
     msgs?.appendChild(responseDiv);
+    let copilotPlan = null;
 
     if (contentType.includes('event-stream')) {
       const reader = response.body.getReader();
@@ -1867,6 +2571,7 @@ window.sendCopilotMessage = async function(text) {
             if (d && d !== '[DONE]') {
               try {
                 const j = JSON.parse(d);
+                if (j.copilot) { copilotPlan = j.copilot; continue; }
                 if (j.done) { bubble.innerHTML = renderMarkdown(accumulated); break; }
                 accumulated += j.chunk || j.content || j.text || '';
                 // Stream as plain text, render markdown on completion
@@ -1879,10 +2584,16 @@ window.sendCopilotMessage = async function(text) {
       }
       // Final markdown render
       bubble.innerHTML = renderMarkdown(accumulated);
+      if (copilotPlan?.actions?.length) {
+        await window.executeCopilotPlan(copilotPlan);
+      }
     } else {
       const data = await response.json();
       const txt = data.response || data.message || 'Response received.';
       bubble.innerHTML = renderMarkdown(txt);
+      if (data.copilot?.actions?.length) {
+        await window.executeCopilotPlan(data.copilot);
+      }
     }
     msgs && (msgs.scrollTop = msgs.scrollHeight);
   } catch(e) {

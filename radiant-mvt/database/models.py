@@ -4,7 +4,7 @@ All 18 tables matching schema.sql exactly.
 """
 from sqlalchemy.types import REAL as Real
 from sqlalchemy import (
-    Column, Integer, Text, Boolean, ForeignKey,
+    Column, Integer, Text, Boolean, ForeignKey, String,
     CheckConstraint, Index, DateTime, Date
 )
 from sqlalchemy.orm import relationship
@@ -329,6 +329,10 @@ class ChatHistory(Base):
     role = Column(Text, nullable=False)
     content = Column(Text, nullable=False)
     screen_context = Column(Text)
+    selected_entity_type = Column(Text)
+    selected_entity_id = Column(Text)
+    selected_entity_label = Column(Text)
+    agent_key = Column(Text)
     sources_cited = Column(Text)
     timestamp = Column(DateTime, server_default=func.now())
 
@@ -340,6 +344,102 @@ class ChatHistory(Base):
 
     def __repr__(self):
         return f"<ChatHistory id={self.id} user_id={self.user_id} role={self.role}>"
+
+
+class AIAgentDefinition(Base):
+    __tablename__ = "ai_agent_definitions"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    agent_key = Column(String(120), unique=True, nullable=False)
+    name = Column(Text, nullable=False)
+    description = Column(Text)
+    category = Column(Text, default="general")
+    purpose = Column(Text)
+    instructions = Column(Text)
+    system_prompt_template = Column(Text, nullable=False)
+    user_prompt_template = Column(Text)
+    model_provider = Column(Text, default="claude")
+    model_name = Column(Text, default="claude-sonnet-4-6")
+    temperature = Column(Real, default=0.2)
+    max_tokens = Column(Integer, default=1400)
+    provider_settings = Column(Text)
+    allowed_tools = Column(Text)
+    allowed_screens = Column(Text)
+    output_format = Column(Text, default="narrative")
+    response_style = Column(Text)
+    is_active = Column(Integer, default=1)
+    is_chat_default = Column(Integer, default=0)
+    version = Column(Integer, default=1)
+    created_by_user_id = Column(Integer, ForeignKey("users.id"))
+    updated_by_user_id = Column(Integer, ForeignKey("users.id"))
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
+    def __repr__(self):
+        return f"<AIAgentDefinition id={self.id} key={self.agent_key} version={self.version}>"
+
+
+class AIAgentVersion(Base):
+    __tablename__ = "ai_agent_versions"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    agent_id = Column(Integer, ForeignKey("ai_agent_definitions.id"), nullable=False)
+    version_number = Column(Integer, nullable=False)
+    change_summary = Column(Text)
+    snapshot_json = Column(Text, nullable=False)
+    changed_by_user_id = Column(Integer, ForeignKey("users.id"))
+    created_at = Column(DateTime, server_default=func.now())
+
+    def __repr__(self):
+        return f"<AIAgentVersion agent_id={self.agent_id} version={self.version_number}>"
+
+
+class AIUserContextProfile(Base):
+    __tablename__ = "ai_user_context_profiles"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id"), unique=True, nullable=False)
+    role_profile = Column(Text)
+    desk_team = Column(Text)
+    industries_covered = Column(Text)
+    commodities_covered = Column(Text)
+    regions_covered = Column(Text)
+    preferred_answer_style = Column(Text)
+    risk_appetite = Column(Text)
+    review_posture = Column(Text)
+    default_focus_areas = Column(Text)
+    analyst_preferences = Column(Text)
+    persistent_notes = Column(Text)
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
+    def __repr__(self):
+        return f"<AIUserContextProfile user_id={self.user_id}>"
+
+
+class AISessionMemory(Base):
+    __tablename__ = "ai_session_memory"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    session_id = Column(String(255), nullable=False)
+    last_screen = Column(Text)
+    selected_entity_type = Column(Text)
+    selected_entity_id = Column(Text)
+    selected_entity_label = Column(Text)
+    memory_summary = Column(Text)
+    recent_user_goal = Column(Text)
+    last_agent_key = Column(Text)
+    last_message_at = Column(DateTime)
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
+    __table_args__ = (
+        Index("idx_ai_session_memory_user_session", "user_id", "session_id", unique=True),
+    )
+
+    def __repr__(self):
+        return f"<AISessionMemory user_id={self.user_id} session_id={self.session_id}>"
 
 
 class DeskDecision(Base):

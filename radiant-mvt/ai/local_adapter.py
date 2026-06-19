@@ -15,6 +15,8 @@ async def generate_local(
     stream: bool = True,
     base_url: Optional[str] = None,
     model: Optional[str] = None,
+    temperature: float = 0.3,
+    max_tokens: int = 1024,
 ) -> AsyncGenerator[str, None]:
     """OpenAI-compatible endpoint for LM Studio"""
     url = (base_url or _DEFAULT_URL).rstrip("/")
@@ -27,9 +29,9 @@ async def generate_local(
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_prompt},
                 ],
-                "max_tokens": 1024,
+                "max_tokens": max_tokens,
                 "stream": stream,
-                "temperature": 0.3,
+                "temperature": temperature,
             }
             if stream:
                 async with client.stream("POST", f"{url}/chat/completions", json=payload) as resp:

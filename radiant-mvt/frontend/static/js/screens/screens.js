@@ -3,6 +3,15 @@
    ============================================================ */
 
 /* ── SCREEN 1: DECISION QUEUE ── */
+const SCREEN_APP_MODE = window.getAppMode ? window.getAppMode() : {};
+const SCREEN_APP_ID = window.currentAppId ? window.currentAppId() : 'trader';
+const SCREEN_STORAGE_KEYS = window.appStorageKeys || { dashboardLayout: 'radiant_dashboard_layout_v2', aiProvider: 'radiant_ai_provider', token: 'radiant_token' };
+
+function readAppToken() {
+  const liveToken = typeof authToken === 'function' ? authToken() : authToken;
+  return liveToken || (window.appStorageGet ? window.appStorageGet(SCREEN_STORAGE_KEYS.token) : localStorage.getItem('radiant_token')) || '';
+}
+
 SCREENS['decision-queue'] = async function(main) {
   const now = new Date();
   const timeStr = now.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
@@ -107,6 +116,7 @@ function renderDecisionCard(d, i) {
 }
 
 window.handleDecisionAction = function(id, action) {
+  if (typeof setSelectedEntity === 'function') setSelectedEntity({ type: 'decision', id: String(id), label: `Decision ${id}` });
   showToast('Action', `Decision ${id}: "${action}" — opening details...`, 'info');
   if (action.toLowerCase().includes('review') || action.toLowerCase().includes('see')) openCopilot();
 };
@@ -121,6 +131,7 @@ window.generateDecisionBriefing = async function() {
 };
 
 window.showDecisionReasoning = async function(decisionId, title) {
+  if (typeof setSelectedEntity === 'function') setSelectedEntity({ type: 'decision', id: String(decisionId), label: title });
   // Remove any existing modal
   const existing = document.getElementById('reasoning-modal');
   if (existing) existing.remove();
@@ -158,13 +169,13 @@ window.showDecisionReasoning = async function(decisionId, title) {
   window._refreshReasoning = async () => {
     await fetch('/api/decisions/' + decisionId + '/refresh-reasoning', {
       method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + ((typeof authToken === 'function' ? authToken() : authToken) || localStorage.getItem('radiant_token') || '') }
+      headers: { 'Authorization': 'Bearer ' + readAppToken() }
     });
     showDecisionReasoning(decisionId, title);
   };
 
   try {
-    const token = (typeof authToken === 'function' ? authToken() : authToken) || localStorage.getItem('radiant_token') || '';
+    const token = readAppToken();
     const response = await fetch(`/api/decisions/${decisionId}/reasoning`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
@@ -214,7 +225,7 @@ window.showDecisionReasoning = async function(decisionId, title) {
 };
 
 /* ── SCREEN 2: DASHBOARD ── */
-const DASHBOARD_LAYOUT_KEY = 'radiant_dashboard_layout_v2';
+const DASHBOARD_LAYOUT_KEY = SCREEN_STORAGE_KEYS.dashboardLayout || 'radiant_dashboard_layout_v2';
 const DASHBOARD_TILE_ORDER = ['kpis','book-pnl','top-performer','intraday','heatmaps','alerts','news','blotter'];
 const DASHBOARD_TILE_META = {
   'kpis': { label: 'KPI Strip', span: 12 },
@@ -245,7 +256,7 @@ function normalizeDashboardLayout(state) {
 
 function getDashboardLayoutState() {
   try {
-    return normalizeDashboardLayout(JSON.parse(localStorage.getItem(DASHBOARD_LAYOUT_KEY) || '{}'));
+    return normalizeDashboardLayout(JSON.parse((window.appStorageGet ? window.appStorageGet(DASHBOARD_LAYOUT_KEY) : localStorage.getItem(DASHBOARD_LAYOUT_KEY)) || '{}'));
   } catch (e) {
     return normalizeDashboardLayout({});
   }
@@ -253,7 +264,8 @@ function getDashboardLayoutState() {
 
 function saveDashboardLayoutState(state) {
   var normalized = normalizeDashboardLayout(state);
-  localStorage.setItem(DASHBOARD_LAYOUT_KEY, JSON.stringify(normalized));
+  if (window.appStorageSet) window.appStorageSet(DASHBOARD_LAYOUT_KEY, JSON.stringify(normalized));
+  else localStorage.setItem(DASHBOARD_LAYOUT_KEY, JSON.stringify(normalized));
   return normalized;
 }
 
@@ -270,18 +282,18 @@ function getDashboardTileBody(id) {
       + '<div style="font-size:22px;font-weight:800;letter-spacing:-.5px">+$47.3M</div>'
       + '<div style="font-size:11px;opacity:.8;margin-top:2px">&#9650; 94% of $50M budget</div>'
       + '</div>'
-      + '<div style="background:white;border:1px solid #E5E7EB;border-radius:10px;padding:12px 14px">'
-      + '<div style="font-size:10px;color:#6B7280;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">VaR Utilisation</div>'
+      + '<div style="background:var(--dashboard-kpi-neutral-bg);border:1px solid var(--dashboard-kpi-neutral-border);border-radius:10px;padding:12px 14px">'
+      + '<div style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">VaR Utilisation</div>'
       + '<div style="font-size:22px;font-weight:800;color:#D97706;letter-spacing:-.5px" id="kpi-var-util">62%</div>'
       + '<div style="background:#FEF3C7;border-radius:4px;height:5px;margin-top:6px"><div id="kpi-var-bar" style="background:#D97706;height:5px;border-radius:4px;width:62%"></div></div>'
       + '</div>'
-      + '<div style="background:white;border:1px solid #E5E7EB;border-radius:10px;padding:12px 14px">'
-      + '<div style="font-size:10px;color:#6B7280;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Open Positions</div>'
-      + '<div style="font-size:22px;font-weight:800;color:#374151;letter-spacing:-.5px" id="kpi-open-positions">6</div>'
-      + '<div style="font-size:11px;color:#6B7280;margin-top:2px" id="kpi-active-books">Across 4 active books</div>'
+      + '<div style="background:var(--dashboard-kpi-neutral-bg);border:1px solid var(--dashboard-kpi-neutral-border);border-radius:10px;padding:12px 14px">'
+      + '<div style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Open Positions</div>'
+      + '<div style="font-size:22px;font-weight:800;color:var(--text2);letter-spacing:-.5px" id="kpi-open-positions">6</div>'
+      + '<div style="font-size:11px;color:var(--muted);margin-top:2px" id="kpi-active-books">Across 4 active books</div>'
       + '</div>'
-      + '<div style="background:white;border:1px solid #E5E7EB;border-radius:10px;padding:12px 14px">'
-      + '<div style="font-size:10px;color:#6B7280;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Active Decisions</div>'
+      + '<div style="background:var(--dashboard-kpi-neutral-bg);border:1px solid var(--dashboard-kpi-neutral-border);border-radius:10px;padding:12px 14px">'
+      + '<div style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Active Decisions</div>'
       + '<div style="font-size:22px;font-weight:800;color:#DC2626;letter-spacing:-.5px" id="kpi-active-alerts">3</div>'
       + '<div style="font-size:11px;color:#DC2626;margin-top:2px">Open AI alerts</div>'
       + '</div>'
@@ -290,26 +302,26 @@ function getDashboardTileBody(id) {
   if (id === 'book-pnl') {
     return '<div class="card" style="padding:14px;height:100%">'
       + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">'
-      + '<span style="font-size:13px;font-weight:700;color:#374151">Book P&amp;L</span>'
+      + '<span style="font-size:13px;font-weight:700;color:var(--text2)">Book P&amp;L</span>'
       + '<span class="badge badge-info" id="dash-pnl-time">Today</span>'
       + '</div>'
       + '<div style="font-size:32px;font-weight:800;color:#16A34A;letter-spacing:-1px;margin:6px 0 2px" id="total-pnl-val">+$2.1M</div>'
-      + '<div style="font-size:11px;color:#6B7280;margin-bottom:12px">Updated from current open positions</div>'
+      + '<div style="font-size:11px;color:var(--muted);margin-bottom:12px">Updated from current open positions</div>'
       + '<div id="book-cards"></div>'
       + '</div>';
   }
   if (id === 'top-performer') {
-    return '<div class="card" style="padding:12px;background:linear-gradient(135deg,#F0F7FF,#EFF6FF);height:100%">'
+    return '<div class="card" style="padding:12px;background:var(--dashboard-top-performer-bg);height:100%">'
       + '<div style="font-size:11px;font-weight:700;color:#1e40af;margin-bottom:8px">&#127942; Top Performer Today</div>'
-      + '<div style="font-size:15px;font-weight:700;color:#111827">Crude &amp; Condensate</div>'
+      + '<div style="font-size:15px;font-weight:700;color:var(--text)">Crude &amp; Condensate</div>'
       + '<div style="font-size:22px;font-weight:800;color:#16A34A;margin:3px 0">+$1.24M</div>'
-      + '<div style="font-size:11px;color:#6B7280">Brent long 120kbbl | avg entry $82.20 | now $96.97</div>'
+      + '<div style="font-size:11px;color:var(--muted)">Brent long 120kbbl | avg entry $82.20 | now $96.97</div>'
       + '</div>';
   }
   if (id === 'intraday') {
     return '<div class="card" style="padding:12px;height:100%">'
       + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'
-      + '<span style="font-size:13px;font-weight:700;color:#374151">Intraday P&amp;L</span>'
+      + '<span style="font-size:13px;font-weight:700;color:var(--text2)">Intraday P&amp;L</span>'
       + '<span style="display:flex;gap:6px;align-items:center"><span style="width:8px;height:8px;background:#16A34A;border-radius:50%;animation:delayPulse 1.5s infinite"></span><span class="badge badge-info">Live</span></span>'
       + '</div>'
       + '<div style="position:relative;height:220px"><canvas id="intraday-chart"></canvas></div>'
@@ -317,15 +329,15 @@ function getDashboardTileBody(id) {
   }
   if (id === 'heatmaps') {
     return '<div class="card" style="padding:12px;height:100%">'
-      + '<div style="font-size:13px;font-weight:700;color:#374151;margin-bottom:4px">&#128200; Position Heat Maps <span style="font-size:11px;font-weight:400;color:#9CA3AF">Commodity x Region</span></div>'
-      + '<div style="font-size:11px;color:#9CA3AF;margin-bottom:10px">These two maps now sit side by side by default, and you can move the whole tile anywhere in the dashboard.</div>'
+      + '<div style="font-size:13px;font-weight:700;color:var(--text2);margin-bottom:4px">&#128200; Position Heat Maps <span style="font-size:11px;font-weight:400;color:var(--muted)">Commodity x Region</span></div>'
+      + '<div style="font-size:11px;color:var(--muted);margin-bottom:10px">These two maps now sit side by side by default, and you can move the whole tile anywhere in the dashboard.</div>'
       + '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px">'
       + '<div style="min-width:0">'
-      + '<div style="font-size:11px;font-weight:700;color:#374151;margin-bottom:6px">P&amp;L Heat Map</div>'
+      + '<div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:6px">P&amp;L Heat Map</div>'
       + '<div id="heat-map-grid-pnl"></div>'
       + '</div>'
       + '<div style="min-width:0">'
-      + '<div style="font-size:11px;font-weight:700;color:#374151;margin-bottom:6px">Barrels Heat Map</div>'
+      + '<div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:6px">Barrels Heat Map</div>'
       + '<div id="heat-map-grid-barrels"></div>'
       + '</div>'
       + '</div>'
@@ -333,8 +345,8 @@ function getDashboardTileBody(id) {
   }
   if (id === 'alerts') {
     return '<div class="card" style="padding:0;overflow:hidden;height:100%">'
-      + '<div style="padding:10px 12px 8px;border-bottom:1px solid #F1F5F9;display:flex;justify-content:space-between;align-items:center">'
-      + '<span style="font-size:13px;font-weight:700;color:#374151">&#128276; AI Alerts</span>'
+      + '<div style="padding:10px 12px 8px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;background:var(--dashboard-table-header-bg)">'
+      + '<span style="font-size:13px;font-weight:700;color:var(--text2)">&#128276; AI Alerts</span>'
       + '<span style="font-size:11px;background:#FEF2F2;color:#DC2626;padding:2px 8px;border-radius:20px;font-weight:700" id="dash-alert-count">2 Active</span>'
       + '</div>'
       + '<div id="dash-alerts" style="padding:8px 12px 10px;max-height:260px;overflow-y:auto"></div>'
@@ -342,19 +354,19 @@ function getDashboardTileBody(id) {
   }
   if (id === 'news') {
     return '<div class="card" style="padding:0;overflow:hidden;height:100%">'
-      + '<div style="padding:10px 12px 8px;border-bottom:1px solid #F1F5F9;display:flex;justify-content:space-between;align-items:center">'
-      + '<span style="font-size:13px;font-weight:700;color:#374151">&#128240; Market News</span>'
-      + '<span style="font-size:11px;color:#9CA3AF">Jun 4, 2026</span>'
+      + '<div style="padding:10px 12px 8px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;background:var(--dashboard-table-header-bg)">'
+      + '<span style="font-size:13px;font-weight:700;color:var(--text2)">&#128240; Market News</span>'
+      + '<span style="font-size:11px;color:var(--muted)">Jun 4, 2026</span>'
       + '</div>'
       + '<div id="dash-news" style="padding:4px 12px 8px;max-height:300px;overflow-y:auto"></div>'
       + '</div>';
   }
   return '<div class="card" style="padding:0;overflow:hidden;height:100%">'
-    + '<div style="padding:10px 14px 8px;border-bottom:1px solid #F1F5F9;display:flex;justify-content:space-between;align-items:center;background:#FAFAFA">'
-    + '<span style="font-size:13px;font-weight:700;color:#374151">&#128195; Trade Blotter</span>'
+    + '<div style="padding:10px 14px 8px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;background:var(--dashboard-table-header-bg)">'
+    + '<span style="font-size:13px;font-weight:700;color:var(--text2)">&#128195; Trade Blotter</span>'
     + '<div style="display:flex;align-items:center;gap:12px">'
-    + '<span style="font-size:13px;color:#94a3b8">Showing last <select id="blotter-row-count" onchange="reloadBlotter(this.value)" style="background:#1e293b;border:1px solid #334155;color:#f1f5f9;border-radius:4px;padding:2px 6px;font-size:13px"><option value="5">5</option><option value="10">10</option><option value="20" selected>20</option><option value="50">50</option><option value="100">100</option></select> trades</span>'
-    + '<span id="blotter-update-time" style="font-size:11px;color:#9CA3AF">Updated just now</span>'
+    + '<span style="font-size:13px;color:var(--muted)">Showing last <select id="blotter-row-count" onchange="reloadBlotter(this.value)" style="background:var(--card);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:2px 6px;font-size:13px"><option value="5">5</option><option value="10">10</option><option value="20" selected>20</option><option value="50">50</option><option value="100">100</option></select> trades</span>'
+    + '<span id="blotter-update-time" style="font-size:11px;color:var(--muted)">Updated just now</span>'
     + '</div>'
     + '</div>'
     + '<div style="max-height:260px;overflow-y:auto">'
@@ -372,8 +384,8 @@ function renderDashboardCustomizer() {
   panel.innerHTML = DASHBOARD_TILE_ORDER.map(function(id) {
     var meta = DASHBOARD_TILE_META[id];
     var hidden = layout.hidden.includes(id);
-    return '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid #E5E7EB">'
-      + '<div><div style="font-size:12px;font-weight:700;color:#111827">' + meta.label + '</div><div style="font-size:11px;color:#6B7280">' + (hidden ? 'Hidden' : 'Visible') + ' · drag visible tiles to reorder</div></div>'
+    return '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">'
+      + '<div><div style="font-size:12px;font-weight:700;color:var(--text)">' + meta.label + '</div><div style="font-size:11px;color:var(--muted)">' + (hidden ? 'Hidden' : 'Visible') + ' · drag visible tiles to reorder</div></div>'
       + '<button class="btn btn-secondary btn-sm" onclick="toggleDashboardTileVisibility(\'' + id + '\')">' + (hidden ? 'Add Tile' : 'Hide Tile') + '</button>'
       + '</div>';
   }).join('');
@@ -388,7 +400,7 @@ function renderDashboardTiles() {
     var meta = DASHBOARD_TILE_META[id];
     return '<div class="dashboard-tile-shell" draggable="' + (id !== 'kpis') + '" data-tile-id="' + id + '" style="grid-column:span ' + meta.span + '">'
       + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">'
-      + '<div style="display:flex;align-items:center;gap:8px;color:#64748B;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em">'
+      + '<div style="display:flex;align-items:center;gap:8px;color:var(--muted);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em">'
       + '<span class="dashboard-tile-handle" style="cursor:' + (id !== 'kpis' ? 'grab' : 'default') + ';opacity:' + (id !== 'kpis' ? '1' : '.35') + '">&#8645;</span>'
       + '<span>' + meta.label + '</span>'
       + '</div>'
@@ -466,18 +478,21 @@ window.resetDashboardLayout = function() {
 
 SCREENS['dashboard'] = async function(main) {
   var dateStr = new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'short'});
+  var isRiskApp = SCREEN_APP_ID === 'risk';
+  var dashTitle = isRiskApp ? 'Risk Dashboard' : 'Trader Dashboard';
+  var dashSubtitle = isRiskApp ? 'Exposure, VaR, and control overview - ' + dateStr : 'Live book overview - ' + dateStr;
   main.innerHTML = '<div class="screen" style="padding:12px 14px">'
     + '<div class="screen-header" style="margin-bottom:10px">'
-    + '<div><div class="screen-title">&#128202; Trader Dashboard</div><div class="screen-subtitle">Live book overview â€” ' + dateStr + '</div></div>'
+    + '<div><div class="screen-title">&#128202; ' + dashTitle + '</div><div class="screen-subtitle">' + dashSubtitle + '</div></div>'
     + '<div class="screen-actions" style="display:flex;gap:8px;flex-wrap:wrap">'
     + '<select class="form-select" style="width:130px" id="dash-book-filter" onchange="onDashboardBookFilterChange()"><option value="">All Books</option><option>Crude</option><option>NGL/Ethane</option><option>Naphtha</option><option>Carbon</option></select>'
-    + '<button class="btn btn-secondary btn-sm" onclick="toggleDashboardCustomizer()">Customize Layout</button>'
-    + '<button class="btn btn-secondary btn-sm" onclick="resetDashboardLayout()">Reset Layout</button>'
+    + '<button class="btn btn-secondary btn-sm" onclick="toggleDashboardCustomizer()">' + (isRiskApp ? 'Customize View' : 'Customize Layout') + '</button>'
+    + '<button class="btn btn-secondary btn-sm" onclick="resetDashboardLayout()">' + (isRiskApp ? 'Reset View' : 'Reset Layout') + '</button>'
     + '<button class="btn btn-secondary btn-sm" onclick="loadDashboardData()">&#8635; Refresh</button>'
     + '</div></div>'
     + '<div id="dashboard-customizer-panel" class="card" style="padding:12px;margin-bottom:12px;display:none">'
-    + '<div style="font-size:13px;font-weight:700;color:#374151;margin-bottom:4px">Dashboard Layout</div>'
-    + '<div style="font-size:11px;color:#6B7280;margin-bottom:8px">Hide or add tiles below. Drag visible tiles by the handle to rearrange the dashboard.</div>'
+    + '<div style="font-size:13px;font-weight:700;color:var(--text2);margin-bottom:4px">Dashboard Layout</div>'
+    + '<div style="font-size:11px;color:var(--muted);margin-bottom:8px">Hide or add tiles below. Drag visible tiles by the handle to rearrange the dashboard.</div>'
     + '<div id="dashboard-customizer"></div>'
     + '</div>'
     + '<div id="dashboard-grid" style="display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:12px"></div>'
@@ -543,18 +558,18 @@ function renderBooks(data) {
     var pos = b.pnl >= 0;
     var barW = Math.round(Math.abs(b.pnl)/maxAbs*100);
     var barColor = pos ? '#16A34A' : '#DC2626';
-    var bgColor = pos ? '#F0FDF4' : '#FEF2F2';
+    var bgColor = pos ? 'var(--dashboard-book-positive-bg)' : 'var(--dashboard-book-negative-bg)';
     var pnlStr = (pos?'+':'-')+'$'+Math.abs(b.pnl/1000).toFixed(0)+'K';
     return '<div style="background:'+bgColor+';border-radius:8px;padding:9px 11px;margin-bottom:6px">'
       + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">'
-      + '<span style="font-size:13px">' + (b.icon||'&#128202;') + ' <strong style="color:#111827">' + b.name + '</strong></span>'
+      + '<span style="font-size:13px">' + (b.icon||'&#128202;') + ' <strong style="color:var(--text)">' + b.name + '</strong></span>'
       + '<span style="font-size:14px;font-weight:800;color:'+barColor+'">'+pnlStr+'</span>'
       + '</div>'
-      + '<div style="background:#E5E7EB;border-radius:3px;height:5px;overflow:hidden">'
+      + '<div style="background:var(--dashboard-book-bar-bg);border-radius:3px;height:5px;overflow:hidden">'
       + '<div style="background:'+barColor+';height:5px;border-radius:3px;width:'+barW+'%;transition:width .8s"></div>'
       + '</div>'
       + '<div style="display:flex;justify-content:space-between;margin-top:4px">'
-      + '<span style="font-size:10px;color:#9CA3AF">Book size: '+b.size+'</span>'
+      + '<span style="font-size:10px;color:var(--muted)">Book size: '+b.size+'</span>'
       + '<span style="font-size:10px;font-weight:700;color:'+barColor+'">'+(b.pct>=0?'+':'')+b.pct+'% today</span>'
       + '</div></div>';
   }).join('');
@@ -583,8 +598,8 @@ function renderBlotter(data, rowLimit) {
     var isBuy = dir === 'BUY';
     var status = (t.status||'CONFIRMED').toUpperCase();
     var flagged = !t.ai_reviewed;
-    var rowBg = flagged ? '#FFFBEB' : '';
-    var commColor = commColors[comm] || '#374151';
+    var rowBg = flagged ? 'var(--warn-lt)' : '';
+    var commColor = commColors[comm] || 'var(--text2)';
     var icon = commIcons[comm] || '&#128202;';
     var price = typeof t.price==='number' ? t.price.toFixed(2) : (t.price||'82.40');
     var vol = (t.volume||50000).toLocaleString();
@@ -597,9 +612,9 @@ function renderBlotter(data, rowLimit) {
       + '<td><span style="background:'+(isBuy?'#DCFCE7':'#FEE2E2')+';color:'+(isBuy?'#15803D':'#DC2626')+';font-weight:700;font-size:11px;padding:2px 9px;border-radius:20px">'+dir+'</span></td>'
       + '<td style="text-align:right;font-family:monospace;font-size:12px">'+vol+'</td>'
       + '<td style="text-align:right;font-family:monospace;font-size:12px;font-weight:600">'+price+'</td>'
-      + '<td style="font-size:12px;color:#374151">'+(t.counterparty||'Vitol')+'</td>'
+      + '<td style="font-size:12px;color:var(--text2)">'+(t.counterparty||'Vitol')+'</td>'
       + '<td><span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:'+(status==='CONFIRMED'?'#DCFCE7':status==='PENDING'?'#FEF9C3':'#FEE2E2')+';color:'+(status==='CONFIRMED'?'#15803D':status==='PENDING'?'#854D0E':'#DC2626')+'">'+status+'</span></td>'
-      + '<td style="font-size:12px;color:#9CA3AF">'+time+'</td>'
+      + '<td style="font-size:12px;color:var(--muted)">'+time+'</td>'
       + '<td>'+(flagged?'<button class="ai-flag-badge" data-trade-key="'+tradeKey.replace(/"/g,'&quot;')+'" title="Show AI review details">&#9888; Flagged</button>':'<span style="font-size:11px;color:#16A34A;font-weight:700">&#10003; Verified</span>')+'</td>'
       + '</tr>';
   }).join('');
@@ -734,20 +749,20 @@ function renderAlerts(data) {
   ];
   var el = document.getElementById('dash-alerts');
   if (!el) return;
-  var cfg = { critical:{ bg:'#FEF2F2', bc:'#DC2626', tc:'#991B1B' }, high:{ bg:'#FFF7ED', bc:'#D97706', tc:'#92400E' }, medium:{ bg:'#FEFCE8', bc:'#CA8A04', tc:'#854D0E' } };
+  var cfg = { critical:{ bg:'var(--neg-lt)', bc:'#DC2626', tc:'#991B1B' }, high:{ bg:'#FFF7ED', bc:'#D97706', tc:'#92400E' }, medium:{ bg:'#FEFCE8', bc:'#CA8A04', tc:'#854D0E' } };
   el.innerHTML = (Array.isArray(alerts)?alerts:[]).slice(0,3).map(function(a, ai) {
     var c = cfg[a.severity] || cfg.medium;
     var alertId = 'alert-detail-' + ai;
     return '<div style="background:'+c.bg+';border-left:3px solid '+c.bc+';border-radius:0 7px 7px 0;padding:8px 10px;margin-bottom:6px;cursor:pointer" onclick="this.querySelector(\'[data-expand]\').style.display=this.querySelector(\'[data-expand]\').style.display===\'none\'?\'block\':\'none\'">'
       + '<div style="display:flex;justify-content:space-between;align-items:flex-start">'
       + '<span style="font-size:12.5px;font-weight:700;color:'+c.tc+'">'+(a.icon||'&#9888;')+' '+(a.title||'')+'</span>'
-      + '<span style="font-size:10px;color:#9CA3AF;white-space:nowrap;margin-left:6px">'+(a.time||'')+'</span>'
+      + '<span style="font-size:10px;color:var(--muted);white-space:nowrap;margin-left:6px">'+(a.time||'')+'</span>'
       + '</div>'
-      + '<div style="font-size:11.5px;color:#374151;margin-top:3px;line-height:1.4">'+(a.body||a.description||'')+'</div>'
+      + '<div style="font-size:11.5px;color:var(--text2);margin-top:3px;line-height:1.4">'+(a.body||a.description||'')+'</div>'
       + '<div data-expand style="display:none;margin-top:8px;padding-top:8px;border-top:1px solid '+c.bc+'20">'
       + '<div style="font-size:11px;font-weight:700;color:'+c.tc+';margin-bottom:4px">Full context</div>'
-      + '<div style="font-size:11px;color:#374151;line-height:1.5">'+(a.body||a.description||'No additional detail available.')+'</div>'
-      + '<button onclick="event.stopPropagation();window.sendCopilotMessage&&window.sendCopilotMessage(\'Tell me more about: '+(a.title||'').replace(/'/g,"\\'")+'\')" style="margin-top:6px;font-size:11px;padding:3px 10px;border:1px solid '+c.bc+';background:white;color:'+c.tc+';border-radius:5px;cursor:pointer">Ask AI →</button>'
+      + '<div style="font-size:11px;color:var(--text2);line-height:1.5">'+(a.body||a.description||'No additional detail available.')+'</div>'
+      + '<button onclick="event.stopPropagation();window.sendCopilotMessage&&window.sendCopilotMessage(\'Tell me more about: '+(a.title||'').replace(/'/g,"\\'")+'\')" style="margin-top:6px;font-size:11px;padding:3px 10px;border:1px solid '+c.bc+';background:var(--card);color:'+c.tc+';border-radius:5px;cursor:pointer">Ask AI →</button>'
       + '</div>'
       + '</div>';
   }).join('');
@@ -779,6 +794,8 @@ function renderIntradayChart() {
   }
 
   var ctx = canvas.getContext('2d');
+  var chartText = typeof getThemeVar === 'function' ? (getThemeVar('--chart-text') || '#9CA3AF') : '#9CA3AF';
+  var chartGrid = typeof getThemeVar === 'function' ? (getThemeVar('--chart-grid') || '#F3F4F6') : '#F3F4F6';
   new Chart(ctx, {
     type: 'line',
     data: {
@@ -802,8 +819,8 @@ function renderIntradayChart() {
         callbacks: { label: function(ctx) { return '+$' + ctx.parsed.y.toLocaleString() + 'K'; } }
       }},
       scales: {
-        x: { ticks: { font:{size:10}, maxTicksLimit: 8, color:'#9CA3AF' }, grid: { display:false } },
-        y: { ticks: { font:{size:10}, color:'#9CA3AF', callback: function(v) { return '$' + v + 'K'; } }, grid: { color:'#F3F4F6' } }
+        x: { ticks: { font:{size:10}, maxTicksLimit: 8, color:chartText }, grid: { display:false } },
+        y: { ticks: { font:{size:10}, color:chartText, callback: function(v) { return '$' + v + 'K'; } }, grid: { color:chartGrid } }
       }
     }
   });
@@ -830,8 +847,8 @@ function renderHeatMapLegacy() {
   // Build table
   var html = '<div style="overflow-x:auto">'
     + '<table style="width:100%;border-collapse:separate;border-spacing:3px;font-size:11px">'
-    + '<thead><tr><th style="text-align:left;padding:3px 4px;color:#9CA3AF;font-weight:600;font-size:10px"></th>'
-    + regions.map(function(r){ return '<th style="text-align:center;padding:3px 6px;color:#9CA3AF;font-weight:600;font-size:10px;white-space:nowrap">'+r+'</th>'; }).join('')
+    + '<thead><tr><th style="text-align:left;padding:3px 4px;color:var(--muted);font-weight:600;font-size:10px"></th>'
+    + regions.map(function(r){ return '<th style="text-align:center;padding:3px 6px;color:var(--muted);font-weight:600;font-size:10px;white-space:nowrap">'+r+'</th>'; }).join('')
     + '</tr></thead><tbody>';
 
   commodities.forEach(function(c) {
@@ -860,10 +877,10 @@ function renderHeatMapLegacy() {
   });
 
   html += '</tbody></table>'
-    + '<div style="display:flex;gap:16px;margin-top:8px;font-size:10px;color:#9CA3AF">'
+    + '<div style="display:flex;gap:16px;margin-top:8px;font-size:10px;color:var(--muted)">'
     + '<span><span style="display:inline-block;width:10px;height:10px;background:rgba(37,99,235,0.6);border-radius:2px;margin-right:4px"></span>Long position</span>'
     + '<span><span style="display:inline-block;width:10px;height:10px;background:rgba(220,38,38,0.6);border-radius:2px;margin-right:4px"></span>Short position</span>'
-    + '<span><span style="display:inline-block;width:10px;height:10px;background:#F9FAFB;border:1px solid #E5E7EB;border-radius:2px;margin-right:4px"></span>Flat</span>'
+    + '<span><span style="display:inline-block;width:10px;height:10px;background:var(--dashboard-flat-cell-bg);border:1px solid var(--border);border-radius:2px;margin-right:4px"></span>Flat</span>'
     + '</div></div>';
 
   el.innerHTML = html;
@@ -918,12 +935,12 @@ function renderHeatMap(data) {
 
     var html = '<div style="overflow-x:auto">'
       + '<table style="width:100%;border-collapse:separate;border-spacing:3px;font-size:11px">'
-      + '<thead><tr><th style="text-align:left;padding:3px 4px;color:#9CA3AF;font-weight:600;font-size:10px"></th>'
-      + regions.map(function(r){ return '<th style="text-align:center;padding:3px 6px;color:#9CA3AF;font-weight:600;font-size:10px;white-space:nowrap">'+r+'</th>'; }).join('')
+      + '<thead><tr><th style="text-align:left;padding:3px 4px;color:var(--muted);font-weight:600;font-size:10px"></th>'
+      + regions.map(function(r){ return '<th style="text-align:center;padding:3px 6px;color:var(--muted);font-weight:600;font-size:10px;white-space:nowrap">'+r+'</th>'; }).join('')
       + '</tr></thead><tbody>';
 
     commodities.forEach(function(c) {
-      html += '<tr><td style="padding:3px 4px;font-weight:600;color:#374151;white-space:nowrap">' + c + '</td>';
+      html += '<tr><td style="padding:3px 4px;font-weight:600;color:var(--text2);white-space:nowrap">' + c + '</td>';
       regions.forEach(function(r) {
         var cell = (matrix[c] && matrix[c][r]) || { pnl_m: 0, quantity: 0, unit: 'bbl', quantity_bbl: 0, quantity_bbl_available: false };
         var pnlVal = Number(cell.pnl_m || 0);
@@ -942,8 +959,8 @@ function renderHeatMap(data) {
           bg = 'rgba(220,38,38,' + (0.12 + intensity * 0.55) + ')';
           fc = intensity > 0.5 ? '#fff' : '#991b1b';
         } else {
-          bg = '#F9FAFB';
-          fc = '#6B7280';
+          bg = 'var(--dashboard-flat-cell-bg)';
+          fc = 'var(--dashboard-flat-cell-text)';
         }
 
         var pnlLabel = pnlVal !== 0
@@ -968,10 +985,10 @@ function renderHeatMap(data) {
     });
 
     html += '</tbody></table>'
-      + '<div style="display:flex;gap:16px;margin-top:8px;font-size:10px;color:#9CA3AF;flex-wrap:wrap">'
+      + '<div style="display:flex;gap:16px;margin-top:8px;font-size:10px;color:var(--muted);flex-wrap:wrap">'
       + '<span><span style="display:inline-block;width:10px;height:10px;background:rgba(37,99,235,0.6);border-radius:2px;margin-right:4px"></span>Long position</span>'
       + '<span><span style="display:inline-block;width:10px;height:10px;background:rgba(220,38,38,0.6);border-radius:2px;margin-right:4px"></span>Short position</span>'
-      + '<span><span style="display:inline-block;width:10px;height:10px;background:#F9FAFB;border:1px solid #E5E7EB;border-radius:2px;margin-right:4px"></span>Flat</span>'
+      + '<span><span style="display:inline-block;width:10px;height:10px;background:var(--dashboard-flat-cell-bg);border:1px solid var(--border);border-radius:2px;margin-right:4px"></span>Flat</span>'
       + (metric === 'barrels'
         ? '<span>Secondary line shows original unit.</span>'
         : '<span>Secondary line shows barrel-equivalent exposure.</span>')
@@ -1023,14 +1040,14 @@ function renderNews(data) {
   el.innerHTML = articles.slice(0,7).map(function(a) {
     var dot = a.sentiment === 'bullish' ? '&#128994;' : (a.sentiment === 'bearish' ? '&#128308;' : '&#128993;');
     var sentColor = a.sentiment === 'bullish' ? '#16A34A' : (a.sentiment === 'bearish' ? '#DC2626' : '#D97706');
-    return '<div style="padding:8px 0;border-bottom:1px solid #F1F5F9;cursor:pointer" '
-      + 'onmouseover="this.style.background=\'#F8FAFC\'" onmouseout="this.style.background=\'\'" '
+    return '<div style="padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer" '
+      + 'onmouseover="this.style.background=\'var(--dashboard-news-hover)\'" onmouseout="this.style.background=\'\'" '
       + 'onclick="openNewsPanel(' + (a.id || 9) + ')">'
       + '<div style="display:flex;gap:7px;align-items:flex-start">'
       + '<span style="font-size:13px;flex-shrink:0;margin-top:2px">' + dot + '</span>'
       + '<div>'
-      + '<div style="font-size:12px;color:#111827;line-height:1.4;margin-bottom:3px;font-weight:500">' + a.headline + '</div>'
-      + '<div style="font-size:11px;color:#6B7280;display:flex;gap:8px">'
+      + '<div style="font-size:12px;color:var(--text);line-height:1.4;margin-bottom:3px;font-weight:500">' + a.headline + '</div>'
+      + '<div style="font-size:11px;color:var(--muted);display:flex;gap:8px">'
       + '<span style="font-weight:700;color:' + sentColor + '">' + (a.sentiment||'NEUTRAL').toUpperCase() + '</span>'
       + '<span>' + a.source + '</span>'
       + '<span>' + a.time + '</span>'
@@ -1953,6 +1970,7 @@ function renderOutstandingActions() {
 window.openEmail = function(id) {
   const e = commsEmailsState.map(normaliseCommsEmail).find(x=>x.id===id);
   if (!e) return;
+  if (typeof setSelectedEntity === 'function') setSelectedEntity({ type: 'email', id: String(id), label: e.subject });
   commsSelectedId = id;
   document.querySelectorAll('.email-row').forEach(r=>r.classList.remove('active'));
   document.getElementById(`email-row-${id}`)?.classList.add('active');
@@ -2021,12 +2039,13 @@ window.markEmailActioned = async function(id) {
 
 /* ── SCREEN 10: COMPLIANCE & AUDIT ── */
 SCREENS['compliance'] = async function(main) {
+  const isRiskApp = SCREEN_APP_ID === 'risk';
   main.innerHTML = `<div class="screen">
     <div class="screen-header">
-      <div><div class="screen-title">⚖️ Compliance & Audit</div><div class="screen-subtitle">Regulatory status · Immutable audit trail · AI action log</div></div>
+      <div><div class="screen-title">⚖️ Compliance & Audit</div><div class="screen-subtitle">${isRiskApp ? 'Control status · Filing oversight · Immutable audit trail' : 'Regulatory status · Immutable audit trail · AI action log'}</div></div>
       <div class="screen-actions">
         <button class="btn btn-secondary btn-sm" onclick="loadCompliance()">⟳ Refresh</button>
-        <button class="btn btn-primary btn-sm">+ New Filing</button>
+        <button class="btn btn-primary btn-sm">${isRiskApp ? 'Review Exception' : '+ New Filing'}</button>
       </div>
     </div>
     <div class="grid-3 mb-12">
@@ -2148,7 +2167,7 @@ window.loadCompliance = async function() {
 
 /* ── SCREEN 11: BOARDROOM (Executive) ── */
 SCREENS['boardroom'] = async function(main) {
-  if (!['executive','admin'].includes(currentRole())) {
+  if (!['executive','admin'].includes(window.currentRole())) {
     main.innerHTML = `<div class="screen flex-center" style="height:60vh"><div class="text-center"><div style="font-size:48px">🔒</div><div class="mt-8 secondary">This screen requires Executive access.</div></div></div>`;
     return;
   }
@@ -2226,7 +2245,7 @@ window.exploreTopQuartile = async function() {
 
 /* ── SCREEN 12: ADMIN / DEMO CONTROL ── */
 SCREENS['admin'] = async function(main) {
-  if (!['admin'].includes(currentRole())) {
+  if (!['admin'].includes(window.currentRole())) {
     main.innerHTML = `<div class="screen flex-center" style="height:60vh"><div class="text-center"><div style="font-size:48px">🔒</div><div class="mt-8 secondary">Admin access required.</div></div></div>`;
     return;
   }
@@ -2305,7 +2324,8 @@ window.triggerScenario = async function(key, name) {
 };
 
 window.setProvider = function(provider) {
-  localStorage.setItem('radiant_ai_provider', provider);
+  if (window.appStorageSet) window.appStorageSet(SCREEN_STORAGE_KEYS.aiProvider, provider);
+  else localStorage.setItem('radiant_ai_provider', provider);
   showToast('AI Provider', `Switched to ${provider === 'claude' ? 'Claude API' : 'Local LLM'}`, 'info');
   loadScreen('admin');
 };
@@ -2858,16 +2878,17 @@ window.showCommodityVaR = function(commodity) {
 
 /* ── SCREEN: AI INTELLIGENCE ── */
 SCREENS['ai'] = async function(main) {
+  const isRiskApp = SCREEN_APP_ID === 'risk';
   main.innerHTML = `<div class="screen">
     <div class="screen-header">
-      <div><div class="screen-title">🤖 AI Intelligence Centre</div><div class="screen-subtitle">Hedge advisor · Trade ideas · Anomaly detection · Pre-mortem analysis</div></div>
+      <div><div class="screen-title">🤖 ${isRiskApp ? 'AI Risk Intelligence' : 'AI Intelligence Centre'}</div><div class="screen-subtitle">${isRiskApp ? 'Exposure diagnostics · concentration alerts · stress review · control insight' : 'Hedge advisor · Trade ideas · Anomaly detection · Pre-mortem analysis'}</div></div>
       <div class="screen-actions">
         <span class="ai-provider-badge"><span class="dot"></span>${(window.aiProvider === 'claude' || window.aiProvider?.() === 'claude') ? '🤖 Radiant AI' : '🔒 Local AI'}</span>
       </div>
     </div>
     <div class="ai-3col">
       <div class="ai-panel">
-        <div class="ai-panel-title">🛡 Hedge Advisor <button class="ai-panel-expand-btn" onclick="expandPanel(this)">⤢ Expand</button></div>
+        <div class="ai-panel-title">${isRiskApp ? '📉 Exposure Review' : '🛡 Hedge Advisor'} <button class="ai-panel-expand-btn" onclick="expandPanel(this)">⤢ Expand</button></div>
         <div class="form-group">
           <label class="form-label">Select Position to Hedge</label>
           <select class="form-select" id="hedge-position">
@@ -2878,7 +2899,7 @@ SCREENS['ai'] = async function(main) {
             <option value="naphtha">Naphtha — 20kt net long (NWE)</option>
           </select>
         </div>
-        <button class="btn btn-primary w-full" onclick="runHedgeAdvisor()">🤖 Get AI Recommendation</button>
+        <button class="btn btn-primary w-full" onclick="runHedgeAdvisor()">${isRiskApp ? '🤖 Review Risk Posture' : '🤖 Get AI Recommendation'}</button>
         <div id="hedge-factors" style="display:none;margin-top:12px">
           <div style="font-size:13px;font-weight:700;color:#111827;margin-bottom:8px">Factor Attribution</div>
           <div id="factor-bars"></div>
@@ -2887,16 +2908,16 @@ SCREENS['ai'] = async function(main) {
         <div class="streaming-box" id="hedge-result" style="display:none;margin-top:10px;min-height:80px"></div>
       </div>
       <div class="ai-panel">
-        <div class="ai-panel-title">💡 Trade Ideas <button class="ai-panel-expand-btn" onclick="expandPanel(this)">⤢ Expand</button></div>
-        <button class="btn btn-secondary btn-sm w-full mb-8" onclick="scanTradeIdeas()">🔍 Scan for Opportunities</button>
+        <div class="ai-panel-title">${isRiskApp ? '🧭 Control Insights' : '💡 Trade Ideas'} <button class="ai-panel-expand-btn" onclick="expandPanel(this)">⤢ Expand</button></div>
+        <button class="btn btn-secondary btn-sm w-full mb-8" onclick="scanTradeIdeas()">${isRiskApp ? '🔍 Scan for Risk Signals' : '🔍 Scan for Opportunities'}</button>
         <div id="trade-ideas-list">${renderTradeIdeaCards()}</div>
       </div>
       <div class="ai-panel">
-        <div class="ai-panel-title">⚠ Anomaly Alerts <button class="ai-panel-expand-btn" onclick="expandPanel(this)">⤢ Expand</button></div>
+        <div class="ai-panel-title">${isRiskApp ? '⚠ Concentration Alerts' : '⚠ Anomaly Alerts'} <button class="ai-panel-expand-btn" onclick="expandPanel(this)">⤢ Expand</button></div>
         <div id="ai-alerts-container"><div class="muted small">Loading alerts...</div></div>
         <div class="di-section mt-8">
-          <div style="font-size:13px;font-weight:700;color:#111827;margin-bottom:8px">🔬 Pre-Mortem Analysis</div>
-          <button class="btn btn-secondary w-full mb-8" onclick="runPreMortem()">Run Pre-Mortem on Book</button>
+          <div style="font-size:13px;font-weight:700;color:#111827;margin-bottom:8px">${isRiskApp ? '🔬 Stress Review' : '🔬 Pre-Mortem Analysis'}</div>
+          <button class="btn btn-secondary w-full mb-8" onclick="runPreMortem()">${isRiskApp ? 'Run Desk Stress Review' : 'Run Pre-Mortem on Book'}</button>
           <div id="premortem-results"></div>
         </div>
       </div>
@@ -3693,6 +3714,84 @@ SCREENS['decision-intelligence'] = async function(main) {
   </div>`;
 };
 
+window.runForensics = async function() {
+  const results = document.getElementById('forensics-results');
+  const narrative = document.getElementById('forensics-narrative');
+  if (!results || !narrative) return;
+  results.style.display = 'block';
+  narrative.textContent = '';
+  await streamToElement(
+    narrative,
+    '/chat/message',
+    {
+      message: 'Run a decision-intelligence forensic review of the most important missed opportunities and shortfall drivers.',
+      screen_context: 'decision-intelligence',
+      provider: 'claude',
+    }
+  );
+};
+
+window.runDeskBrain = async function() {
+  const input = document.getElementById('desk-brain-query');
+  const container = document.getElementById('desk-brain-results');
+  if (!container) return;
+  const query = (input?.value || '').trim() || 'Brent/Urals spread arb';
+  container.innerHTML = `
+    <div style="background:linear-gradient(135deg,#1e40af,#2563EB);border-radius:10px;padding:14px 18px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center">
+      <div style="color:white">
+        <div style="font-size:18px;font-weight:800">Desk Brain search running</div>
+        <div style="font-size:12px;opacity:.8;margin-top:2px">${query}</div>
+      </div>
+      <div class="loading-spinner" style="border-color:rgba(255,255,255,.4);border-top-color:white"></div>
+    </div>
+    <div style="background:#F8FAFC;border:1px solid #E5E7EB;border-radius:10px;padding:14px;color:#6B7280;font-size:13px">
+      Searching institutional memory, pattern-matching historical structures, and preparing the analyst note...
+    </div>
+  `;
+  await new Promise(resolve => setTimeout(resolve, 900));
+  container.innerHTML = `
+    <div style="background:linear-gradient(135deg,#1e40af,#2563EB);border-radius:10px;padding:14px 18px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center">
+      <div style="color:white">
+        <div style="font-size:18px;font-weight:800">Desk Brain results ready</div>
+        <div style="font-size:12px;opacity:.8;margin-top:2px">${query}</div>
+      </div>
+      <div style="display:flex;gap:20px">
+        <div style="text-align:center;color:white"><div style="font-size:22px;font-weight:800">17</div><div style="font-size:10px;opacity:.75">Similar setups</div></div>
+        <div style="text-align:center;color:white"><div style="font-size:22px;font-weight:800">82%</div><div style="font-size:10px;opacity:.75">Win rate</div></div>
+        <div style="text-align:center;color:white"><div style="font-size:22px;font-weight:800">+$2.8M</div><div style="font-size:10px;opacity:.75">Avg P&amp;L</div></div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div style="background:white;border:1px solid #E5E7EB;border-radius:10px;padding:14px">
+        <div style="font-size:12px;font-weight:700;color:#111827;margin-bottom:8px">Pattern summary</div>
+        <div style="font-size:13px;color:#374151;line-height:1.6">
+          Historical Brent/Urals spread trades performed best when the initial spread dislocation was driven by logistics or sanctions noise
+          rather than structural demand weakness. Most winners were paired with freight awareness and a defined exit window inside two weeks.
+        </div>
+      </div>
+      <div style="background:white;border:1px solid #E5E7EB;border-radius:10px;padding:14px">
+        <div style="font-size:12px;font-weight:700;color:#111827;margin-bottom:8px">What the desk usually does well</div>
+        <div style="font-size:13px;color:#374151;line-height:1.6">
+          Winning structures were sized progressively, hedged with Brent overlays, and exited once the spread normalized to the 60-day mean.
+          Underperforming examples stayed open too long after the catalyst faded.
+        </div>
+      </div>
+      <div style="background:white;border:1px solid #E5E7EB;border-radius:10px;padding:14px">
+        <div style="font-size:12px;font-weight:700;color:#111827;margin-bottom:8px">Failure modes</div>
+        <div style="font-size:13px;color:#374151;line-height:1.6">
+          Misses were usually caused by late entry after the first leg had already moved, insufficient freight protection, or conflicting inventory constraints.
+        </div>
+      </div>
+      <div style="background:white;border:1px solid #E5E7EB;border-radius:10px;padding:14px">
+        <div style="font-size:12px;font-weight:700;color:#111827;margin-bottom:8px">Recommended next step</div>
+        <div style="font-size:13px;color:#374151;line-height:1.6">
+          Use this screen to compare the current spread setup with prior trades, then jump to Positions &amp; Risk for hedge sizing or Market Data &amp; Curves for scenario testing.
+        </div>
+      </div>
+    </div>
+  `;
+};
+
 SCREENS['configuration'] = async function(main) {
   main.innerHTML = `
     <div class="screen" style="padding:16px">
@@ -3876,7 +3975,7 @@ window.closeAddFeedModal = function() {
 };
 
 window.saveNewFeed = async function() {
-  var token = localStorage.getItem('radiant_token') || '';
+  var token = readAppToken();
   var provider = document.getElementById('af-provider').value;
   // Normalize provider for backend matching
   var providerMap = {
@@ -3963,7 +4062,7 @@ function _renderConnectorCard(c) {
 }
 
 window.loadAllConnectors = async function() {
-  var token = localStorage.getItem('radiant_token') || '';
+  var token = readAppToken();
   try {
     var r = await fetch('/api/configuration/connectors', {headers:{'Authorization':'Bearer '+token}});
     var data = await r.json();
@@ -3996,7 +4095,7 @@ window.loadAllConnectors = async function() {
 };
 
 window.saveFeedKey = async function(id) {
-  var token = localStorage.getItem('radiant_token') || '';
+  var token = readAppToken();
   var keyEl = document.getElementById('key-' + id);
   if (!keyEl || !keyEl.value) return;
   var r = await fetch('/api/configuration/connectors/' + id, {
@@ -4009,7 +4108,7 @@ window.saveFeedKey = async function(id) {
 };
 
 window.testFeed = async function(id) {
-  var token = localStorage.getItem('radiant_token') || '';
+  var token = readAppToken();
   var btn = document.getElementById('test-' + id);
   if (btn) { btn.textContent='⟳'; btn.disabled=true; }
   try {
@@ -4030,10 +4129,652 @@ window.testFeed = async function(id) {
 
 window.deleteFeed = async function(id) {
   if (!confirm('Remove this connector?')) return;
-  var token = localStorage.getItem('radiant_token') || '';
+  var token = readAppToken();
   var r = await fetch('/api/configuration/connectors/' + id, {
     method:'DELETE', headers:{'Authorization':'Bearer '+token}
   });
   if (r.ok) loadAllConnectors();
   else alert('Delete failed');
+};
+
+/* AI STUDIO */
+window.aiStudioState = {
+  overview: null,
+  selectedAgentId: null,
+  draftAgent: null,
+  testResult: null,
+};
+
+const AI_STUDIO_NEW_AGENT = {
+  agent_key: 'new_agent_key',
+  name: 'New Agent',
+  description: '',
+  category: 'general',
+  purpose: '',
+  instructions: '',
+  system_prompt_template:
+    'You are {agent_name} for Radiant-MVT.\nPurpose: {agent_purpose}\nInstructions: {agent_instructions}\n\nUser profile:\n{user_profile_summary}\n\nRuntime context:\n- Screen: {screen_context}\n- Selected entity: {selected_entity_summary}\n- Session memory: {session_memory}\n\nLive desk snapshot:\n{portfolio_snapshot}\n\nMarket snapshot:\n{market_snapshot}',
+  user_prompt_template: 'User request:\n{user_message}',
+  model_provider: 'claude',
+  model_name: 'claude-sonnet-4-6',
+  temperature: 0.2,
+  max_tokens: 1400,
+  provider_settings: {},
+  allowed_tools: ['market_snapshot', 'position_snapshot'],
+  allowed_screens: ['dashboard'],
+  output_format: 'narrative',
+  response_style: 'Concise professional response',
+  is_active: 1,
+  is_chat_default: 0,
+};
+
+function aiStudioCanManage() {
+  return ['admin', 'executive', 'risk'].includes(window.currentRole());
+}
+
+function aiStudioSplitList(value) {
+  return String(value || '')
+    .split(/\n|,/)
+    .map(v => v.trim())
+    .filter(Boolean);
+}
+
+function aiStudioJoinList(value) {
+  return Array.isArray(value) ? value.join(', ') : '';
+}
+
+function aiStudioCurrentAgent() {
+  if (window.aiStudioState.draftAgent) return window.aiStudioState.draftAgent;
+  const agents = window.aiStudioState.overview?.agents || [];
+  return agents.find(agent => agent.id === window.aiStudioState.selectedAgentId) || agents[0] || null;
+}
+
+function aiStudioVersionMarkup(agentId) {
+  const agent = (window.aiStudioState.overview?.agents || []).find(item => item.id === agentId);
+  const versions = agent?._versions || [];
+  if (!versions.length) {
+    return '<div class="secondary small">No version history loaded yet.</div>';
+  }
+  return versions.map(version => `
+    <div class="ai-studio-version-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+        <div style="font-size:13px;font-weight:700;color:#111827">v${version.version_number}</div>
+        <div style="font-size:11px;color:#64748b">${version.created_at ? new Date(version.created_at).toLocaleString() : 'recent'}</div>
+      </div>
+      <div style="font-size:12px;color:#374151;margin-top:6px">${version.change_summary || 'Configuration updated'}</div>
+    </div>
+  `).join('');
+}
+
+function renderAIStudioWorkspace() {
+  const data = window.aiStudioState.overview;
+  const agent = aiStudioCurrentAgent();
+  const root = document.getElementById('ai-studio-root');
+  if (!root || !data) return;
+
+  const profile = data.profile || {};
+  const agents = data.agents || [];
+  const selectedId = agent?.id;
+  const manage = aiStudioCanManage();
+  const activeCount = agents.filter(item => item.is_active).length;
+  const defaultAgent = agents.find(item => item.is_chat_default);
+
+  root.innerHTML = `
+    <div class="screen ai-studio-screen">
+      <div class="screen-header">
+        <div>
+          <div class="screen-title">AI Studio</div>
+          <div class="screen-subtitle">Enterprise agent control layer for prompts, runtime policy, model routing, and persistent analyst context.</div>
+        </div>
+        <div class="screen-actions">
+          ${manage ? '<button class="btn btn-secondary btn-sm" onclick="createAIStudioAgent()">New Agent</button>' : ''}
+          <button class="btn btn-primary btn-sm" onclick="loadAIStudioOverview(true)">Refresh</button>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:16px">
+        <div class="card" style="padding:14px 16px">
+          <div class="kpi-label">Agent Registry</div>
+          <div class="kpi-value accent">${agents.length}</div>
+          <div class="secondary small mt-4">${activeCount} active definitions</div>
+        </div>
+        <div class="card" style="padding:14px 16px">
+          <div class="kpi-label">Default Copilot</div>
+          <div style="font-size:18px;font-weight:700;color:#111827">${defaultAgent ? defaultAgent.name : 'Unassigned'}</div>
+          <div class="secondary small mt-4">${defaultAgent ? defaultAgent.model_provider + ' / ' + defaultAgent.model_name : 'Set via agent editor'}</div>
+        </div>
+        <div class="card" style="padding:14px 16px">
+          <div class="kpi-label">My Context</div>
+          <div style="font-size:18px;font-weight:700;color:#111827">${profile.preferred_answer_style || 'Configured'}</div>
+          <div class="secondary small mt-4">${(profile.commodities_covered || []).length} commodities tagged</div>
+        </div>
+        <div class="card" style="padding:14px 16px">
+          <div class="kpi-label">Governance</div>
+          <div style="font-size:18px;font-weight:700;color:#111827">${manage ? 'Editable' : 'View / Test'}</div>
+          <div class="secondary small mt-4">${data.users?.length || 0} active users in scope</div>
+        </div>
+      </div>
+
+      <div class="ai-studio-layout">
+        <div class="card ai-studio-panel">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px">
+            <div>
+              <div class="card-title" style="margin-bottom:2px">Agent Registry</div>
+              <div class="secondary small">Seeded operating agents plus custom definitions.</div>
+            </div>
+            <span class="badge badge-info">${agents.length}</span>
+          </div>
+          <div class="ai-studio-agent-list">
+            ${agents.map(item => `
+              <button class="ai-studio-agent-item ${item.id === selectedId ? 'active' : ''}" onclick="selectAIStudioAgent(${item.id})">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+                  <strong>${item.name}</strong>
+                  <span class="badge ${item.is_active ? 'badge-low' : 'badge-critical'}">${item.is_active ? 'Active' : 'Inactive'}</span>
+                </div>
+                <div class="secondary small" style="margin-top:4px">${item.description || item.purpose || item.agent_key}</div>
+                <div style="display:flex;align-items:center;gap:8px;margin-top:8px;font-size:11px;color:#64748b">
+                  <span>${item.model_provider}</span>
+                  <span>v${item.version}</span>
+                  ${item.is_chat_default ? '<span style="color:#0066CC;font-weight:700">Default copilot</span>' : ''}
+                </div>
+              </button>
+            `).join('')}
+          </div>
+        </div>
+
+        <div class="card ai-studio-panel">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px">
+            <div>
+              <div class="card-title" style="margin-bottom:2px">Agent Definition</div>
+              <div class="secondary small">${manage ? 'Business-safe editing for prompts, models, runtime guardrails, and screen scope.' : 'View current definitions and use the test harness.'}</div>
+            </div>
+            ${agent ? `<span class="badge badge-medium">${agent.agent_key}</span>` : ''}
+          </div>
+          ${agent ? `
+            <div class="ai-studio-form-grid">
+              <div class="form-group">
+                <label>Name</label>
+                <input id="ai-agent-name" value="${agent.name || ''}" ${manage ? '' : 'disabled'}>
+              </div>
+              <div class="form-group">
+                <label>Agent Key</label>
+                <input id="ai-agent-key" value="${agent.agent_key || ''}" ${manage ? '' : 'disabled'}>
+              </div>
+              <div class="form-group">
+                <label>Category</label>
+                <input id="ai-agent-category" value="${agent.category || ''}" ${manage ? '' : 'disabled'}>
+              </div>
+              <div class="form-group">
+                <label>Output Format</label>
+                <select id="ai-agent-output-format" ${manage ? '' : 'disabled'}>
+                  ${(data.defaults?.output_formats || []).map(fmt => `<option value="${fmt}" ${fmt === agent.output_format ? 'selected' : ''}>${fmt}</option>`).join('')}
+                </select>
+              </div>
+              <div class="form-group" style="grid-column:1/-1">
+                <label>Description</label>
+                <textarea id="ai-agent-description" rows="2" ${manage ? '' : 'disabled'}>${agent.description || ''}</textarea>
+              </div>
+              <div class="form-group" style="grid-column:1/-1">
+                <label>Purpose</label>
+                <textarea id="ai-agent-purpose" rows="3" ${manage ? '' : 'disabled'}>${agent.purpose || ''}</textarea>
+              </div>
+              <div class="form-group" style="grid-column:1/-1">
+                <label>Instructions</label>
+                <textarea id="ai-agent-instructions" rows="4" ${manage ? '' : 'disabled'}>${agent.instructions || ''}</textarea>
+              </div>
+              <div class="form-group" style="grid-column:1/-1">
+                <label>System Prompt Template</label>
+                <textarea id="ai-agent-system-prompt" rows="10" class="mono" ${manage ? '' : 'disabled'}>${agent.system_prompt_template || ''}</textarea>
+              </div>
+              <div class="form-group" style="grid-column:1/-1">
+                <label>User Prompt Template</label>
+                <textarea id="ai-agent-user-prompt" rows="5" class="mono" ${manage ? '' : 'disabled'}>${agent.user_prompt_template || ''}</textarea>
+              </div>
+            </div>
+
+            <div class="ai-studio-form-grid" style="margin-top:6px">
+              <div class="form-group">
+                <label>Model Provider</label>
+                <select id="ai-agent-provider" ${manage ? '' : 'disabled'}>
+                  ${['claude','local'].map(provider => `<option value="${provider}" ${provider === agent.model_provider ? 'selected' : ''}>${provider}</option>`).join('')}
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Model Name</label>
+                <input id="ai-agent-model" value="${agent.model_name || ''}" ${manage ? '' : 'disabled'}>
+              </div>
+              <div class="form-group">
+                <label>Temperature</label>
+                <input id="ai-agent-temperature" type="number" step="0.05" min="0" max="1.5" value="${agent.temperature ?? 0.2}" ${manage ? '' : 'disabled'}>
+              </div>
+              <div class="form-group">
+                <label>Max Tokens</label>
+                <input id="ai-agent-max-tokens" type="number" min="128" max="8000" value="${agent.max_tokens || 1400}" ${manage ? '' : 'disabled'}>
+              </div>
+              <div class="form-group" style="grid-column:1/-1">
+                <label>Allowed Screens</label>
+                <textarea id="ai-agent-screens" rows="2" ${manage ? '' : 'disabled'}>${aiStudioJoinList(agent.allowed_screens)}</textarea>
+              </div>
+              <div class="form-group" style="grid-column:1/-1">
+                <label>Allowed Tools</label>
+                <textarea id="ai-agent-tools" rows="2" ${manage ? '' : 'disabled'}>${aiStudioJoinList(agent.allowed_tools)}</textarea>
+              </div>
+              <div class="form-group" style="grid-column:1/-1">
+                <label>Response Style</label>
+                <input id="ai-agent-response-style" value="${agent.response_style || ''}" ${manage ? '' : 'disabled'}>
+              </div>
+              <div class="form-group" style="grid-column:1/-1">
+                <label>Provider Settings (JSON)</label>
+                <textarea id="ai-agent-provider-settings" rows="4" class="mono" ${manage ? '' : 'disabled'}>${JSON.stringify(agent.provider_settings || {}, null, 2)}</textarea>
+              </div>
+              <div class="form-group">
+                <label style="display:flex;align-items:center;gap:8px">
+                  <input id="ai-agent-active" type="checkbox" style="width:auto" ${agent.is_active ? 'checked' : ''} ${manage ? '' : 'disabled'}>
+                  Active
+                </label>
+              </div>
+              <div class="form-group">
+                <label style="display:flex;align-items:center;gap:8px">
+                  <input id="ai-agent-default" type="checkbox" style="width:auto" ${agent.is_chat_default ? 'checked' : ''} ${manage ? '' : 'disabled'}>
+                  Default chat copilot
+                </label>
+              </div>
+              <div class="form-group" style="grid-column:1/-1">
+                <label>Change Summary</label>
+                <input id="ai-agent-change-summary" placeholder="Why are you changing this agent?" ${manage ? '' : 'disabled'}>
+              </div>
+            </div>
+
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px">
+              <div class="secondary small">Template variables available: <code>{user_message}</code>, <code>{screen_context}</code>, <code>{selected_entity_summary}</code>, <code>{portfolio_snapshot}</code>, <code>{market_snapshot}</code>, <code>{user_profile_summary}</code>, <code>{session_memory}</code>.</div>
+              ${manage ? '<button class="btn btn-primary btn-sm" onclick="saveAIStudioAgent()">Save Agent</button>' : ''}
+            </div>
+
+            <div style="margin-top:16px">
+              <div class="card-title" style="margin-bottom:8px">Version History</div>
+              <div id="ai-studio-version-list">${aiStudioVersionMarkup(agent.id)}</div>
+            </div>
+          ` : '<div class="secondary">No agent selected.</div>'}
+        </div>
+
+        <div style="display:grid;gap:12px">
+          <div class="card ai-studio-panel">
+            <div class="card-title" style="margin-bottom:8px">Test Agent</div>
+            <div class="secondary small" style="margin-bottom:10px">Run a safe prompt test using your current user profile and optional selected record context.</div>
+            <div class="form-group">
+              <label>Target Screen Context</label>
+              <select id="ai-studio-test-screen">
+                ${(data.defaults?.screens || []).map(screen => `<option value="${screen}" ${screen === 'ai-studio' ? 'selected' : ''}>${screen}</option>`).join('')}
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Test Prompt</label>
+              <textarea id="ai-studio-test-message" rows="5">Explain what this agent would tell me about my most important exposure right now.</textarea>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="runAIStudioAgentTest()" ${agent ? '' : 'disabled'}>Run Test</button>
+            <div id="ai-studio-test-output" class="ai-studio-test-output">${window.aiStudioState.testResult ? renderAIStudioTestResult(window.aiStudioState.testResult) : '<div class="secondary small">Compiled prompt preview and model output will appear here.</div>'}</div>
+          </div>
+
+          <div class="card ai-studio-panel">
+            <div class="card-title" style="margin-bottom:8px">My AI Context Profile</div>
+            <div class="secondary small" style="margin-bottom:10px">Persistent analyst context automatically injected into chat and agent runs.</div>
+            <div class="ai-studio-form-grid">
+              <div class="form-group">
+                <label>Role</label>
+                <input id="ai-profile-role" value="${profile.role || ''}">
+              </div>
+              <div class="form-group">
+                <label>Desk / Team</label>
+                <input id="ai-profile-desk" value="${profile.desk_team || ''}">
+              </div>
+              <div class="form-group" style="grid-column:1/-1">
+                <label>Industries Covered</label>
+                <input id="ai-profile-industries" value="${aiStudioJoinList(profile.industries_covered)}">
+              </div>
+              <div class="form-group" style="grid-column:1/-1">
+                <label>Commodities Covered</label>
+                <input id="ai-profile-commodities" value="${aiStudioJoinList(profile.commodities_covered)}">
+              </div>
+              <div class="form-group" style="grid-column:1/-1">
+                <label>Regions Covered</label>
+                <input id="ai-profile-regions" value="${aiStudioJoinList(profile.regions_covered)}">
+              </div>
+              <div class="form-group">
+                <label>Preferred Answer Style</label>
+                <input id="ai-profile-style" value="${profile.preferred_answer_style || ''}">
+              </div>
+              <div class="form-group">
+                <label>Risk Appetite</label>
+                <input id="ai-profile-risk" value="${profile.risk_appetite || ''}">
+              </div>
+              <div class="form-group" style="grid-column:1/-1">
+                <label>Review Posture</label>
+                <textarea id="ai-profile-review" rows="3">${profile.review_posture || ''}</textarea>
+              </div>
+              <div class="form-group" style="grid-column:1/-1">
+                <label>Default Focus Areas</label>
+                <input id="ai-profile-focus" value="${aiStudioJoinList(profile.default_focus_areas)}">
+              </div>
+              <div class="form-group" style="grid-column:1/-1">
+                <label>Analyst Preferences</label>
+                <input id="ai-profile-preferences" value="${aiStudioJoinList(profile.analyst_preferences)}">
+              </div>
+              <div class="form-group" style="grid-column:1/-1">
+                <label>Persistent Notes</label>
+                <textarea id="ai-profile-notes" rows="4">${profile.persistent_notes || ''}</textarea>
+              </div>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="saveAIStudioProfile()">Save Profile</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderAIStudioTestResult(result) {
+  return `
+    <div style="display:grid;gap:10px">
+      <div>
+        <div class="kpi-label">Runtime Context</div>
+        <div class="secondary small">Screen: ${result.runtime_context?.screen_context || 'n/a'} | Entity: ${result.runtime_context?.selected_entity_label || 'None selected'}</div>
+      </div>
+      <div>
+        <div class="kpi-label">Model Output</div>
+        <div class="ai-studio-response-box">${(result.response || '').replace(/</g, '&lt;').replace(/\n/g, '<br>')}</div>
+      </div>
+      <details>
+        <summary style="cursor:pointer;font-weight:600;color:#374151">Show Compiled Prompts</summary>
+        <div style="margin-top:8px;display:grid;gap:8px">
+          <div>
+            <div class="kpi-label">System Prompt</div>
+            <pre class="ai-studio-pre">${(result.compiled_prompts?.system_prompt || '').replace(/</g, '&lt;')}</pre>
+          </div>
+          <div>
+            <div class="kpi-label">User Prompt</div>
+            <pre class="ai-studio-pre">${(result.compiled_prompts?.user_prompt || '').replace(/</g, '&lt;')}</pre>
+          </div>
+        </div>
+      </details>
+    </div>
+  `;
+}
+
+window.loadAIStudioOverview = async function(forceSelectDefault) {
+  const data = await apiCall('/ai-studio/overview');
+  if (!data) {
+    const root = document.getElementById('ai-studio-root');
+    if (root) root.innerHTML = '<div class="card" style="color:#DC2626">Unable to load AI Studio configuration.</div>';
+    return;
+  }
+  window.aiStudioState.overview = data;
+  if (forceSelectDefault || !window.aiStudioState.selectedAgentId) {
+    window.aiStudioState.selectedAgentId = data.defaults?.default_chat_agent_id || data.agents?.[0]?.id || null;
+    window.aiStudioState.draftAgent = null;
+  }
+  const selected = (data.agents || []).find(agent => agent.id === window.aiStudioState.selectedAgentId);
+  if (selected && !selected._versions) {
+    const versions = await apiCall(`/ai-studio/agents/${selected.id}/versions`);
+    if (versions?.versions) selected._versions = versions.versions;
+  }
+  renderAIStudioWorkspace();
+};
+
+window.selectAIStudioAgent = async function(agentId) {
+  window.aiStudioState.selectedAgentId = agentId;
+  window.aiStudioState.draftAgent = null;
+  window.aiStudioState.testResult = null;
+  const selected = (window.aiStudioState.overview?.agents || []).find(agent => agent.id === agentId);
+  if (selected && !selected._versions) {
+    const versions = await apiCall(`/ai-studio/agents/${selected.id}/versions`);
+    if (versions?.versions) selected._versions = versions.versions;
+  }
+  renderAIStudioWorkspace();
+};
+
+window.createAIStudioAgent = function() {
+  if (!aiStudioCanManage()) return;
+  window.aiStudioState.draftAgent = { ...AI_STUDIO_NEW_AGENT };
+  window.aiStudioState.selectedAgentId = null;
+  window.aiStudioState.testResult = null;
+  renderAIStudioWorkspace();
+};
+
+window.saveAIStudioAgent = async function() {
+  if (!aiStudioCanManage()) return;
+  const current = aiStudioCurrentAgent();
+  if (!current) return;
+  const payload = {
+    agent_key: document.getElementById('ai-agent-key').value.trim(),
+    name: document.getElementById('ai-agent-name').value.trim(),
+    description: document.getElementById('ai-agent-description').value.trim(),
+    category: document.getElementById('ai-agent-category').value.trim(),
+    purpose: document.getElementById('ai-agent-purpose').value.trim(),
+    instructions: document.getElementById('ai-agent-instructions').value.trim(),
+    system_prompt_template: document.getElementById('ai-agent-system-prompt').value,
+    user_prompt_template: document.getElementById('ai-agent-user-prompt').value,
+    model_provider: document.getElementById('ai-agent-provider').value,
+    model_name: document.getElementById('ai-agent-model').value.trim(),
+    temperature: parseFloat(document.getElementById('ai-agent-temperature').value || '0.2'),
+    max_tokens: parseInt(document.getElementById('ai-agent-max-tokens').value || '1400', 10),
+    allowed_screens: aiStudioSplitList(document.getElementById('ai-agent-screens').value),
+    allowed_tools: aiStudioSplitList(document.getElementById('ai-agent-tools').value),
+    output_format: document.getElementById('ai-agent-output-format').value,
+    response_style: document.getElementById('ai-agent-response-style').value.trim(),
+    is_active: document.getElementById('ai-agent-active').checked,
+    is_chat_default: document.getElementById('ai-agent-default').checked,
+    change_summary: document.getElementById('ai-agent-change-summary').value.trim() || 'AI Studio update',
+  };
+  try {
+    payload.provider_settings = JSON.parse(document.getElementById('ai-agent-provider-settings').value || '{}');
+  } catch (e) {
+    showToast('AI Studio', 'Provider settings must be valid JSON.', 'error');
+    return;
+  }
+
+  const endpoint = current.id ? `/ai-studio/agents/${current.id}` : '/ai-studio/agents';
+  const method = current.id ? 'PUT' : 'POST';
+  const result = await apiCall(endpoint, { method, body: JSON.stringify(payload) });
+  if (result) {
+    showToast('AI Studio', current.id ? 'Agent configuration saved.' : 'New agent created.', 'success');
+    await loadAIStudioOverview(true);
+    if (result.id) window.aiStudioState.selectedAgentId = result.id;
+    window.aiStudioState.draftAgent = null;
+    await loadAIStudioOverview(false);
+  } else {
+    showToast('AI Studio', 'Unable to save agent configuration.', 'error');
+  }
+};
+
+window.runAIStudioAgentTest = async function() {
+  const agent = aiStudioCurrentAgent();
+  if (!agent || !agent.id) {
+    showToast('AI Studio', 'Save the new agent before running a test.', 'warning');
+    return;
+  }
+  const output = document.getElementById('ai-studio-test-output');
+  if (output) output.innerHTML = '<div class="secondary small">Running prompt test...</div>';
+  const payload = {
+    message: document.getElementById('ai-studio-test-message').value,
+    screen_context: document.getElementById('ai-studio-test-screen').value,
+    selected_entity: getSelectedEntity(),
+  };
+  const result = await apiCall(`/ai-studio/agents/${agent.id}/test`, {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  });
+  if (result) {
+    window.aiStudioState.testResult = result;
+    if (output) output.innerHTML = renderAIStudioTestResult(result);
+    showToast('AI Studio', 'Agent test completed.', 'success');
+  } else {
+    if (output) output.innerHTML = '<div style="color:#DC2626">Agent test failed.</div>';
+  }
+};
+
+window.saveAIStudioProfile = async function() {
+  const payload = {
+    role: document.getElementById('ai-profile-role').value.trim(),
+    desk_team: document.getElementById('ai-profile-desk').value.trim(),
+    industries_covered: aiStudioSplitList(document.getElementById('ai-profile-industries').value),
+    commodities_covered: aiStudioSplitList(document.getElementById('ai-profile-commodities').value),
+    regions_covered: aiStudioSplitList(document.getElementById('ai-profile-regions').value),
+    preferred_answer_style: document.getElementById('ai-profile-style').value.trim(),
+    risk_appetite: document.getElementById('ai-profile-risk').value.trim(),
+    review_posture: document.getElementById('ai-profile-review').value.trim(),
+    default_focus_areas: aiStudioSplitList(document.getElementById('ai-profile-focus').value),
+    analyst_preferences: aiStudioSplitList(document.getElementById('ai-profile-preferences').value),
+    persistent_notes: document.getElementById('ai-profile-notes').value.trim(),
+  };
+  const result = await apiCall('/ai-studio/profile/me', {
+    method: 'PUT',
+    body: JSON.stringify(payload)
+  });
+  if (result) {
+    if (window.aiStudioState.overview) window.aiStudioState.overview.profile = result;
+    showToast('AI Studio', 'Your AI context profile was saved.', 'success');
+    renderAIStudioWorkspace();
+  } else {
+    showToast('AI Studio', 'Unable to save profile.', 'error');
+  }
+};
+
+SCREENS['ai-studio'] = async function(main) {
+  main.innerHTML = '<div id="ai-studio-root" class="screen"><div class="flex-center" style="height:240px"><span class="loading-spinner"></span></div></div>';
+  await loadAIStudioOverview();
+};
+
+SCREENS['documentation'] = async function(main) {
+  const guide = await window.loadAppGuide();
+
+  const renderDocumentationScreen = function(screenKey) {
+    const groups = window.getDocumentationGroupsData ? window.getDocumentationGroupsData() : [];
+    const allScreens = guide?.screens || [];
+    const fallbackKey = groups[0]?.items?.[0]?.key || allScreens[0]?.key || 'decision-queue';
+    const activeKey = screenKey || (window.getDocumentationSelectedScreen && window.getDocumentationSelectedScreen()) || fallbackKey;
+    if (window.setDocumentationSelectedScreen) window.setDocumentationSelectedScreen(activeKey);
+    const manual = window.getManualScreen ? window.getManualScreen(activeKey) : null;
+    const selected = manual || (window.getManualScreen ? window.getManualScreen(fallbackKey) : null);
+    const prompts = (window.COPILOT_SUGGESTIONS?.[selected?.key] || []).slice(0, 3);
+    const featureList = (selected?.features || []).map(item => `<li>${window.escapeHtml(item)}</li>`).join('');
+    const sectionCards = (selected?.sections || []).map(section => `
+      <div class="docs-card">
+        <div class="docs-card-title">${window.escapeHtml(section.title || 'Guidance')}</div>
+        <ul class="docs-feature-list">${(section.items || []).map(item => `<li>${window.escapeHtml(item)}</li>`).join('')}</ul>
+      </div>
+    `).join('');
+    const taskCards = (selected?.tasks || []).map(task => `
+      <div class="docs-task-card agent-assistable">
+        <div class="docs-task-copy">
+          <div class="docs-task-title">${window.escapeHtml(task)}</div>
+          <div class="docs-task-meta">Ask Radiant AI to guide you or perform the supported workflow directly.</div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="promptCopilotForTask(${window.escapeJsArg(selected.key)}, ${window.escapeJsArg(task)})">Let AI Handle It</button>
+      </div>
+    `).join('');
+    const promptChips = prompts.map(prompt => `
+      <button class="docs-prompt-chip" onclick="openCopilot(); sendCopilotMessage(${window.escapeJsArg(prompt)})">${window.escapeHtml(prompt)}</button>
+    `).join('');
+    const chatExamples = (selected?.chat_examples || []).map(prompt => `
+      <button class="docs-prompt-chip" onclick="openCopilot(); sendCopilotMessage(${window.escapeJsArg(prompt)})">${window.escapeHtml(prompt)}</button>
+    `).join('');
+    const relatedLinks = (selected?.related_screens || []).map(key => `
+      <button class="docs-related-link" onclick="navigateTo(${window.escapeJsArg(key)})">${window.escapeHtml(window.screenDisplayName(key))}</button>
+    `).join('');
+    const visibleGroups = groups.length > 0 ? groups : [
+      {
+        label: 'All Screens',
+        items: allScreens
+      }
+    ];
+
+    main.innerHTML = `
+      <div class="screen docs-screen">
+        <div class="screen-header">
+          <div>
+            <div class="screen-title">Documentation & Help</div>
+            <div class="screen-subtitle">Browse every feature, jump straight to the right screen, and let Radiant AI act for you where supported.</div>
+          </div>
+          <div class="screen-actions">
+            <button class="btn btn-secondary btn-sm" onclick="openCopilot(); sendCopilotMessage('What can you do for me in this app?')">Ask Radiant AI</button>
+            <button class="btn btn-primary btn-sm" onclick="openPageHelp('documentation')">How This Works</button>
+          </div>
+        </div>
+
+        <div class="docs-shell">
+          <aside class="docs-tree-panel">
+            <div class="docs-overview-card">
+              <div class="docs-overview-label">Application Guide</div>
+              <div class="docs-overview-text">${window.escapeHtml((guide?.overview || 'Radiant-MVT brings trading, intelligence, operations, and admin workflows into one AI-assisted workspace.'))}</div>
+            </div>
+            <div class="docs-tree-scroll">
+              ${visibleGroups.map(group => `
+                <section class="docs-tree-group">
+                  <div class="docs-tree-heading">${window.escapeHtml(group.label)}</div>
+                  <div class="docs-tree-items">
+                    ${group.items.map(item => `
+                      <button class="docs-tree-item ${item.key === selected?.key ? 'active' : ''}" onclick="renderDocumentationScreen(${window.escapeJsArg(item.key)})">
+                        <span class="docs-tree-item-title">${window.escapeHtml(item.title)}</span>
+                        <span class="docs-tree-item-summary">${window.escapeHtml(item.summary)}</span>
+                      </button>
+                    `).join('')}
+                  </div>
+                </section>
+              `).join('')}
+            </div>
+          </aside>
+
+          <section class="docs-detail-panel">
+            <div class="docs-detail-scroll">
+              <div class="docs-detail-hero">
+                <div class="docs-detail-eyebrow">${window.escapeHtml(groups.find(group => group.items.some(item => item.key === selected?.key))?.label || 'Workspace')}</div>
+                <div class="docs-detail-title-row">
+                  <div>
+                    <h2 class="docs-detail-title">${window.escapeHtml(selected?.title || 'Documentation')}</h2>
+                    <p class="docs-detail-summary">${window.escapeHtml(selected?.summary || 'Select a screen on the left to explore its features and supported actions.')}</p>
+                  </div>
+                  <div class="docs-detail-actions">
+                    <button class="btn btn-secondary btn-sm" onclick="navigateTo(${window.escapeJsArg(selected?.key || 'decision-queue')})">Open Screen</button>
+                    <button class="btn btn-primary btn-sm" onclick="openCopilot(); sendCopilotMessage(${window.escapeJsArg(window.PAGE_HELP_PROMPTS?.[selected?.key] || `Explain the ${window.screenDisplayName(selected?.key)} page and how to use it.`)})">Explain in Chat</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="docs-grid">
+                <div class="docs-card">
+                  <div class="docs-card-title">Features</div>
+                  <ul class="docs-feature-list">${featureList || '<li>Feature details are being prepared for this screen.</li>'}</ul>
+                </div>
+                <div class="docs-card">
+                  <div class="docs-card-title">Helpful Chat Prompts</div>
+                  <div class="docs-prompt-list">${promptChips || '<div class="secondary small">Ask Radiant AI anything about this screen.</div>'}</div>
+                </div>
+              </div>
+
+              ${sectionCards ? `<div class="docs-grid docs-section-grid">${sectionCards}</div>` : ''}
+
+              <div class="docs-card">
+                <div class="docs-card-title">Common Tasks</div>
+                <div class="docs-task-list">${taskCards || '<div class="secondary small">This screen is primarily informational, but Radiant AI can still explain it in chat.</div>'}</div>
+              </div>
+
+              <div class="docs-grid">
+                <div class="docs-card">
+                  <div class="docs-card-title">Example Questions For Chat</div>
+                  <div class="docs-prompt-list">${chatExamples || '<div class="secondary small">Ask Radiant AI how to use this screen.</div>'}</div>
+                </div>
+                <div class="docs-card">
+                  <div class="docs-card-title">Related Screens</div>
+                  <div class="docs-related-list">${relatedLinks || '<div class="secondary small">No related screens listed yet.</div>'}</div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    `;
+  };
+
+  window.renderDocumentationScreen = renderDocumentationScreen;
+  renderDocumentationScreen();
 };

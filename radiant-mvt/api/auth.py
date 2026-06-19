@@ -12,6 +12,7 @@ from sqlalchemy import text
 
 from database.db import get_db
 from api.rate_limit import limiter
+from app_modes import get_allowed_apps_for_role
 
 router = APIRouter()
 
@@ -28,6 +29,7 @@ security = HTTPBearer()
 class LoginRequest(BaseModel):
     email: str
     password: str
+    app: Optional[str] = None
 
 class Token(BaseModel):
     access_token: str
@@ -38,6 +40,7 @@ class Token(BaseModel):
     role: str
     desk: str
     title: Optional[str] = None
+    allowed_apps: list[str]
 
 class TokenData(BaseModel):
     user_id: Optional[int] = None
@@ -105,6 +108,7 @@ async def get_current_user(
         "role": row.role,
         "desk": row.desk,
         "title": row.title,
+        "allowed_apps": get_allowed_apps_for_role(row.role),
     }
 
 async def require_role(*roles: str):
@@ -136,6 +140,13 @@ async def login(request: Request, body: LoginRequest = Body(...), db: Session = 
         )
     if not row.is_active:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Account deactivated")
+    allowed_apps = get_allowed_apps_for_role(row.role)
+    requested_app = (body.app or "").strip().lower()
+    if requested_app and requested_app not in allowed_apps:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"{row.role.title()} accounts cannot access the {requested_app} workspace",
+        )
 
     # Update last_login
     db.execute(
@@ -159,6 +170,7 @@ async def login(request: Request, body: LoginRequest = Body(...), db: Session = 
         role=row.role,
         desk=row.desk or "INEOS Trading & Shipping",
         title=row.title,
+        allowed_apps=allowed_apps,
     )
 
 

@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, FileResponse
+from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.base import BaseHTTPMiddleware
 
@@ -19,6 +19,7 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 
 from database.db import init_db, run_migrations
+from shell_app_factory import _render_index
 
 # ── Configure logging ────────────────────────────────────────────────────────
 logging.basicConfig(
@@ -151,6 +152,13 @@ async def lifespan(app: FastAPI):
     try:
         from database.seed import run_seed
         run_seed()
+        from ai.studio import seed_ai_studio_defaults
+        from database.db import SessionLocal as _SLAI
+        _db_ai = _SLAI()
+        try:
+            seed_ai_studio_defaults(_db_ai)
+        finally:
+            _db_ai.close()
         from database.seed.seed_all import seed_monthly_actuals_if_empty
         seed_monthly_actuals_if_empty()
         from feeds.news_feed import seed_news_if_empty as _seed_news2
@@ -284,6 +292,7 @@ from api.market_intelligence import router as market_intel_router
 from api.configuration import router as configuration_router
 from api.news          import router as news_router
 from api.dashboard     import router as dashboard_router
+from api.ai_studio     import router as ai_studio_router
 
 app.include_router(auth_router,           prefix="/api/auth",           tags=["Auth"])
 app.include_router(users_router,          prefix="/api/users",          tags=["Users"])
@@ -303,6 +312,7 @@ app.include_router(market_intel_router,   prefix="/api/market",         tags=["M
 app.include_router(configuration_router,  prefix="/api/configuration",  tags=["Configuration"])
 app.include_router(news_router,           prefix="/api/news",           tags=["News"])
 app.include_router(dashboard_router,      prefix="/api/dashboard",      tags=["Dashboard"])
+app.include_router(ai_studio_router,      prefix="/api/ai-studio",      tags=["AI Studio"])
 
 
 # ── Additional route aliases ─────────────────────────────────────────────────
@@ -312,17 +322,16 @@ app.include_router(ai_settings_router,    prefix="/api/ai",             tags=["A
 
 # ── Static files & SPA catch-all ─────────────────────────────────────────────
 STATIC_DIR = os.path.join(os.path.dirname(__file__), "frontend", "static")
-INDEX_HTML = os.path.join(os.path.dirname(__file__), "frontend", "index.html")
-
+HELP_DOCS_DIR = os.path.join(os.path.dirname(__file__), "docs", "help")
 if os.path.isdir(STATIC_DIR):
     app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+if os.path.isdir(HELP_DOCS_DIR):
+    app.mount("/help-docs", StaticFiles(directory=HELP_DOCS_DIR), name="help-docs")
 
 @app.get("/", include_in_schema=False)
 async def serve_root():
     """Serve frontend - no auth required."""
-    if os.path.exists(INDEX_HTML):
-        return FileResponse(INDEX_HTML)
-    return JSONResponse({"message": "Radiant-MVT API running."})
+    return HTMLResponse(_render_index("trader"))
 
 @app.get("/favicon.ico", include_in_schema=False)
 async def serve_favicon():
@@ -333,12 +342,7 @@ async def spa_catch_all(full_path: str, request: Request):
     """Serve the SPA index.html for all non-API routes."""
     if full_path.startswith("api/"):
         return JSONResponse({"detail": "Not Found"}, status_code=404)
-    if os.path.exists(INDEX_HTML):
-        return FileResponse(INDEX_HTML)
-    return JSONResponse(
-        {"message": "Radiant-MVT API running. Frontend not yet deployed."},
-        status_code=200,
-    )
+    return HTMLResponse(_render_index("trader"))
 
 
 # ── Dev entry point ───────────────────────────────────────────────────────────

@@ -180,6 +180,10 @@ def run_migrations():
         ('demo_scenarios', 'trigger_type',             'NVARCHAR(50)',  'TEXT'),
         ('decision_queue', 'reasoning_text',           'NVARCHAR(MAX)', 'TEXT'),
         ('decision_queue', 'reasoning_generated_at',   'DATETIME2',    'DATETIME'),
+        ('chat_history',   'selected_entity_type',     'NVARCHAR(100)', 'TEXT'),
+        ('chat_history',   'selected_entity_id',       'NVARCHAR(100)', 'TEXT'),
+        ('chat_history',   'selected_entity_label',    'NVARCHAR(255)', 'TEXT'),
+        ('chat_history',   'agent_key',                'NVARCHAR(120)', 'TEXT'),
     ]
 
     is_mssql = is_sql_server()
@@ -203,10 +207,10 @@ def run_migrations():
                 except Exception as e:
                     _log.debug("Migration skip %s.%s: %s", table, col, e)
 
-        # Ensure external_connectors table exists (ORM handles it but belt+braces)
-        if 'external_connectors' not in existing_tables:
-            if is_mssql:
-                conn_sql = """
+        table_create_sql = {}
+        if is_mssql:
+            table_create_sql = {
+                'external_connectors': """
                     CREATE TABLE external_connectors (
                         id INT IDENTITY(1,1) PRIMARY KEY,
                         name NVARCHAR(255) NOT NULL,
@@ -222,9 +226,83 @@ def run_migrations():
                         last_error NVARCHAR(MAX),
                         created_at DATETIME2 DEFAULT GETDATE(),
                         updated_at DATETIME2 DEFAULT GETDATE()
-                    )"""
-            else:
-                conn_sql = """
+                    )""",
+                'ai_agent_definitions': """
+                    CREATE TABLE ai_agent_definitions (
+                        id INT IDENTITY(1,1) PRIMARY KEY,
+                        agent_key NVARCHAR(120) NOT NULL UNIQUE,
+                        name NVARCHAR(255) NOT NULL,
+                        description NVARCHAR(MAX),
+                        category NVARCHAR(100) DEFAULT 'general',
+                        purpose NVARCHAR(MAX),
+                        instructions NVARCHAR(MAX),
+                        system_prompt_template NVARCHAR(MAX) NOT NULL,
+                        user_prompt_template NVARCHAR(MAX),
+                        model_provider NVARCHAR(50) DEFAULT 'claude',
+                        model_name NVARCHAR(120) DEFAULT 'claude-sonnet-4-6',
+                        temperature FLOAT DEFAULT 0.2,
+                        max_tokens INT DEFAULT 1400,
+                        provider_settings NVARCHAR(MAX),
+                        allowed_tools NVARCHAR(MAX),
+                        allowed_screens NVARCHAR(MAX),
+                        output_format NVARCHAR(80) DEFAULT 'narrative',
+                        response_style NVARCHAR(120),
+                        is_active INT DEFAULT 1,
+                        is_chat_default INT DEFAULT 0,
+                        version INT DEFAULT 1,
+                        created_by_user_id INT,
+                        updated_by_user_id INT,
+                        created_at DATETIME2 DEFAULT GETDATE(),
+                        updated_at DATETIME2 DEFAULT GETDATE()
+                    )""",
+                'ai_agent_versions': """
+                    CREATE TABLE ai_agent_versions (
+                        id INT IDENTITY(1,1) PRIMARY KEY,
+                        agent_id INT NOT NULL,
+                        version_number INT NOT NULL,
+                        change_summary NVARCHAR(MAX),
+                        snapshot_json NVARCHAR(MAX) NOT NULL,
+                        changed_by_user_id INT,
+                        created_at DATETIME2 DEFAULT GETDATE()
+                    )""",
+                'ai_user_context_profiles': """
+                    CREATE TABLE ai_user_context_profiles (
+                        id INT IDENTITY(1,1) PRIMARY KEY,
+                        user_id INT NOT NULL UNIQUE,
+                        role_profile NVARCHAR(255),
+                        desk_team NVARCHAR(255),
+                        industries_covered NVARCHAR(MAX),
+                        commodities_covered NVARCHAR(MAX),
+                        regions_covered NVARCHAR(MAX),
+                        preferred_answer_style NVARCHAR(255),
+                        risk_appetite NVARCHAR(255),
+                        review_posture NVARCHAR(255),
+                        default_focus_areas NVARCHAR(MAX),
+                        analyst_preferences NVARCHAR(MAX),
+                        persistent_notes NVARCHAR(MAX),
+                        created_at DATETIME2 DEFAULT GETDATE(),
+                        updated_at DATETIME2 DEFAULT GETDATE()
+                    )""",
+                'ai_session_memory': """
+                    CREATE TABLE ai_session_memory (
+                        id INT IDENTITY(1,1) PRIMARY KEY,
+                        user_id INT NOT NULL,
+                        session_id NVARCHAR(255) NOT NULL,
+                        last_screen NVARCHAR(120),
+                        selected_entity_type NVARCHAR(120),
+                        selected_entity_id NVARCHAR(120),
+                        selected_entity_label NVARCHAR(255),
+                        memory_summary NVARCHAR(MAX),
+                        recent_user_goal NVARCHAR(MAX),
+                        last_agent_key NVARCHAR(120),
+                        last_message_at DATETIME2,
+                        created_at DATETIME2 DEFAULT GETDATE(),
+                        updated_at DATETIME2 DEFAULT GETDATE()
+                    )""",
+            }
+        else:
+            table_create_sql = {
+                'external_connectors': """
                     CREATE TABLE IF NOT EXISTS external_connectors (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
                         name TEXT NOT NULL, connector_type TEXT NOT NULL,
@@ -233,14 +311,109 @@ def run_migrations():
                         is_active INTEGER DEFAULT 1, last_connected_at DATETIME,
                         last_status TEXT DEFAULT 'Not tested', last_error TEXT,
                         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP)"""
+                        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP)""",
+                'ai_agent_definitions': """
+                    CREATE TABLE IF NOT EXISTS ai_agent_definitions (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        agent_key TEXT NOT NULL UNIQUE,
+                        name TEXT NOT NULL,
+                        description TEXT,
+                        category TEXT DEFAULT 'general',
+                        purpose TEXT,
+                        instructions TEXT,
+                        system_prompt_template TEXT NOT NULL,
+                        user_prompt_template TEXT,
+                        model_provider TEXT DEFAULT 'claude',
+                        model_name TEXT DEFAULT 'claude-sonnet-4-6',
+                        temperature REAL DEFAULT 0.2,
+                        max_tokens INTEGER DEFAULT 1400,
+                        provider_settings TEXT,
+                        allowed_tools TEXT,
+                        allowed_screens TEXT,
+                        output_format TEXT DEFAULT 'narrative',
+                        response_style TEXT,
+                        is_active INTEGER DEFAULT 1,
+                        is_chat_default INTEGER DEFAULT 0,
+                        version INTEGER DEFAULT 1,
+                        created_by_user_id INTEGER,
+                        updated_by_user_id INTEGER,
+                        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                    )""",
+                'ai_agent_versions': """
+                    CREATE TABLE IF NOT EXISTS ai_agent_versions (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        agent_id INTEGER NOT NULL,
+                        version_number INTEGER NOT NULL,
+                        change_summary TEXT,
+                        snapshot_json TEXT NOT NULL,
+                        changed_by_user_id INTEGER,
+                        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                    )""",
+                'ai_user_context_profiles': """
+                    CREATE TABLE IF NOT EXISTS ai_user_context_profiles (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        user_id INTEGER NOT NULL UNIQUE,
+                        role_profile TEXT,
+                        desk_team TEXT,
+                        industries_covered TEXT,
+                        commodities_covered TEXT,
+                        regions_covered TEXT,
+                        preferred_answer_style TEXT,
+                        risk_appetite TEXT,
+                        review_posture TEXT,
+                        default_focus_areas TEXT,
+                        analyst_preferences TEXT,
+                        persistent_notes TEXT,
+                        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                    )""",
+                'ai_session_memory': """
+                    CREATE TABLE IF NOT EXISTS ai_session_memory (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        user_id INTEGER NOT NULL,
+                        session_id TEXT NOT NULL,
+                        last_screen TEXT,
+                        selected_entity_type TEXT,
+                        selected_entity_id TEXT,
+                        selected_entity_label TEXT,
+                        memory_summary TEXT,
+                        recent_user_goal TEXT,
+                        last_agent_key TEXT,
+                        last_message_at DATETIME,
+                        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                    )""",
+            }
+
+        for table_name, conn_sql in table_create_sql.items():
+            if table_name in existing_tables:
+                continue
             with engine.connect() as conn:
                 try:
                     conn.execute(sa_text(conn_sql))
                     conn.commit()
-                    _log.info("Created external_connectors table")
+                    _log.info("Created %s table", table_name)
                 except Exception as e:
-                    _log.debug("external_connectors creation: %s", e)
+                    _log.debug("%s creation: %s", table_name, e)
+
+        if 'ai_session_memory' in table_create_sql:
+            with engine.connect() as conn:
+                try:
+                    if is_mssql:
+                        conn.execute(sa_text(
+                            "IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = 'idx_ai_session_memory_user_session') "
+                            "CREATE UNIQUE INDEX idx_ai_session_memory_user_session "
+                            "ON ai_session_memory(user_id, session_id)"
+                        ))
+                    else:
+                        conn.execute(sa_text(
+                            "CREATE UNIQUE INDEX IF NOT EXISTS idx_ai_session_memory_user_session "
+                            "ON ai_session_memory(user_id, session_id)"
+                        ))
+                    conn.commit()
+                except Exception as e:
+                    _log.debug("ai_session_memory index skip: %s", e)
 
         _log.info("run_migrations() complete")
     except Exception as e:
