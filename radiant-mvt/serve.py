@@ -1,8 +1,8 @@
 """Radiant-MVT™ proxy server — serves frontend + proxies /api/* to FastAPI backend"""
 import http.server, urllib.request, urllib.error, json, os, sys, socket
 
-BACKEND_HOST = "localhost"
-BACKEND_PORT = 8080
+BACKEND_HOST = os.getenv("RADIANT_BACKEND_HOST", "localhost")
+BACKEND_PORT = int(os.getenv("RADIANT_BACKEND_PORT", "8000"))
 FRONTEND_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "frontend")
 
 class Handler(http.server.SimpleHTTPRequestHandler):

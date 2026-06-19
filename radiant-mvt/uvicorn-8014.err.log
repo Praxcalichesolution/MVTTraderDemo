@@ -1,0 +1,36 @@
+INFO:     Started server process [174492]
+INFO:     Waiting for application startup.
+2026-06-12 22:40:46  INFO      radiant_mvt — === Radiant-MVT starting up ===
+2026-06-12 22:40:46  INFO      radiant_mvt — Initialising database …
+2026-06-12 22:40:51  INFO      database.db — Base.metadata.create_all() completed
+2026-06-12 22:40:57  INFO      database.db — run_migrations() complete
+2026-06-12 22:40:57  INFO      radiant_mvt — Database ready.
+2026-06-12 22:41:01  INFO      database.db — Base.metadata.create_all() completed
+2026-06-12 22:41:01  INFO      database.seed.seed_all — Database already seeded. Use --force to re-seed.
+2026-06-12 22:41:05  INFO      apscheduler.scheduler — Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-06-12 22:41:05  INFO      apscheduler.scheduler — Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-06-12 22:41:05  INFO      apscheduler.scheduler — Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-06-12 22:41:05  INFO      apscheduler.scheduler — Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-06-12 22:41:05  INFO      apscheduler.scheduler — Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-06-12 22:41:05  INFO      apscheduler.scheduler — Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-06-12 22:41:05  INFO      apscheduler.scheduler — Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-06-12 22:41:05  INFO      apscheduler.scheduler — Adding job tentatively -- it will be properly scheduled when the scheduler starts
+2026-06-12 22:41:05  INFO      apscheduler.scheduler — Added job "fetch_and_store_market_data" to job store "default"
+2026-06-12 22:41:05  INFO      apscheduler.scheduler — Added job "fetch_and_store_news" to job store "default"
+2026-06-12 22:41:05  INFO      apscheduler.scheduler — Added job "aggregate_all_feeds" to job store "default"
+2026-06-12 22:41:05  INFO      apscheduler.scheduler — Added job "simulate_etrm_updates" to job store "default"
+2026-06-12 22:41:05  INFO      apscheduler.scheduler — Added job "simulate_vessel_positions" to job store "default"
+2026-06-12 22:41:05  INFO      apscheduler.scheduler — Added job "inject_random_anomaly" to job store "default"
+2026-06-12 22:41:05  INFO      apscheduler.scheduler — Added job "run_market_intelligence_agent" to job store "default"
+2026-06-12 22:41:05  INFO      apscheduler.scheduler — Added job "run_market_intelligence_agent" to job store "default"
+2026-06-12 22:41:05  INFO      apscheduler.scheduler — Scheduler started
+2026-06-12 22:41:05  INFO      radiant_mvt — Background feed scheduler started (8 jobs).
+2026-06-12 22:41:05  INFO      apscheduler.scheduler — Removed job market_intel_startup
+INFO:     Application startup complete.
+2026-06-12 22:41:05  WARNING   apscheduler.executors.default — Run time of job "run_market_intelligence_agent (trigger: date[2026-06-12 22:41:15 UTC], next run at: 2026-06-12 22:41:15 UTC)" was missed by 3:59:50.011492
+ERROR:    [Errno 10048] error while attempting to bind on address ('127.0.0.1', 8014): only one usage of each socket address (protocol/network address/port) is normally permitted
+INFO:     Waiting for application shutdown.
+2026-06-12 22:41:05  INFO      radiant_mvt — === Radiant-MVT shutting down ===
+2026-06-12 22:41:05  INFO      radiant_mvt — Scheduler stopped.
+2026-06-12 22:41:05  INFO      apscheduler.scheduler — Scheduler has been shut down
+INFO:     Application shutdown complete.
