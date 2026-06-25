@@ -46,6 +46,8 @@ let docsNavigationTarget = null;
 const SCREEN_DISPLAY_NAMES = {
   'decision-queue': 'Decision Queue',
   'dashboard': 'Dashboard',
+  'atlas': 'MVT Atlas',
+  'risk-atlas': 'Risk Atlas',
   'positions': 'Positions & Risk',
   'ai': 'AI Intelligence',
   'performance': 'Performance & Analytics',
@@ -76,6 +78,8 @@ const DOCUMENTATION_GROUPS = APP_CONFIG.documentation_groups || [
 const PAGE_HELP_PROMPTS = {
   'decision-queue': 'Explain how to work through the Decision Queue and what to do first.',
   'dashboard': 'Explain what this dashboard is showing and what I should look at first.',
+  'atlas': 'Explain the MVT Atlas map, the visible layers, and which trade or logistics object I should inspect first.',
+  'risk-atlas': 'Explain the Risk Atlas map, the scenario overlay, and which spatial risk hotspot needs attention first.',
   'positions': 'Explain how to use the Positions & Risk screen and where the biggest exposure is.',
   'ai': 'Explain the AI Intelligence screen and which tools I can run from here.',
   'performance': 'Explain the Performance & Analytics page and how to investigate shortfall.',
@@ -118,6 +122,8 @@ const CONCIERGE_CONTEXT = {
 const COPILOT_SUGGESTIONS = {
   'decision-queue':   ["What's most urgent right now?","Summarise today's risk","Draft my morning note"],
   'dashboard':        ["What's driving today's P&L?","Show me my biggest risk right now","What should I act on?"],
+  'atlas':            ["Explain the selected map object","Summarize Atlas for the morning meeting","What should I investigate first?"],
+  'risk-atlas':       ["Explain this risk hotspot","Run scenario summary","What should I hedge first?"],
   'positions':        ["What's my exposure if Brent drops $5?","Which position needs hedging most?","Show me my open risks"],
   'ai':               ["Explain the top trade idea","What anomalies did you find?","Run pre-mortem on my book"],
   'performance':      ["Why are we behind target?","What's our run-rate forecast?","Show opportunity cost"],
@@ -133,16 +139,31 @@ const COPILOT_SUGGESTIONS = {
   'admin':            ["Trigger Urals scenario","Test AI connection","Show system status"]
 };
 
+CONCIERGE_CONTEXT['atlas'] = {
+  text: '<strong>MVT Atlas</strong> is showing deal pins, logistics routes, hub exposure, pricing, trust, and AI anomaly layers.',
+  actions: ['Explain Atlas','Map Risks']
+};
+CONCIERGE_CONTEXT['risk-atlas'] = {
+  text: '<strong>Risk Atlas</strong> is ready for VaR heat, basis-vol connectors, and scenario recoloring.',
+  actions: ['Run Scenario','Explain Hotspot']
+};
+
 if (APP_ID === 'risk') {
   PAGE_HELP_PROMPTS['dashboard'] = 'Explain the risk dashboard, the key limit signals, and where oversight attention is needed first.';
+  PAGE_HELP_PROMPTS['risk-atlas'] = 'Explain the Risk Atlas screen, the VaR heat layer, basis connectors, scenario overlay, and top control actions.';
   PAGE_HELP_PROMPTS['ai'] = 'Explain the AI Intelligence screen from a risk oversight perspective.';
   PAGE_HELP_PROMPTS['compliance'] = 'Explain the Compliance & Audit page and the highest-priority controls for the risk team.';
+  CONCIERGE_CONTEXT['risk-atlas'] = {
+    text: '<strong>Spatial risk</strong> highlights Gulf Coast VaR, NWE basis volatility, and delivery-obligation exposure.',
+    actions: ['Run Scenario','Draft Control Note']
+  };
   CONCIERGE_CONTEXT['dashboard'] = { text: '<strong>Desk VaR</strong> is running at 62% of limit. Two exposure concentrations need review before the morning control call.', actions: ['Top Exposure','Open Controls'] };
   CONCIERGE_CONTEXT['positions'] = { text: 'Largest concentration remains <strong>Crude long $214M</strong>. Hedge coverage and board-limit headroom are both within tolerance.', actions: ['Stress Desk','Hedge Review'] };
   CONCIERGE_CONTEXT['market'] = { text: '<strong>Spread moves</strong> in Brent, Urals, and EUA are driving today\'s risk sensitivity changes.', actions: ['Curve Analysis','View Drivers'] };
   CONCIERGE_CONTEXT['ai'] = { text: 'Radiant AI has surfaced <strong>two control insights</strong> and <strong>one concentration anomaly</strong> since 06:00.', actions: ['Review Alerts','Run Scenario'] };
   CONCIERGE_CONTEXT['compliance'] = { text: 'All core filings are <strong>on track</strong>. One audit trail exception needs same-day review.', actions: ['View Status','Audit Trail'] };
   COPILOT_SUGGESTIONS['dashboard'] = ['What is the biggest limit risk right now?','Summarize desk exposures','Which control should I review first?'];
+  COPILOT_SUGGESTIONS['risk-atlas'] = ['Explain this risk hotspot','What changed?','What should I hedge first?'];
   COPILOT_SUGGESTIONS['ai'] = ['What concentration anomalies did you find?','Show me the top control insight','Run a stress review'];
   COPILOT_SUGGESTIONS['compliance'] = ['Show today\'s exceptions','What filings are due next?','Open the audit trail'];
 }

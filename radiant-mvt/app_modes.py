@@ -7,6 +7,9 @@ from copy import deepcopy
 SCREEN_META = {
     "decision-queue": {"label": "Decision Queue", "icon": "📋"},
     "dashboard": {"label": "Dashboard", "icon": "📊"},
+    "atlas": {"label": "MVT Atlas", "icon": "A"},
+    "risk-atlas": {"label": "Risk Atlas", "icon": "R"},
+    "risk-module": {"label": "Exposure Workbench", "icon": "E"},
     "positions": {"label": "Positions & Risk", "icon": "📈"},
     "ai": {"label": "AI Intelligence", "icon": "🤖"},
     "performance": {"label": "Performance", "icon": "🎯"},
@@ -44,6 +47,7 @@ APP_MODES = {
             "ai",
             "performance",
             "decision-intelligence",
+            "atlas",
             "vessels",
             "comms",
             "compliance",
@@ -62,11 +66,12 @@ APP_MODES = {
         "screen_fallbacks": {
             "positions": "dashboard",
             "market": "ai",
+            "risk-module": "dashboard",
         },
         "nav_sections": [
             {"label": "Trading", "items": ["decision-queue", "dashboard"]},
             {"label": "Intelligence", "items": ["ai", "performance", "decision-intelligence"]},
-            {"label": "Operations", "items": ["vessels", "comms", "compliance"]},
+            {"label": "Operations", "items": ["atlas", "vessels", "comms", "compliance"]},
             {
                 "label": "Tools",
                 "items": [
@@ -86,7 +91,7 @@ APP_MODES = {
         "documentation_groups": [
             {"key": "trading", "label": "Trading Workspace", "screens": ["decision-queue", "dashboard"]},
             {"key": "intelligence", "label": "AI & Analytics", "screens": ["ai", "performance", "decision-intelligence"]},
-            {"key": "operations", "label": "Operations", "screens": ["vessels", "comms", "compliance"]},
+            {"key": "operations", "label": "Operations", "screens": ["atlas", "vessels", "comms", "compliance"]},
             {"key": "tools", "label": "Trader Tools", "screens": ["documentation", "ai-studio", "configuration"]},
             {"key": "management", "label": "Leadership", "screens": ["boardroom", "admin"]},
         ],
@@ -107,6 +112,8 @@ APP_MODES = {
         "allowed_roles": ["risk", "executive", "admin"],
         "allowed_screens": [
             "dashboard",
+            "risk-atlas",
+            "risk-module",
             "positions",
             "market",
             "ai",
@@ -118,8 +125,8 @@ APP_MODES = {
             "admin",
         ],
         "topbar_kpis": [
-            {"label": "Desk VaR", "screen": "positions"},
-            {"label": "Limit Use", "screen": "positions"},
+            {"label": "Desk VaR", "screen": "risk-module"},
+            {"label": "Limit Use", "screen": "risk-module"},
             {"label": "Exposures", "screen": "market"},
             {"label": "Breaches", "screen": "compliance"},
         ],
@@ -131,7 +138,7 @@ APP_MODES = {
             "comms": "compliance",
         },
         "nav_sections": [
-            {"label": "Risk", "items": ["dashboard", "positions", "market", "compliance"]},
+            {"label": "Risk", "items": ["dashboard", "risk-atlas", "risk-module", "positions", "market", "compliance"]},
             {"label": "Intelligence", "items": ["ai"]},
             {"label": "Tools", "items": ["documentation", "ai-studio", "configuration"]},
             {
@@ -143,7 +150,7 @@ APP_MODES = {
             },
         ],
         "documentation_groups": [
-            {"key": "risk", "label": "Risk Workspace", "screens": ["dashboard", "positions", "market", "compliance"]},
+            {"key": "risk", "label": "Risk Workspace", "screens": ["dashboard", "risk-atlas", "risk-module", "positions", "market", "compliance"]},
             {"key": "intelligence", "label": "AI & Oversight", "screens": ["ai"]},
             {"key": "tools", "label": "Risk Tools", "screens": ["documentation", "ai-studio", "configuration"]},
             {"key": "management", "label": "Leadership", "screens": ["boardroom", "admin"]},

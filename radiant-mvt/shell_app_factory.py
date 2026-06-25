@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 
 from fastapi import FastAPI, Request
-from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
 from app_modes import get_app_mode
@@ -34,6 +34,10 @@ def _render_index(mode: str) -> str:
     )
 
 
+def _html_response(html: str) -> StreamingResponse:
+    return StreamingResponse(iter([html.encode("utf-8")]), media_type="text/html; charset=utf-8")
+
+
 def create_shell_app(mode: str) -> FastAPI:
     config = get_app_mode(mode)
     app = FastAPI(
@@ -51,7 +55,7 @@ def create_shell_app(mode: str) -> FastAPI:
 
     @app.get("/", include_in_schema=False)
     async def root():
-        return HTMLResponse(_render_index(mode))
+        return _html_response(_render_index(mode))
 
     @app.get("/favicon.ico", include_in_schema=False)
     async def favicon():
@@ -61,6 +65,6 @@ def create_shell_app(mode: str) -> FastAPI:
     async def spa(full_path: str, request: Request):
         if full_path.startswith("static/"):
             return JSONResponse({"detail": "Not Found"}, status_code=404)
-        return HTMLResponse(_render_index(mode))
+        return _html_response(_render_index(mode))
 
     return app

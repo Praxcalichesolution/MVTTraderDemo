@@ -226,30 +226,41 @@ window.showDecisionReasoning = async function(decisionId, title) {
 
 /* ── SCREEN 2: DASHBOARD ── */
 const DASHBOARD_LAYOUT_KEY = SCREEN_STORAGE_KEYS.dashboardLayout || 'radiant_dashboard_layout_v2';
-const DASHBOARD_TILE_ORDER = ['kpis','book-pnl','top-performer','intraday','heatmaps','alerts','news','blotter'];
+const DASHBOARD_TILE_ORDER = ['kpis','book-pnl','top-performer','intraday','market-curve','heatmaps','alerts','news','blotter'];
 const DASHBOARD_TILE_META = {
   'kpis': { label: 'KPI Strip', span: 12 },
   'book-pnl': { label: 'Book P&L', span: 4 },
   'top-performer': { label: 'Top Performer', span: 4 },
   'intraday': { label: 'Intraday P&L', span: 4 },
+  'market-curve': { label: 'Market Curve', span: 8, apps: ['risk'] },
   'heatmaps': { label: 'Position Heat Maps', span: 8 },
   'alerts': { label: 'AI Alerts', span: 4 },
   'news': { label: 'Market News', span: 4 },
   'blotter': { label: 'Trade Blotter', span: 12 }
 };
+var dashboardMarketCurveChartRef = null;
+var activeDashboardMarketCurve = 'brent';
+
+function getDashboardTileIds() {
+  return DASHBOARD_TILE_ORDER.filter(function(id) {
+    var meta = DASHBOARD_TILE_META[id];
+    return meta && (!meta.apps || meta.apps.includes(SCREEN_APP_ID));
+  });
+}
 
 function normalizeDashboardLayout(state) {
   state = state || {};
-  var order = Array.isArray(state.order) ? state.order.slice() : DASHBOARD_TILE_ORDER.slice();
+  var tileIds = getDashboardTileIds();
+  var order = Array.isArray(state.order) ? state.order.slice() : tileIds.slice();
   var hidden = Array.isArray(state.hidden) ? state.hidden.slice() : [];
-  DASHBOARD_TILE_ORDER.forEach(function(id) {
+  tileIds.forEach(function(id) {
     if (!order.includes(id)) order.push(id);
   });
   order = order.filter(function(id, index) {
-    return DASHBOARD_TILE_META[id] && order.indexOf(id) === index;
+    return tileIds.includes(id) && order.indexOf(id) === index;
   });
   hidden = hidden.filter(function(id, index) {
-    return DASHBOARD_TILE_META[id] && hidden.indexOf(id) === index;
+    return tileIds.includes(id) && hidden.indexOf(id) === index;
   });
   return { order: order, hidden: hidden };
 }
@@ -343,6 +354,29 @@ function getDashboardTileBody(id) {
       + '</div>'
       + '</div>';
   }
+  if (id === 'market-curve') {
+    return '<div class="card" style="padding:12px;height:100%">'
+      + '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:8px;flex-wrap:wrap">'
+      + '<div>'
+      + '<div style="font-size:13px;font-weight:700;color:var(--text2)">Forward Market Curve</div>'
+      + '<div style="font-size:11px;color:var(--muted);margin-top:2px">Prompt-to-forward shape for curve and basis risk</div>'
+      + '</div>'
+      + '<div class="curve-selector" id="dashboard-curve-selector" style="flex-wrap:wrap;justify-content:flex-end">'
+      + '<button class="curve-btn active" onclick="switchDashboardMarketCurve(\'brent\', this)">Brent</button>'
+      + '<button class="curve-btn" onclick="switchDashboardMarketCurve(\'wti\', this)">WTI</button>'
+      + '<button class="curve-btn" onclick="switchDashboardMarketCurve(\'ethane\', this)">Ethane</button>'
+      + '<button class="curve-btn" onclick="switchDashboardMarketCurve(\'naphtha\', this)">Naphtha</button>'
+      + '<button class="curve-btn" onclick="switchDashboardMarketCurve(\'eua\', this)">EUA</button>'
+      + '</div>'
+      + '</div>'
+      + '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:10px" id="dashboard-curve-stats">'
+      + '<div style="background:var(--dashboard-kpi-neutral-bg);border:1px solid var(--dashboard-kpi-neutral-border);border-radius:8px;padding:8px 10px"><div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase">Prompt</div><div style="font-size:17px;font-weight:800;color:var(--text2)" id="dash-curve-prompt">--</div></div>'
+      + '<div style="background:var(--dashboard-kpi-neutral-bg);border:1px solid var(--dashboard-kpi-neutral-border);border-radius:8px;padding:8px 10px"><div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase">Far</div><div style="font-size:17px;font-weight:800;color:var(--text2)" id="dash-curve-far">--</div></div>'
+      + '<div style="background:var(--dashboard-kpi-neutral-bg);border:1px solid var(--dashboard-kpi-neutral-border);border-radius:8px;padding:8px 10px"><div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase">Shape</div><div style="font-size:17px;font-weight:800;color:#D97706" id="dash-curve-shape">--</div></div>'
+      + '</div>'
+      + '<div style="position:relative;height:230px"><canvas id="dashboard-market-curve-chart"></canvas></div>'
+      + '</div>';
+  }
   if (id === 'alerts') {
     return '<div class="card" style="padding:0;overflow:hidden;height:100%">'
       + '<div style="padding:10px 12px 8px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;background:var(--dashboard-table-header-bg)">'
@@ -381,7 +415,7 @@ function renderDashboardCustomizer() {
   var layout = getDashboardLayoutState();
   var panel = document.getElementById('dashboard-customizer');
   if (!panel) return;
-  panel.innerHTML = DASHBOARD_TILE_ORDER.map(function(id) {
+  panel.innerHTML = getDashboardTileIds().map(function(id) {
     var meta = DASHBOARD_TILE_META[id];
     var hidden = layout.hidden.includes(id);
     return '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">'
@@ -471,7 +505,7 @@ window.toggleDashboardTileVisibility = function(tileId) {
 };
 
 window.resetDashboardLayout = function() {
-  saveDashboardLayoutState({ order: DASHBOARD_TILE_ORDER.slice(), hidden: [] });
+  saveDashboardLayoutState({ order: getDashboardTileIds(), hidden: [] });
   renderDashboardTiles();
   loadDashboardData();
 };
@@ -511,6 +545,7 @@ window.loadDashboardData = async function() {
   renderNews(dashboard && dashboard.news ? dashboard.news : null);
   renderHeatMap(dashboard && dashboard.heatmap ? dashboard.heatmap : null);
   setTimeout(renderIntradayChart, 80);
+  setTimeout(renderDashboardMarketCurveChart, 90);
 };
 
 window.onDashboardBookFilterChange = function() {
@@ -821,6 +856,112 @@ function renderIntradayChart() {
       scales: {
         x: { ticks: { font:{size:10}, maxTicksLimit: 8, color:chartText }, grid: { display:false } },
         y: { ticks: { font:{size:10}, color:chartText, callback: function(v) { return '$' + v + 'K'; } }, grid: { color:chartGrid } }
+      }
+    }
+  });
+}
+
+function dashboardCurveFallbackSeries(commodity) {
+  var base = {
+    Brent: [82.40, 82.25, 82.12, 81.98, 81.76, 81.51, 81.18, 80.72],
+    WTI: [78.90, 78.73, 78.55, 78.38, 78.12, 77.84, 77.48, 77.05],
+    Ethane: [248, 251, 254, 257, 261, 265, 271, 278],
+    Naphtha: [612, 618, 623, 627, 632, 638, 646, 655],
+    EUA: [63.20, 63.55, 63.88, 64.10, 64.48, 64.93, 65.40, 66.05]
+  }[commodity] || [80, 80.2, 80.1, 79.9, 79.7, 79.4, 79.1, 78.8];
+  var labels = ['Spot', 'M+1', 'M+2', 'M+3', 'Q+1', 'Q+2', 'Cal+1', 'Cal+2'];
+  return base.map(function(price, idx) {
+    return { tenor: labels[idx], price: price };
+  });
+}
+
+function formatDashboardCurvePrice(value) {
+  var amount = Number(value || 0);
+  if (Math.abs(amount) >= 100) return '$' + amount.toFixed(0);
+  return '$' + amount.toFixed(2);
+}
+
+window.switchDashboardMarketCurve = function(curveKey, btn) {
+  activeDashboardMarketCurve = curveKey || 'brent';
+  document.querySelectorAll('#dashboard-curve-selector .curve-btn').forEach(function(node) {
+    node.classList.toggle('active', node === btn);
+  });
+  renderDashboardMarketCurveChart();
+};
+
+async function renderDashboardMarketCurveChart() {
+  var canvas = document.getElementById('dashboard-market-curve-chart');
+  if (!canvas || typeof Chart === 'undefined') return;
+
+  var commodityMap = marketCurveCommodityMap();
+  var commodity = commodityMap[activeDashboardMarketCurve] || 'Brent';
+  document.querySelectorAll('#dashboard-curve-selector .curve-btn').forEach(function(node) {
+    var buttonText = String(node.textContent || '').trim().toLowerCase();
+    node.classList.toggle('active', buttonText === activeDashboardMarketCurve);
+  });
+
+  var data = await apiCall('/market/curves?commodity=' + encodeURIComponent(commodity)).catch(function() { return null; });
+  var series = data && data[commodity] ? data[commodity] : null;
+  if (!series || !series.length) series = dashboardCurveFallbackSeries(commodity);
+
+  var labels = series.map(function(point) { return point.tenor || point.delivery_month || ''; });
+  var prices = series.map(function(point) { return Number(point.price || 0); });
+  var prompt = prices[0] || 0;
+  var far = prices[prices.length - 1] || prompt;
+  var shape = prompt > far ? 'Backwardation' : (prompt < far ? 'Contango' : 'Flat');
+  var curveMove = far - prompt;
+
+  var promptEl = document.getElementById('dash-curve-prompt');
+  var farEl = document.getElementById('dash-curve-far');
+  var shapeEl = document.getElementById('dash-curve-shape');
+  if (promptEl) promptEl.textContent = formatDashboardCurvePrice(prompt);
+  if (farEl) farEl.textContent = formatDashboardCurvePrice(far);
+  if (shapeEl) {
+    shapeEl.textContent = shape + ' ' + (curveMove >= 0 ? '+' : '') + curveMove.toFixed(Math.abs(curveMove) >= 10 ? 0 : 2);
+    shapeEl.style.color = shape === 'Backwardation' ? '#D97706' : (shape === 'Contango' ? '#2563EB' : 'var(--muted)');
+  }
+
+  var existing = Chart.getChart ? Chart.getChart(canvas) : dashboardMarketCurveChartRef;
+  if (existing) existing.destroy();
+
+  var chartText = typeof getThemeVar === 'function' ? (getThemeVar('--chart-text') || '#9CA3AF') : '#9CA3AF';
+  var chartGrid = typeof getThemeVar === 'function' ? (getThemeVar('--chart-grid') || '#F3F4F6') : '#F3F4F6';
+  var lineColor = shape === 'Backwardation' ? '#D97706' : '#2563EB';
+  dashboardMarketCurveChartRef = new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: commodity + ' forward curve',
+        data: prices,
+        borderColor: lineColor,
+        backgroundColor: shape === 'Backwardation' ? 'rgba(217,119,6,0.12)' : 'rgba(37,99,235,0.12)',
+        fill: true,
+        tension: 0.35,
+        borderWidth: 3,
+        pointRadius: 2,
+        pointHoverRadius: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) {
+              return commodity + ': ' + formatDashboardCurvePrice(ctx.raw);
+            }
+          }
+        }
+      },
+      scales: {
+        x: { ticks: { font: { size: 10 }, color: chartText, maxRotation: 0 }, grid: { display: false } },
+        y: {
+          ticks: { font: { size: 10 }, color: chartText, callback: function(value) { return formatDashboardCurvePrice(value); } },
+          grid: { color: chartGrid }
+        }
       }
     }
   });
@@ -4639,6 +4780,1159 @@ window.saveAIStudioProfile = async function() {
   }
 };
 
+function riskModuleMoney(value) {
+  const amount = Number(value || 0);
+  const sign = amount < 0 ? '-' : '';
+  const abs = Math.abs(amount);
+  if (abs >= 1000000) return `${sign}$${(abs / 1000000).toFixed(2)}M`;
+  if (abs >= 1000) return `${sign}$${(abs / 1000).toFixed(1)}K`;
+  return `${sign}$${abs.toFixed(0)}`;
+}
+
+function riskModuleNumber(value) {
+  return Number(value || 0).toLocaleString(undefined, { maximumFractionDigits: 0 });
+}
+
+function riskModuleStatusClass(status) {
+  const clean = String(status || '').toLowerCase();
+  if (clean === 'breach') return 'critical';
+  if (clean === 'warning') return 'warning';
+  return 'success';
+}
+
+const RISK_WORKBENCH_DEMO_EXPOSURES = [
+  { id:'demo-brent-usgc', book_name:'Crude Alpha', commodity:'Brent', region:'US Gulf Coast', tenor:'Prompt', source_type:'Mixed', physical_volume:420000, financial_volume:-285000, net_volume:135000, delta_equivalent:135000, normalized_price:91.42, hedge_effectiveness:0.68, basis_bucket:'Brent prompt / USGC', price_index:'ICE Brent M1', counterparty:'Shell Trading', reporting_tag:'Weekly Board Pack', physical_type:'Storage + export cargo', location_basis:'USGC Houston', var_contribution:1850000, stress_loss:-6120000, status:'Warning' },
+  { id:'demo-urals-med', book_name:'Med Arb', commodity:'Urals', region:'Mediterranean', tenor:'M+1', source_type:'Physical', physical_volume:180000, financial_volume:0, net_volume:180000, delta_equivalent:180000, normalized_price:72.08, hedge_effectiveness:0.12, basis_bucket:'Urals-Brent / Med', price_index:'Urals CIF Med', counterparty:'Vitol', reporting_tag:'Monthly Risk Committee', physical_type:'Delivered cargo', location_basis:'CIF Augusta', var_contribution:2420000, stress_loss:-5840000, status:'Breach' },
+  { id:'demo-ethane-nwe', book_name:'NGL Logistics', commodity:'Ethane', region:'Northwest Europe', tenor:'Prompt', source_type:'Physical', physical_volume:31000, financial_volume:-19000, net_volume:12000, delta_equivalent:12000, normalized_price:326.5, hedge_effectiveness:0.61, basis_bucket:'NGL freight-adjusted / NWE', price_index:'Mont Belvieu ethane + freight', counterparty:'INEOS Olefins', reporting_tag:'Weekly Board Pack', physical_type:'Vessel in transit', location_basis:'Rafnes delivery', var_contribution:980000, stress_loss:-2210000, status:'Warning' },
+  { id:'demo-lpg-usgc-nwe', book_name:'NGL Spread', commodity:'LPG', region:'USGC to NWE', tenor:'Q3-26', source_type:'Mixed', physical_volume:64000, financial_volume:-51000, net_volume:13000, delta_equivalent:13000, normalized_price:612.2, hedge_effectiveness:0.8, basis_bucket:'NGL freight-adjusted / USGC-NWE', price_index:'Argus propane CIF ARA', counterparty:'TotalEnergies', reporting_tag:'Weekly Board Pack', physical_type:'Propane cargo + swap', location_basis:'ARA delivered', var_contribution:760000, stress_loss:-1420000, status:'OK' },
+  { id:'demo-naphtha-ara', book_name:'Products', commodity:'Naphtha', region:'ARA', tenor:'M+2', source_type:'Financial', physical_volume:0, financial_volume:-95000, net_volume:-95000, delta_equivalent:-95000, normalized_price:712.4, hedge_effectiveness:1, basis_bucket:'Naphtha crack / ARA', price_index:'Platts CIF NWE Naphtha', counterparty:'BP Oil Intl', reporting_tag:'Monthly Risk Committee', physical_type:'Paper crack hedge', location_basis:'ARA', var_contribution:1120000, stress_loss:1860000, status:'OK' },
+  { id:'demo-gas-hh-ttf', book_name:'Gas Basis', commodity:'Natural Gas', region:'USGC / TTF', tenor:'Q4-26', source_type:'Financial', physical_volume:0, financial_volume:440000, net_volume:440000, delta_equivalent:440000, normalized_price:3.88, hedge_effectiveness:1, basis_bucket:'HH-TTF basis / Atlantic', price_index:'Henry Hub vs TTF', counterparty:'Glencore Energy', reporting_tag:'Monthly Risk Committee', physical_type:'Basis swap', location_basis:'HH-TTF', var_contribution:1360000, stress_loss:-3180000, status:'Warning' },
+  { id:'demo-carbon-eua', book_name:'Carbon', commodity:'EUA Carbon', region:'EU ETS', tenor:'Cal-27', source_type:'Financial', physical_volume:0, financial_volume:125000, net_volume:125000, delta_equivalent:125000, normalized_price:83.6, hedge_effectiveness:0.67, basis_bucket:'EUA outright / EU ETS', price_index:'ICE EUA Dec-27', counterparty:'Exchange', reporting_tag:'Executive Summary', physical_type:'Compliance-linked hedge', location_basis:'EU ETS', var_contribution:920000, stress_loss:-2560000, status:'OK' },
+  { id:'demo-wti-cushing', book_name:'Crude Hedge', commodity:'WTI', region:'Cushing', tenor:'M+1', source_type:'Financial', physical_volume:0, financial_volume:-155000, net_volume:-155000, delta_equivalent:-155000, normalized_price:87.16, hedge_effectiveness:1, basis_bucket:'WTI outright / Cushing', price_index:'NYMEX WTI M1', counterparty:'Exchange', reporting_tag:'Weekly Board Pack', physical_type:'Futures hedge', location_basis:'Cushing', var_contribution:1040000, stress_loss:3920000, status:'OK' },
+  { id:'demo-freight-afra', book_name:'Freight', commodity:'Freight', region:'Atlantic Basin', tenor:'Prompt', source_type:'Physical', physical_volume:1, financial_volume:0, net_volume:1, delta_equivalent:1, normalized_price:1285000, hedge_effectiveness:0.35, basis_bucket:'Aframax freight / Atlantic', price_index:'Baltic dirty tanker route', counterparty:'Stena Bulk', reporting_tag:'Weekly Board Pack', physical_type:'Voyage obligation', location_basis:'USGC-NWE', var_contribution:440000, stress_loss:-980000, status:'Warning' },
+  { id:'demo-dubai-sing', book_name:'Asia Crude', commodity:'Dubai', region:'Singapore', tenor:'Q3-26', source_type:'Mixed', physical_volume:90000, financial_volume:-72000, net_volume:18000, delta_equivalent:18000, normalized_price:88.21, hedge_effectiveness:0.8, basis_bucket:'Dubai-Brent / Asia', price_index:'Platts Dubai', counterparty:'Trafigura', reporting_tag:'Executive Summary', physical_type:'Term supply + hedge', location_basis:'Singapore', var_contribution:630000, stress_loss:-1180000, status:'OK' }
+];
+
+var riskWorkbenchCharts = {};
+var riskWorkbenchFilters = { commodity:'all', book:'all', region:'all', tenor:'all', source:'all', report:'weekly' };
+
+function riskWorkbenchStatusFor(row) {
+  if (row.status) return row.status;
+  const hedge = Number(row.hedge_effectiveness || 0);
+  const notional = Math.abs(Number(row.notional_usd || 0));
+  if (hedge < 0.35 && notional > 5000000) return 'Breach';
+  if (hedge < 0.7 || notional > 12000000) return 'Warning';
+  return 'OK';
+}
+
+function riskWorkbenchEnrichRow(row, index) {
+  const notional = Number(row.notional_usd || (Number(row.delta_equivalent || 0) * Number(row.normalized_price || 0)));
+  const absNotional = Math.abs(notional);
+  const commodity = row.commodity || 'Unknown';
+  const volSeed = (commodity.length + index + 3) * 0.0075;
+  return {
+    ...row,
+    id: row.id || row.position_id || `api-exp-${index}`,
+    book_name: row.book_name || 'Unassigned',
+    region: row.region || row.location_basis || 'Global',
+    tenor: row.tenor || 'Prompt',
+    source_type: row.source_type || 'Mixed',
+    normalized_price: Number(row.normalized_price || 0),
+    hedge_effectiveness: Number(row.hedge_effectiveness || 0),
+    notional_usd: notional,
+    physical_volume: Number(row.physical_volume || 0),
+    financial_volume: Number(row.financial_volume || 0),
+    net_volume: Number(row.net_volume || row.delta_equivalent || 0),
+    delta_equivalent: Number(row.delta_equivalent || row.net_volume || 0),
+    basis_bucket: row.basis_bucket || `${commodity} outright / ${row.region || 'Global'}`,
+    price_index: row.price_index || `${commodity} index`,
+    counterparty: row.counterparty || 'ETRM feed',
+    reporting_tag: row.reporting_tag || (index % 2 ? 'Monthly Risk Committee' : 'Weekly Board Pack'),
+    physical_type: row.physical_type || (Number(row.physical_volume || 0) ? 'Physical obligation' : 'Paper hedge'),
+    var_contribution: Number(row.var_contribution || Math.max(85000, absNotional * volSeed)),
+    stress_loss: Number(row.stress_loss || (notional >= 0 ? -1 : 1) * Math.max(120000, absNotional * (0.035 + volSeed))),
+    status: riskWorkbenchStatusFor(row)
+  };
+}
+
+function riskWorkbenchBuildData(data) {
+  const apiRows = (data?.exposures || []).map(riskWorkbenchEnrichRow);
+  const seen = new Set(apiRows.map(row => `${row.commodity}|${row.book_name}|${row.region}|${row.tenor}`));
+  const demoRows = RISK_WORKBENCH_DEMO_EXPOSURES
+    .map(riskWorkbenchEnrichRow)
+    .filter(row => !seen.has(`${row.commodity}|${row.book_name}|${row.region}|${row.tenor}`));
+  return apiRows.concat(demoRows).slice(0, 18);
+}
+
+function riskWorkbenchFilteredRows() {
+  const data = window.RISK_MODULE_STATE || {};
+  const rows = data.enriched_exposures || [];
+  return rows.filter(row => {
+    if (riskWorkbenchFilters.commodity !== 'all' && row.commodity !== riskWorkbenchFilters.commodity) return false;
+    if (riskWorkbenchFilters.book !== 'all' && row.book_name !== riskWorkbenchFilters.book) return false;
+    if (riskWorkbenchFilters.region !== 'all' && row.region !== riskWorkbenchFilters.region) return false;
+    if (riskWorkbenchFilters.tenor !== 'all' && row.tenor !== riskWorkbenchFilters.tenor) return false;
+    if (riskWorkbenchFilters.source !== 'all' && row.source_type !== riskWorkbenchFilters.source) return false;
+    return true;
+  });
+}
+
+function riskWorkbenchGroup(rows, key, valueKey) {
+  return rows.reduce((acc, row) => {
+    const label = row[key] || 'Other';
+    acc[label] = (acc[label] || 0) + Number(row[valueKey] || 0);
+    return acc;
+  }, {});
+}
+
+function riskWorkbenchUnique(rows, key) {
+  return [...new Set(rows.map(row => row[key]).filter(Boolean))].sort();
+}
+
+function riskWorkbenchOptionHtml(values, active) {
+  return '<option value="all">All</option>' + values.map(value => `<option value="${escapeHtml(value)}" ${value === active ? 'selected' : ''}>${escapeHtml(value)}</option>`).join('');
+}
+
+function riskWorkbenchSummary(rows, limits, backtesting) {
+  const gross = rows.reduce((sum, row) => sum + Math.abs(Number(row.notional_usd || 0)), 0);
+  const net = rows.reduce((sum, row) => sum + Number(row.notional_usd || 0), 0);
+  const physical = rows.reduce((sum, row) => sum + Math.abs(Number(row.physical_volume || 0) * Number(row.normalized_price || 0)), 0);
+  const price = rows.reduce((sum, row) => sum + Math.abs(Number(row.delta_equivalent || 0) * Number(row.normalized_price || 0)), 0);
+  const varTotal = rows.reduce((sum, row) => sum + Math.abs(Number(row.var_contribution || 0)), 0);
+  const stressLoss = rows.reduce((sum, row) => sum + Math.min(Number(row.stress_loss || 0), 0), 0);
+  const avgHedge = rows.length ? rows.reduce((sum, row) => sum + Number(row.hedge_effectiveness || 0), 0) / rows.length : 0;
+  const breaches = rows.filter(row => riskWorkbenchStatusFor(row) === 'Breach').length + (limits || []).filter(row => row.status === 'Breach').length;
+  const warnings = rows.filter(row => riskWorkbenchStatusFor(row) === 'Warning').length + (limits || []).filter(row => row.status === 'Warning').length;
+  return { gross, net, physical, price, varTotal, stressLoss, avgHedge, breaches, warnings, exceptions: Number(backtesting?.exceptions || 0) };
+}
+
+function riskWorkbenchTone(status) {
+  const clean = String(status || '').toLowerCase();
+  if (clean === 'breach') return 'danger';
+  if (clean === 'warning') return 'watch';
+  return 'ok';
+}
+
+function riskWorkbenchRenderTreemap(rows) {
+  const host = document.getElementById('risk-treemap');
+  if (!host) return;
+  const grouped = Object.entries(riskWorkbenchGroup(rows, 'commodity', 'notional_usd'))
+    .map(([label, value]) => ({ label, value: Math.abs(value) }))
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 8);
+  const total = grouped.reduce((sum, item) => sum + item.value, 0) || 1;
+  host.innerHTML = grouped.map((item, index) => {
+    const flex = Math.max(12, item.value / total * 100);
+    const tone = index < 2 ? 'danger' : index < 5 ? 'watch' : 'ok';
+    return `<button class="risk-tree-tile ${tone}" style="flex-basis:${flex}%" onclick="riskWorkbenchSetFilter('commodity','${escapeJsArg(item.label).slice(1, -1)}')">
+      <strong>${escapeHtml(item.label)}</strong><span>${riskModuleMoney(item.value)}</span>
+    </button>`;
+  }).join('');
+}
+
+function riskWorkbenchRenderHeatmap(rows) {
+  const host = document.getElementById('risk-heatmap');
+  if (!host) return;
+  const commodities = riskWorkbenchUnique(rows, 'commodity').slice(0, 7);
+  const tenors = riskWorkbenchUnique(rows, 'tenor').slice(0, 7);
+  const maxAbs = Math.max(1, ...rows.map(row => Math.abs(Number(row.notional_usd || 0))));
+  const body = commodities.map(commodity => {
+    const cells = tenors.map(tenor => {
+    const value = rows.filter(row => row.commodity === commodity && row.tenor === tenor).reduce((sum, row) => sum + Number(row.notional_usd || 0), 0);
+    const intensity = Math.min(1, Math.abs(value) / maxAbs);
+    const cls = value < 0 ? 'short' : value > 0 ? 'long' : 'flat';
+    return `<button class="risk-heat-cell ${cls}" style="--risk-alpha:${0.16 + intensity * 0.72}" title="${escapeHtml(commodity)} ${escapeHtml(tenor)} ${riskModuleMoney(value)}">
+      <span>${value ? riskModuleMoney(value) : '-'}</span>
+    </button>`;
+    }).join('');
+    return `<strong>${escapeHtml(commodity)}</strong>${cells}`;
+  }).join('');
+  host.innerHTML = `
+    <div class="risk-heat-grid" style="grid-template-columns:92px repeat(${Math.max(tenors.length, 1)}, minmax(70px,1fr))">
+      <div></div>${tenors.map(t => `<b>${escapeHtml(t)}</b>`).join('')}
+      ${body}
+    </div>`;
+}
+
+function riskWorkbenchRenderMap(rows) {
+  const host = document.getElementById('risk-region-map');
+  if (!host) return;
+  const coords = {
+    'US Gulf Coast':[20, 62], 'USGC to NWE':[42, 48], 'Mediterranean':[58, 57], 'Northwest Europe':[51, 35],
+    'ARA':[50, 38], 'USGC / TTF':[43, 45], 'EU ETS':[55, 35], 'Cushing':[24, 54], 'Atlantic Basin':[39, 50],
+    'Singapore':[78, 68], 'Global':[48, 52]
+  };
+  const grouped = Object.entries(riskWorkbenchGroup(rows, 'region', 'notional_usd')).map(([region, value]) => ({ region, value }));
+  const maxAbs = Math.max(1, ...grouped.map(item => Math.abs(item.value)));
+  host.innerHTML = grouped.map(item => {
+    const point = coords[item.region] || coords.Global;
+    const size = 24 + Math.abs(item.value) / maxAbs * 34;
+    const cls = item.value < 0 ? 'short' : 'long';
+    return `<button class="risk-map-bubble ${cls}" style="left:${point[0]}%;top:${point[1]}%;width:${size}px;height:${size}px" onclick="riskWorkbenchSetFilter('region','${escapeJsArg(item.region).slice(1, -1)}')" title="${escapeHtml(item.region)} ${riskModuleMoney(item.value)}">
+      <span>${escapeHtml(item.region.split(' ')[0])}</span>
+    </button>`;
+  }).join('') + '<div class="risk-map-label">Regional exposure bubbles</div>';
+}
+
+function riskWorkbenchDestroyCharts() {
+  Object.values(riskWorkbenchCharts).forEach(chart => {
+    if (chart && typeof chart.destroy === 'function') chart.destroy();
+  });
+  riskWorkbenchCharts = {};
+}
+
+function riskWorkbenchChart(id, config) {
+  const canvas = document.getElementById(id);
+  if (!canvas || typeof Chart === 'undefined') return;
+  riskWorkbenchCharts[id] = new Chart(canvas, config);
+}
+
+function riskWorkbenchRenderCharts(rows, stress) {
+  riskWorkbenchDestroyCharts();
+  const commodityGroups = riskWorkbenchGroup(rows, 'commodity', 'var_contribution');
+  const physicalByCommodity = {};
+  const financialByCommodity = {};
+  rows.forEach(row => {
+    const label = row.commodity || 'Other';
+    physicalByCommodity[label] = (physicalByCommodity[label] || 0) + Math.abs(Number(row.physical_volume || 0) * Number(row.normalized_price || 0));
+    financialByCommodity[label] = (financialByCommodity[label] || 0) + Math.abs(Number(row.financial_volume || 0) * Number(row.normalized_price || 0));
+  });
+  const commodities = Object.keys({ ...physicalByCommodity, ...financialByCommodity }).slice(0, 8);
+  riskWorkbenchChart('risk-physical-chart', {
+    type:'bar',
+    data:{ labels:commodities, datasets:[
+      { label:'Physical', data:commodities.map(c => physicalByCommodity[c] || 0), backgroundColor:'#0E7490' },
+      { label:'Paper hedge', data:commodities.map(c => financialByCommodity[c] || 0), backgroundColor:'#64748B' }
+    ]},
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom' }, tooltip:{ callbacks:{ label:ctx => `${ctx.dataset.label}: ${riskModuleMoney(ctx.parsed.y)}` }}}, scales:{ x:{ stacked:true, ticks:{ maxRotation:0 }}, y:{ stacked:true, ticks:{ callback:v => riskModuleMoney(v) }}}}
+  });
+  riskWorkbenchChart('risk-var-donut', {
+    type:'doughnut',
+    data:{ labels:Object.keys(commodityGroups), datasets:[{ data:Object.values(commodityGroups).map(Math.abs), backgroundColor:['#0E7490','#DC2626','#D97706','#2563EB','#16A34A','#7C3AED','#475569','#0891B2'] }] },
+    options:{ responsive:true, maintainAspectRatio:false, cutout:'64%', plugins:{ legend:{ position:'bottom' }, tooltip:{ callbacks:{ label:ctx => `${ctx.label}: ${riskModuleMoney(ctx.parsed)}` }}}}
+  });
+  const scenarioRows = stress && stress.length ? stress : [
+    { scenario_name:'Brent -5%', total_pnl_impact:rows.reduce((s, r) => s + Number(r.stress_loss || 0) * 0.42, 0) },
+    { scenario_name:'Basis blowout', total_pnl_impact:rows.reduce((s, r) => s + Number(r.stress_loss || 0) * 0.68, 0) },
+    { scenario_name:'Freight delay', total_pnl_impact:rows.reduce((s, r) => s + Number(r.stress_loss || 0) * 0.31, 0) },
+    { scenario_name:'Gas rally', total_pnl_impact:rows.reduce((s, r) => s + Number(r.stress_loss || 0) * 0.24, 0) }
+  ];
+  riskWorkbenchChart('risk-stress-chart', {
+    type:'bar',
+    data:{ labels:scenarioRows.map(s => s.scenario_name), datasets:[{ label:'P&L impact', data:scenarioRows.map(s => s.total_pnl_impact), backgroundColor:scenarioRows.map(s => Number(s.total_pnl_impact) < 0 ? '#DC2626' : '#16A34A') }] },
+    options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false }, tooltip:{ callbacks:{ label:ctx => riskModuleMoney(ctx.parsed.x) }}}, scales:{ x:{ ticks:{ callback:v => riskModuleMoney(v) }}}}
+  });
+  riskWorkbenchChart('risk-hedge-scatter', {
+    type:'scatter',
+    data:{ datasets:[{ label:'Exposure rows', data:rows.map(row => ({ x:Math.abs(Number(row.notional_usd || 0)), y:Number(row.hedge_effectiveness || 0) * 100, label:row.commodity })), backgroundColor:rows.map(row => riskWorkbenchTone(riskWorkbenchStatusFor(row)) === 'danger' ? '#DC2626' : riskWorkbenchTone(riskWorkbenchStatusFor(row)) === 'watch' ? '#D97706' : '#0E7490'), pointRadius:6 }] },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false }, tooltip:{ callbacks:{ label:ctx => `${ctx.raw.label}: ${riskModuleMoney(ctx.raw.x)} / ${ctx.raw.y.toFixed(0)}% hedged` }}}, scales:{ x:{ title:{ display:true, text:'Gross notional' }, ticks:{ callback:v => riskModuleMoney(v) }}, y:{ min:0, max:105, title:{ display:true, text:'Hedge effectiveness' }, ticks:{ callback:v => `${v}%` }}}}
+  });
+}
+
+function riskWorkbenchRenderTables(rows, reports) {
+  const tbody = document.getElementById('risk-exposure-rows');
+  if (tbody) {
+    tbody.innerHTML = rows
+      .sort((a, b) => Math.abs(Number(b.var_contribution || 0)) - Math.abs(Number(a.var_contribution || 0)))
+      .map(row => `
+        <tr>
+          <td><strong>${escapeHtml(row.commodity)}</strong><span>${escapeHtml(row.price_index || '')}</span></td>
+          <td>${escapeHtml(row.book_name)}<span>${escapeHtml(row.region)} / ${escapeHtml(row.tenor)}</span></td>
+          <td>${escapeHtml(row.source_type)}<span>${escapeHtml(row.physical_type || '')}</span></td>
+          <td class="right">${riskModuleNumber(row.physical_volume)}</td>
+          <td class="right">${riskModuleNumber(row.financial_volume)}</td>
+          <td class="right">${riskModuleNumber(row.delta_equivalent)}</td>
+          <td class="right">${riskModuleMoney(row.notional_usd)}</td>
+          <td class="right">${Number(row.hedge_effectiveness || 0).toLocaleString(undefined, { style:'percent', maximumFractionDigits:0 })}</td>
+          <td class="right">${riskModuleMoney(row.var_contribution)}</td>
+          <td><span class="status-badge ${riskModuleStatusClass(row.status)}">${escapeHtml(row.status)}</span></td>
+        </tr>
+      `).join('');
+  }
+  const reportHost = document.getElementById('risk-report-pack');
+  if (reportHost) {
+    const packRows = [
+      { type:'Weekly', title:'Executive exposure movements', status:'Ready', focus:'Commodity, book, and region changes' },
+      { type:'Weekly', title:'Top five VaR and stress drivers', status:'Ready', focus:'Board-level risk narrative' },
+      { type:'Monthly', title:'Risk committee pack', status:'Draft', focus:'Limits, backtesting, methodology' },
+      { type:'Monthly', title:'Physical obligations appendix', status:'Ready', focus:'Cargo, storage, and delivery exposure' }
+    ].concat((reports || []).map(row => ({ type:row.report_type, title:row.title, status:row.status, focus:row.methodology }))).slice(0, 6);
+    reportHost.innerHTML = packRows.map(row => `
+      <button class="risk-report-row" onclick="riskWorkbenchDraftNarrative('${escapeJsArg(row.title).slice(1, -1)}')">
+        <span><b>${escapeHtml(row.type)}</b>${escapeHtml(row.title)}</span>
+        <em>${escapeHtml(row.focus || '')}</em>
+        <strong>${escapeHtml(row.status || 'Ready')}</strong>
+      </button>
+    `).join('');
+  }
+}
+
+function riskWorkbenchRenderNarrative(rows, summary) {
+  const host = document.getElementById('risk-management-note');
+  if (!host) return;
+  const topCommodity = Object.entries(riskWorkbenchGroup(rows, 'commodity', 'var_contribution')).sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]))[0];
+  const topRegion = Object.entries(riskWorkbenchGroup(rows, 'region', 'notional_usd')).sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]))[0];
+  host.innerHTML = `
+    <strong>Management readout</strong>
+    <p>Gross exposure is ${riskModuleMoney(summary.gross)} with net ${summary.net >= 0 ? 'long' : 'short'} exposure of ${riskModuleMoney(summary.net)}. ${escapeHtml(topCommodity?.[0] || 'Commodity')} is the largest VaR contributor and ${escapeHtml(topRegion?.[0] || 'regional')} exposure is the primary concentration.</p>
+    <p>${summary.breaches} breach items, ${summary.warnings} watch items, and ${summary.exceptions} backtesting exceptions should be referenced in the ${riskWorkbenchFilters.report === 'monthly' ? 'monthly risk committee' : 'weekly management'} pack.</p>
+  `;
+}
+
+function riskWorkbenchRenderFilteredView() {
+  const data = window.RISK_MODULE_STATE || {};
+  const rows = riskWorkbenchFilteredRows();
+  const summary = riskWorkbenchSummary(rows, data.limits || [], data.backtesting || {});
+  const setText = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
+  setText('risk-kpi-gross', riskModuleMoney(summary.gross));
+  setText('risk-kpi-net', riskModuleMoney(summary.net));
+  setText('risk-kpi-physical', riskModuleMoney(summary.physical));
+  setText('risk-kpi-price', riskModuleMoney(summary.price));
+  setText('risk-kpi-var', riskModuleMoney(summary.varTotal));
+  setText('risk-kpi-hedge', `${(summary.avgHedge * 100).toFixed(0)}%`);
+  setText('risk-kpi-breaches', String(summary.breaches));
+  setText('risk-filter-count', `${rows.length} exposure rows`);
+  riskWorkbenchRenderNarrative(rows, summary);
+  riskWorkbenchRenderTreemap(rows);
+  riskWorkbenchRenderHeatmap(rows);
+  riskWorkbenchRenderMap(rows);
+  riskWorkbenchRenderCharts(rows, data.stress || []);
+  riskWorkbenchRenderTables(rows, data.reports || []);
+}
+
+window.riskWorkbenchSetFilter = function(key, value) {
+  riskWorkbenchFilters[key] = value || 'all';
+  riskWorkbenchRenderFilteredView();
+  const select = document.querySelector(`[data-risk-filter="${key}"]`);
+  if (select) select.value = riskWorkbenchFilters[key];
+};
+
+window.riskWorkbenchResetFilters = function() {
+  riskWorkbenchFilters = { commodity:'all', book:'all', region:'all', tenor:'all', source:'all', report:riskWorkbenchFilters.report || 'weekly' };
+  document.querySelectorAll('[data-risk-filter]').forEach(select => { select.value = 'all'; });
+  riskWorkbenchRenderFilteredView();
+};
+
+window.riskWorkbenchSetReport = function(report) {
+  riskWorkbenchFilters.report = report || 'weekly';
+  document.querySelectorAll('.risk-period-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.report === riskWorkbenchFilters.report));
+  riskWorkbenchRenderFilteredView();
+};
+
+window.riskWorkbenchDraftNarrative = function(topic) {
+  const rows = riskWorkbenchFilteredRows();
+  const commodities = riskWorkbenchUnique(rows, 'commodity').slice(0, 5).join(', ');
+  openCopilot();
+  sendCopilotMessage(`Draft a ${riskWorkbenchFilters.report} senior management risk note for ${topic || 'the exposure workbench'}. Focus on exposure, physical obligations, price exposure, VaR drivers, limit issues, and recommended actions. Commodities in scope: ${commodities}.`);
+};
+
+function renderRiskModule(data) {
+  const root = document.getElementById('risk-module-root');
+  if (!root) return;
+  const sourceRows = riskWorkbenchBuildData(data);
+  data.enriched_exposures = sourceRows;
+  const rows = sourceRows;
+  const metrics = data?.metrics || [];
+  const limits = data?.limits || [];
+  const backtesting = data?.backtesting || { observations: [], exceptions: 0, exception_rate_pct: 0 };
+  const latest = data?.latest_var || metrics.find(item => item.confidence === 0.99 && item.horizon_days === 1) || {};
+  const summary = riskWorkbenchSummary(rows, limits, backtesting);
+  const filterRows = [
+    ['commodity', 'Commodity', riskWorkbenchUnique(rows, 'commodity')],
+    ['book', 'Book', riskWorkbenchUnique(rows, 'book_name')],
+    ['region', 'Region', riskWorkbenchUnique(rows, 'region')],
+    ['tenor', 'Tenor', riskWorkbenchUnique(rows, 'tenor')],
+    ['source', 'Exposure Type', riskWorkbenchUnique(rows, 'source_type')]
+  ];
+
+  root.innerHTML = `
+    <div class="screen risk-workbench">
+      <div class="screen-header">
+        <div>
+          <div class="screen-title">Exposure Workbench</div>
+          <div class="screen-subtitle">Exposure, physical obligations, price risk, stress, limits, and executive reporting in one risk cockpit.</div>
+        </div>
+        <div class="screen-actions">
+          <button class="btn btn-secondary btn-sm" onclick="riskWorkbenchSetReport('weekly')">Weekly Pack</button>
+          <button class="btn btn-secondary btn-sm" onclick="riskWorkbenchSetReport('monthly')">Monthly Pack</button>
+          <button class="btn btn-secondary btn-sm" onclick="riskWorkbenchDraftNarrative('Executive exposure summary')">AI Narrative</button>
+          <button class="btn btn-primary btn-sm" onclick="runRiskModule()">Run Risk</button>
+        </div>
+      </div>
+
+      <div class="risk-hero">
+        <div class="risk-hero-main">
+          <div class="risk-hero-eyebrow">Upper management exposure view</div>
+          <h2>Physical and price exposure across the energy portfolio</h2>
+          <div id="risk-management-note" class="risk-management-note"></div>
+        </div>
+        <div class="risk-hero-side">
+          <div><span>1D 99% VaR</span><strong>${riskModuleMoney(latest.var_amount)}</strong></div>
+          <div><span>Expected shortfall</span><strong>${riskModuleMoney(latest.expected_shortfall)}</strong></div>
+          <div><span>Model exceptions</span><strong>${backtesting.exceptions || 0}</strong></div>
+        </div>
+      </div>
+
+      <div class="risk-filter-bar">
+        ${filterRows.map(([key, label, values]) => `
+          <label>
+            <span>${label}</span>
+            <select data-risk-filter="${key}" onchange="riskWorkbenchSetFilter('${key}', this.value)">
+              ${riskWorkbenchOptionHtml(values, riskWorkbenchFilters[key])}
+            </select>
+          </label>
+        `).join('')}
+        <div class="risk-period-control">
+          <button class="risk-period-btn active" data-report="weekly" onclick="riskWorkbenchSetReport('weekly')">Weekly</button>
+          <button class="risk-period-btn" data-report="monthly" onclick="riskWorkbenchSetReport('monthly')">Monthly</button>
+        </div>
+        <button class="btn btn-secondary btn-sm" onclick="riskWorkbenchResetFilters()">Reset</button>
+        <span id="risk-filter-count" class="risk-filter-count">${rows.length} exposure rows</span>
+      </div>
+
+      <div class="risk-kpi-grid">
+        <div class="risk-kpi-card"><span>Gross Exposure</span><strong id="risk-kpi-gross">${riskModuleMoney(summary.gross)}</strong><em>Total absolute notional</em></div>
+        <div class="risk-kpi-card"><span>Net Exposure</span><strong id="risk-kpi-net">${riskModuleMoney(summary.net)}</strong><em>Long / short after hedge</em></div>
+        <div class="risk-kpi-card"><span>Physical Exposure</span><strong id="risk-kpi-physical">${riskModuleMoney(summary.physical)}</strong><em>Cargo, storage, logistics</em></div>
+        <div class="risk-kpi-card"><span>Price Exposure</span><strong id="risk-kpi-price">${riskModuleMoney(summary.price)}</strong><em>Delta-equivalent value</em></div>
+        <div class="risk-kpi-card"><span>VaR Contribution</span><strong id="risk-kpi-var">${riskModuleMoney(summary.varTotal)}</strong><em>Commodity-level risk</em></div>
+        <div class="risk-kpi-card"><span>Hedge Coverage</span><strong id="risk-kpi-hedge">${(summary.avgHedge * 100).toFixed(0)}%</strong><em>Average effectiveness</em></div>
+        <div class="risk-kpi-card danger"><span>Breaches</span><strong id="risk-kpi-breaches">${summary.breaches}</strong><em>${summary.warnings} watch items</em></div>
+      </div>
+
+      <div class="risk-viz-grid">
+        <section class="risk-panel risk-panel-wide">
+          <div class="risk-panel-head"><h3>Commodity Exposure Treemap</h3><span>Size by gross notional</span></div>
+          <div id="risk-treemap" class="risk-treemap"></div>
+        </section>
+        <section class="risk-panel">
+          <div class="risk-panel-head"><h3>Physical vs Paper</h3><span>Exposure stack</span></div>
+          <div class="risk-chart"><canvas id="risk-physical-chart"></canvas></div>
+        </section>
+        <section class="risk-panel risk-panel-wide">
+          <div class="risk-panel-head"><h3>Price Exposure Heatmap</h3><span>Commodity x tenor</span></div>
+          <div id="risk-heatmap" class="risk-heatmap"></div>
+        </section>
+        <section class="risk-panel">
+          <div class="risk-panel-head"><h3>Regional Concentration</h3><span>Physical and basis hubs</span></div>
+          <div id="risk-region-map" class="risk-region-map"></div>
+        </section>
+        <section class="risk-panel">
+          <div class="risk-panel-head"><h3>VaR Contribution</h3><span>Commodity drivers</span></div>
+          <div class="risk-chart"><canvas id="risk-var-donut"></canvas></div>
+        </section>
+        <section class="risk-panel">
+          <div class="risk-panel-head"><h3>Stress Impact</h3><span>Scenario P&L</span></div>
+          <div class="risk-chart"><canvas id="risk-stress-chart"></canvas></div>
+        </section>
+        <section class="risk-panel">
+          <div class="risk-panel-head"><h3>Hedge Effectiveness</h3><span>Exposure size vs coverage</span></div>
+          <div class="risk-chart"><canvas id="risk-hedge-scatter"></canvas></div>
+        </section>
+        <section class="risk-panel">
+          <div class="risk-panel-head"><h3>Report Pack Builder</h3><span>Weekly and monthly outputs</span></div>
+          <div id="risk-report-pack" class="risk-report-pack"></div>
+        </section>
+      </div>
+
+      <div class="risk-panel risk-table-panel">
+        <div class="risk-panel-head">
+          <h3>Exposure Drilldown</h3>
+          <span>Physical, financial, delta, price index, VaR, and control status</span>
+        </div>
+        <div class="risk-table-wrap">
+          <table class="data-table risk-exposure-table">
+            <thead>
+              <tr>
+                <th>Commodity</th><th>Book / Region</th><th>Exposure</th>
+                <th class="right">Physical</th><th class="right">Financial</th><th class="right">Delta Eq.</th>
+                <th class="right">Notional</th><th class="right">Hedge</th><th class="right">VaR</th><th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="risk-exposure-rows"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  `;
+  riskWorkbenchSetReport(riskWorkbenchFilters.report || 'weekly');
+  riskWorkbenchRenderFilteredView();
+}
+
+const RISK_REPORTING_REPORTS = [
+  { id:'current-exposure', label:'Current Exposure', group:'Risk', description:'Position, source, curve, period, and counterparty rows' },
+  { id:'risk-exposure', label:'Risk Exposure', group:'Risk', description:'Risk ID, deal detail, VaR, stress, and control flags' },
+  { id:'credit-exposure', label:'Credit Exposure', group:'Credit', description:'Counterparty concentration and limit watch' },
+  { id:'deal-search', label:'Deal Search', group:'Commercial', description:'Find deals, details, curves, and linked rows' },
+  { id:'shipment-cost', label:'Shipment to Cost', group:'Logistics', description:'Movement, planned transfer, inventory, and cost checks' },
+  { id:'price-curves', label:'Price Curves', group:'Pricing', description:'Curve service, curve product, quote date, and pricing status' },
+  { id:'mark-to-market', label:'Mark to Market', group:'Finance', description:'Notional, VaR, stress, MTM, and explanation' }
+];
+
+const RISK_REPORTING_SAMPLE_ROWS = [
+  { risk_id:'2266598', deal:'PEMPC21LP0007', deal_detail_id:'63', our_company:'Pembina Midstream Limited Partnership', their_company:'Pembina Pipeline Corporation', risk_type:'Physical', product:'SYN', location:'Edmonton AB South Terminal', curve_service:'NYMEX', curve_product:'NYMEX WTI (CL)', curve_location:'n/a', period_start:'2026-08-01', period_end:'2026-08-31', strategy:'CRD-STREAM-Crude-PMLP', position_volume:-2142.86, priced_in_pct:1, portfolio_position_group:'AOSPL', child_product:'SYN', curve_child_product:'NYMEX WTI (CL)', period_group_start:'2026-08-01', period_group_end:'2026-08-31', end_of_day:'2026-06-23', exposure_quote_date:'', source:'Movement Transaction' },
+  { risk_id:'2266598', deal:'PEMPC21LP0007', deal_detail_id:'63', our_company:'Pembina Midstream Limited Partnership', their_company:'Pembina Pipeline Corporation', risk_type:'Physical', product:'SYN', location:'Edmonton AB South Terminal', curve_service:'Calrock Forward', curve_product:'SYN / EDM Diff', curve_location:'Edmonton AB', period_start:'2026-06-01', period_end:'2026-06-30', strategy:'CRD-STREAM-Crude-PMLP', position_volume:-9000, priced_in_pct:1, portfolio_position_group:'AOSPL', child_product:'SYN', curve_child_product:'SYN / EDM Diff', period_group_start:'2026-06-01', period_group_end:'2026-06-30', end_of_day:'2026-06-23', exposure_quote_date:'', source:'Movement Transaction' },
+  { risk_id:'2266607', deal:'ENBPL21LP0005', deal_detail_id:'9', our_company:'Pembina Midstream Limited Partnership', their_company:'Enbridge Pipelines Inc.', risk_type:'Physical', product:'SYN', location:'Edmonton AB South Terminal', curve_service:'Calrock Forward', curve_product:'SYN / EDM Diff', curve_location:'Edmonton AB', period_start:'2026-06-01', period_end:'2026-06-30', strategy:'SYN-STREAM-Crude-PMLP', position_volume:40000, priced_in_pct:1, portfolio_position_group:'AOSPL', child_product:'SYN', curve_child_product:'SYN / EDM Diff', period_group_start:'2026-06-01', period_group_end:'2026-06-30', end_of_day:'2026-06-23', exposure_quote_date:'', source:'Movement Transaction' },
+  { risk_id:'2214608', deal:'ENBPL21LP0005', deal_detail_id:'8', our_company:'Pembina Midstream Limited Partnership', their_company:'Enbridge Pipelines Inc.', risk_type:'Physical', product:'SYN', location:'North 40 AB Terminal', curve_service:'Calrock Forward', curve_product:'SYN / EDM Diff', curve_location:'Edmonton AB', period_start:'2026-07-01', period_end:'2026-07-31', strategy:'SYN-STREAM-Crude-PMLP', position_volume:-75000, priced_in_pct:1, portfolio_position_group:'AOSPL', child_product:'SYN', curve_child_product:'SYN / EDM Diff', period_group_start:'2026-07-01', period_group_end:'2026-07-31', end_of_day:'2026-06-23', exposure_quote_date:'', source:'Planned Transfer' },
+  { risk_id:'2108742', deal:'PEMPC21BD0011', deal_detail_id:'1', our_company:'Pembina Midstream Limited Partnership', their_company:'Pembina Pipeline Corporation', risk_type:'Inventory', product:'SYN', location:'North 40 AB Terminal', curve_service:'NYMEX', curve_product:'NYMEX WTI (CL)', curve_location:'n/a', period_start:'2026-08-01', period_end:'2026-08-31', strategy:'SYN-STREAM-Crude-PMLP', position_volume:16170.01, priced_in_pct:1, portfolio_position_group:'AOSPL', child_product:'SYN', curve_child_product:'NYMEX WTI (CL)', period_group_start:'2026-08-01', period_group_end:'2026-08-31', end_of_day:'2026-06-23', exposure_quote_date:'', source:'Actual Balance' },
+  { risk_id:'', deal:'CNVUS26TB0002', deal_detail_id:'2', our_company:'Pembina Midstream Limited Partnership', their_company:'Cenovus Energy Inc.', risk_type:'Physical', product:'SYN', location:'Edmonton AB South Terminal', curve_service:'Calrock Forward', curve_product:'SYN / EDM Diff', curve_location:'Edmonton AB', period_start:'2026-06-01', period_end:'2026-06-30', strategy:'SYN-STREAM-Crude-PMLP', position_volume:-48544.80, priced_in_pct:1, portfolio_position_group:'AOSPL', child_product:'SYN', curve_child_product:'SYN / EDM Diff', period_group_start:'2026-06-01', period_group_end:'2026-06-30', end_of_day:'2026-06-23', exposure_quote_date:'', source:'Movement Transaction' },
+  { risk_id:'', deal:'PEMPC25BD0004', deal_detail_id:'5', our_company:'Pembina Midstream Limited Partnership', their_company:'Pembina Pipeline Corporation', risk_type:'Inventory', product:'SYN', location:'Edmonton AB South Terminal', curve_service:'Calrock Forward', curve_product:'SYN / EDM Diff', curve_location:'Edmonton AB', period_start:'2026-06-01', period_end:'2026-06-30', strategy:'SYN-STREAM-Crude-PMLP', position_volume:-48544.80, priced_in_pct:1, portfolio_position_group:'AOSPL', child_product:'SYN', curve_child_product:'SYN / EDM Diff', period_group_start:'2026-06-01', period_group_end:'2026-06-30', end_of_day:'2026-06-23', exposure_quote_date:'', source:'Inventory Change' },
+  { risk_id:'', deal:'UNIPC26TP0006', deal_detail_id:'1', our_company:'Pembina Midstream Limited Partnership', their_company:'Unipec Canada Ltd.', risk_type:'Physical', product:'SYN', location:'Edmonton AB - AOSPL', curve_service:'NYMEX', curve_product:'NYMEX WTI (CL)', curve_location:'n/a', period_start:'2026-08-01', period_end:'2026-08-31', strategy:'SYN-STREAM-Crude-PMLP', position_volume:10000, priced_in_pct:1, portfolio_position_group:'AOSPL', child_product:'SYN', curve_child_product:'NYMEX WTI (CL)', period_group_start:'2026-08-01', period_group_end:'2026-08-31', end_of_day:'2026-06-23', exposure_quote_date:'', source:'Planned Transfer' }
+];
+
+var riskReportingState = {
+  report:'current-exposure',
+  filters:{ company:'all', counterparty:'all', risk_type:'all', product:'all', location:'all', curve:'all', source:'all', period:'all', date_from:'', date_to:'', search:'' },
+  groupBy:'their_company',
+  selectedIssue:null,
+  sortKey:'abs_position',
+  sortDir:'desc',
+  reportPanelOpen:true,
+  filtersOpen:false,
+  drillOpen:false,
+  aiPanelOpen:false,
+  columnsOpen:false,
+  hiddenColumns:['our_company', 'strategy', 'end_of_day']
+};
+
+function riskReportingDate(value) {
+  if (!value) return '';
+  const text = String(value);
+  return text.length >= 10 ? text.slice(0, 10) : text;
+}
+
+function riskReportingMonth(value) {
+  const text = riskReportingDate(value);
+  return text.length >= 7 ? text.slice(0, 7) : 'No Period';
+}
+
+function riskReportingToReportRow(row, index) {
+  const commodity = row.commodity || row.product || row.child_product || 'SYN';
+  const volume = Number(row.position_volume ?? row.delta_equivalent ?? row.net_volume ?? 0);
+  const price = Number(row.normalized_price || 82 + (index % 7) * 2.15);
+  const notional = Number(row.notional_usd || volume * price);
+  const absPosition = Math.abs(volume);
+  const dealSeed = String(row.deal || row.id || row.position_id || `RISK${index + 1}`).replace(/[^A-Za-z0-9]/g, '').slice(0, 10).toUpperCase();
+  const sourceType = row.source || row.source_type || (Number(row.physical_volume || 0) ? 'Movement Transaction' : 'Financial Deal');
+  const riskType = row.risk_type || (sourceType.indexOf('Inventory') >= 0 ? 'Inventory' : (row.source_type === 'Financial' ? 'Quotational' : 'Physical'));
+  const periodStart = riskReportingDate(row.period_group_start || row.period_start || row.as_of || '2026-08-01');
+  const periodEnd = riskReportingDate(row.period_group_end || row.period_end || '2026-08-31');
+  const curve = row.curve_child_product || row.curve_product || row.price_index || row.basis_bucket || `${commodity} Index`;
+  const status = riskWorkbenchStatusFor(row);
+  return {
+    row_id: row.row_id || `rr-${index}`,
+    risk_id: row.risk_id || (riskReportingState.report === 'risk-exposure' ? String(2200000 + index * 17) : ''),
+    deal: row.deal || `${commodity.slice(0, 3).toUpperCase()}${dealSeed}${String(index + 1).padStart(3, '0')}`,
+    deal_detail_id: String(row.deal_detail_id || row.position_id || (index % 8) + 1),
+    our_company: row.our_company || 'Pembina Midstream Limited Partnership',
+    their_company: row.their_company || row.counterparty || (index % 3 === 0 ? 'Pembina Pipeline Corporation' : row.book_name || 'Exchange'),
+    risk_type: riskType,
+    product: row.product || commodity,
+    location: row.location || row.location_basis || row.region || 'AOSPL',
+    curve_service: row.curve_service || (String(curve).indexOf('NYMEX') >= 0 ? 'NYMEX' : 'Calrock Forward'),
+    curve_product: row.curve_product || curve,
+    curve_location: row.curve_location || (String(curve).indexOf('NYMEX') >= 0 ? 'n/a' : row.region || 'Edmonton AB'),
+    period_start: periodStart,
+    period_end: periodEnd,
+    strategy: row.strategy || `${commodity.slice(0, 3).toUpperCase()}-STREAM-Crude-PMLP`,
+    position_volume: volume,
+    abs_position: absPosition,
+    priced_in_pct: Number(row.priced_in_pct ?? row.hedge_effectiveness ?? 1),
+    portfolio_position_group: row.portfolio_position_group || row.book_name || 'AOSPL',
+    child_product: row.child_product || commodity,
+    curve_child_product: curve,
+    period_group_start: periodStart,
+    period_group_end: periodEnd,
+    period_month: riskReportingMonth(periodStart),
+    end_of_day: riskReportingDate(row.end_of_day || row.as_of || '2026-06-23'),
+    exposure_quote_date: riskReportingDate(row.exposure_quote_date || ''),
+    source: sourceType,
+    notional_usd: notional,
+    var_contribution: Number(row.var_contribution || Math.abs(notional) * 0.075),
+    stress_loss: Number(row.stress_loss || -Math.abs(notional) * 0.16),
+    status,
+    ai_severity: status === 'Breach' ? 'High' : status === 'Warning' ? 'Medium' : 'Low'
+  };
+}
+
+function riskReportingExpandRows(rows) {
+  const counterparties = [
+    'Pembina Pipeline Corporation', 'Enbridge Pipelines Inc.', 'Pembina Oil Sands Pipeline L.P.',
+    'Suncor Energy Marketing Inc.', 'Cenovus Energy Inc.', 'Unipec Canada Ltd.',
+    'CNOOC Marketing Canada', 'Shell Trading Canada', 'Elbow River Marketing Ltd.'
+  ];
+  const locations = ['North 40 AB Terminal', 'Edmonton AB South Terminal', 'Edmonton AB - AOSPL', 'AOSPL'];
+  const curves = [
+    ['Calrock Forward', 'SYN / EDM Diff', 'Edmonton AB'],
+    ['Calrock Forward', 'SYN / SSP Diff', 'Edmonton AB'],
+    ['NYMEX', 'NYMEX WTI (CL)', 'n/a'],
+    ['WADF Enbridge PL', 'MSW Diff', 'Edmonton AB'],
+    ['RFCRD-XCOMMCRDINSYN', 'CRD', 'Edmonton AB']
+  ];
+  const sources = ['Movement Transaction', 'Inventory Change', 'Planned Transfer', 'Time Based Estimated Transaction', 'Actual Balance', 'Obligation'];
+  const riskTypes = ['Physical', 'Inventory', 'Quotational'];
+  const expanded = [];
+  rows.forEach((row, rowIndex) => {
+    expanded.push({ ...row, row_id: `${row.row_id}-base` });
+    for (let i = 1; i <= 8; i += 1) {
+      const month = 6 + ((rowIndex + i) % 5);
+      const curve = curves[(rowIndex + i) % curves.length];
+      const factor = (i % 2 ? -1 : 1) * (0.45 + (i * 0.13));
+      const volume = Math.round(Number(row.position_volume || 0) * factor * 100) / 100 || (i % 2 ? -10000 : 12500);
+      expanded.push({
+        ...row,
+        row_id: `${row.row_id}-${i}`,
+        risk_id: row.risk_id || String(2200000 + rowIndex * 97 + i),
+        deal: `${String(row.deal || 'DEAL').replace(/\d+$/, '')}${String(1000 + rowIndex * 11 + i).slice(-4)}`,
+        deal_detail_id: String((Number(row.deal_detail_id || 1) + i) % 78 || 1),
+        their_company: counterparties[(rowIndex + i) % counterparties.length],
+        risk_type: riskTypes[(rowIndex + i) % riskTypes.length],
+        location: locations[(rowIndex + i) % locations.length],
+        curve_service: curve[0],
+        curve_product: curve[1],
+        curve_child_product: curve[1],
+        curve_location: curve[2],
+        source: sources[(rowIndex + i) % sources.length],
+        position_volume: volume,
+        abs_position: Math.abs(volume),
+        period_start: `2026-${String(month).padStart(2, '0')}-01`,
+        period_end: `2026-${String(month).padStart(2, '0')}-${month === 9 ? '30' : '31'}`,
+        period_group_start: `2026-${String(month).padStart(2, '0')}-01`,
+        period_group_end: `2026-${String(month).padStart(2, '0')}-${month === 9 ? '30' : '31'}`,
+        period_month: `2026-${String(month).padStart(2, '0')}`,
+        exposure_quote_date: i % 4 === 0 ? '2026-06-23' : '',
+        priced_in_pct: i % 7 === 0 ? 0.72 : 1,
+        notional_usd: volume * (78 + ((rowIndex + i) % 9) * 1.85),
+        var_contribution: Math.abs(volume) * (5.8 + i),
+        stress_loss: -Math.abs(volume) * (12 + i)
+      });
+    }
+  });
+  return expanded.map((row, index) => {
+    const status = row.priced_in_pct < 0.95 && row.abs_position > 25000 ? 'Breach' : riskWorkbenchStatusFor(row);
+    return {
+      ...row,
+      status,
+      ai_severity: status === 'Breach' ? 'High' : status === 'Warning' ? 'Medium' : 'Low',
+      row_id: row.row_id || `expanded-${index}`
+    };
+  });
+}
+
+function riskReportingRows(data) {
+  const normalized = riskWorkbenchBuildData(data || {}).map(riskReportingToReportRow);
+  const sample = RISK_REPORTING_SAMPLE_ROWS.map(riskReportingToReportRow);
+  const keyed = new Map();
+  sample.concat(normalized).forEach(row => keyed.set(`${row.deal}|${row.deal_detail_id}|${row.curve_child_product}|${row.period_group_start}|${row.source}`, row));
+  return riskReportingExpandRows(Array.from(keyed.values()));
+}
+
+function riskReportingVisibleRows() {
+  const rows = (window.RISK_MODULE_STATE?.report_rows || []);
+  const f = riskReportingState.filters;
+  const search = String(f.search || '').toLowerCase().trim();
+  return rows.filter(row => {
+    if (f.company !== 'all' && row.our_company !== f.company) return false;
+    if (f.counterparty !== 'all' && row.their_company !== f.counterparty) return false;
+    if (f.risk_type !== 'all' && row.risk_type !== f.risk_type) return false;
+    if (f.product !== 'all' && row.product !== f.product) return false;
+    if (f.location !== 'all' && row.location !== f.location) return false;
+    if (f.curve !== 'all' && row.curve_child_product !== f.curve) return false;
+    if (f.source !== 'all' && row.source !== f.source) return false;
+    if (f.period !== 'all' && row.period_month !== f.period) return false;
+    if (f.date_from && riskReportingDate(row.period_group_start) < f.date_from) return false;
+    if (f.date_to && riskReportingDate(row.period_group_start) > f.date_to) return false;
+    if (riskReportingState.report === 'risk-exposure' && !row.risk_id) return false;
+    if (riskReportingState.report === 'credit-exposure' && row.their_company === 'Exchange') return false;
+    if (riskReportingState.report === 'shipment-cost' && !/Movement|Transfer|Inventory|Balance/i.test(row.source)) return false;
+    if (riskReportingState.report === 'price-curves' && !row.curve_child_product) return false;
+    if (search) {
+      const haystack = [row.deal, row.risk_id, row.deal_detail_id, row.their_company, row.location, row.curve_child_product, row.strategy, row.source].join(' ').toLowerCase();
+      if (!haystack.includes(search)) return false;
+    }
+    return true;
+  }).sort((a, b) => {
+    const key = riskReportingState.sortKey;
+    const av = a[key];
+    const bv = b[key];
+    const result = typeof av === 'number' || typeof bv === 'number' ? Number(av || 0) - Number(bv || 0) : String(av || '').localeCompare(String(bv || ''));
+    return riskReportingState.sortDir === 'asc' ? result : -result;
+  });
+}
+
+function riskReportingUnique(rows, key) {
+  return [...new Set(rows.map(row => row[key]).filter(Boolean))].sort();
+}
+
+function riskReportingFilterOptions(rows, key, active) {
+  return '<option value="all">All</option>' + riskReportingUnique(rows, key)
+    .map(value => `<option value="${escapeHtml(value)}" ${value === active ? 'selected' : ''}>${escapeHtml(value)}</option>`)
+    .join('');
+}
+
+function riskReportingSummary(rows) {
+  const gross = rows.reduce((sum, row) => sum + row.abs_position, 0);
+  const net = rows.reduce((sum, row) => sum + row.position_volume, 0);
+  const notional = rows.reduce((sum, row) => sum + Math.abs(row.notional_usd), 0);
+  const priced = rows.length ? rows.reduce((sum, row) => sum + Number(row.priced_in_pct || 0), 0) / rows.length : 0;
+  const counterparties = new Set(rows.map(row => row.their_company)).size;
+  const issues = riskReportingIssues(rows);
+  return { gross, net, notional, priced, counterparties, issues };
+}
+
+function riskReportingGroupRows(rows, key) {
+  return Object.entries(rows.reduce((acc, row) => {
+    const label = row[key] || 'Other';
+    if (!acc[label]) acc[label] = { label, rows:0, gross:0, net:0, notional:0 };
+    acc[label].rows += 1;
+    acc[label].gross += row.abs_position;
+    acc[label].net += row.position_volume;
+    acc[label].notional += Math.abs(row.notional_usd);
+    return acc;
+  }, {})).map(([, value]) => value).sort((a, b) => b.gross - a.gross);
+}
+
+function riskReportingIssues(rows) {
+  const issues = [];
+  const byCounterparty = riskReportingGroupRows(rows, 'their_company');
+  const byCurve = riskReportingGroupRows(rows, 'curve_child_product');
+  const bySource = riskReportingGroupRows(rows, 'source');
+  const totalGross = rows.reduce((sum, row) => sum + row.abs_position, 0) || 1;
+  byCounterparty.slice(0, 4).forEach(group => {
+    const pct = group.gross / totalGross;
+    if (pct >= 0.28) issues.push({
+      id:`counterparty-${group.label}`, severity:pct >= 0.45 ? 'High' : 'Medium',
+      title:'Counterparty concentration', scope:group.label,
+      body:`${group.label} represents ${(pct * 100).toFixed(0)}% of filtered gross exposure.`,
+      action:'Review credit limit, collateral, and open deal drivers.', filter:{ key:'counterparty', value:group.label }
+    });
+  });
+  byCurve.slice(0, 3).forEach(group => {
+    if (group.gross > 50000) issues.push({
+      id:`curve-${group.label}`, severity:'Medium', title:'Curve exposure driver', scope:group.label,
+      body:`${group.label} is one of the largest curve buckets in the current report.`,
+      action:'Drill to deal rows and confirm pricing curve mapping.', filter:{ key:'curve', value:group.label }
+    });
+  });
+  const missingQuote = rows.filter(row => !row.exposure_quote_date && /NYMEX|Diff|Curve|Forward/i.test(row.curve_child_product));
+  if (missingQuote.length) issues.push({
+    id:'missing-quote-date', severity:'Medium', title:'Missing exposure quote date', scope:`${missingQuote.length} rows`,
+    body:'Rows have priced exposure but no quote date populated.',
+    action:'Confirm quote-date feed and EOD pricing completeness.', filter:null
+  });
+  const largeUnpriced = rows.filter(row => Number(row.priced_in_pct || 0) < 0.95 && row.abs_position > 25000);
+  if (largeUnpriced.length) issues.push({
+    id:'unpriced-exposure', severity:'High', title:'Large partially priced exposure', scope:`${largeUnpriced.length} rows`,
+    body:'Material rows are below 95% priced-in.',
+    action:'Open pricing report and resolve missing fixed/floating components.', filter:null
+  });
+  const planned = bySource.find(group => group.label === 'Planned Transfer');
+  if (planned && planned.gross / totalGross > 0.22) issues.push({
+    id:'planned-transfer-mix', severity:'Low', title:'Planned transfer source mix', scope:'Planned Transfer',
+    body:`Planned transfers represent ${((planned.gross / totalGross) * 100).toFixed(0)}% of filtered gross exposure.`,
+    action:'Compare planned transfers against actual movements before close.', filter:{ key:'source', value:'Planned Transfer' }
+  });
+  return issues.slice(0, 8);
+}
+
+function riskReportingIssueClass(severity) {
+  const clean = String(severity || '').toLowerCase();
+  if (clean === 'high') return 'critical';
+  if (clean === 'medium') return 'warning';
+  return 'success';
+}
+
+function riskReportingColumnList() {
+  const base = [
+    ['actions', 'Actions'], ['deal', 'Deal'], ['deal_detail_id', 'Detail'], ['risk_id', 'Risk ID'],
+    ['our_company', 'Our Company'], ['their_company', 'Their Company'], ['risk_type', 'Risk Type'],
+    ['product', 'Product'], ['location', 'Location'], ['curve_service', 'Curve Service'],
+    ['curve_child_product', 'Curve Child Product'], ['period_group_start', 'Period Start'],
+    ['period_group_end', 'Period End'], ['strategy', 'Strategy'], ['position_volume', 'Position', 'right'],
+    ['priced_in_pct', 'Priced-in %', 'right'], ['portfolio_position_group', 'Position Group'],
+    ['end_of_day', 'End of Day'], ['source', 'Source'], ['notional_usd', 'Exposure Value', 'right'],
+    ['var_contribution', 'VaR', 'right'], ['stress_loss', 'Stress P&L', 'right'], ['status', 'Status']
+  ];
+  if (riskReportingState.report === 'current-exposure') return base.filter(([key]) => key !== 'risk_id' && key !== 'var_contribution' && key !== 'stress_loss');
+  if (riskReportingState.report === 'risk-exposure') return base.filter(([key]) => key !== 'notional_usd');
+  if (riskReportingState.report === 'credit-exposure') return [
+    ['actions', 'Actions'], ['their_company', 'Counterparty'], ['portfolio_position_group', 'Position Group'],
+    ['risk_type', 'Risk Type'], ['product', 'Product'], ['location', 'Location'], ['position_volume', 'Position', 'right'],
+    ['notional_usd', 'Exposure Value', 'right'], ['curve_child_product', 'Curve'], ['source', 'Source'], ['status', 'Status']
+  ];
+  if (riskReportingState.report === 'shipment-cost') return [
+    ['actions', 'Actions'], ['deal', 'Deal'], ['source', 'Shipment Source'], ['location', 'Location'], ['period_group_start', 'Period'],
+    ['product', 'Product'], ['position_volume', 'Volume', 'right'], ['their_company', 'Counterparty'],
+    ['curve_child_product', 'Price Curve'], ['status', 'Cost Check']
+  ];
+  if (riskReportingState.report === 'price-curves') return [
+    ['actions', 'Actions'], ['curve_service', 'Curve Service'], ['curve_child_product', 'Curve Product'], ['curve_location', 'Curve Location'],
+    ['product', 'Product'], ['period_group_start', 'Period Start'], ['exposure_quote_date', 'Quote Date'],
+    ['position_volume', 'Position', 'right'], ['priced_in_pct', 'Priced-in %', 'right'], ['deal', 'Deal'], ['status', 'Status']
+  ];
+  if (riskReportingState.report === 'mark-to-market') return [
+    ['actions', 'Actions'], ['deal', 'Deal'], ['their_company', 'Counterparty'], ['product', 'Product'], ['curve_child_product', 'Curve'],
+    ['position_volume', 'Position', 'right'], ['notional_usd', 'MTM Proxy', 'right'], ['var_contribution', 'VaR', 'right'],
+    ['stress_loss', 'Stress P&L', 'right'], ['status', 'Status']
+  ];
+  return base;
+}
+
+function riskReportingColumns() {
+  return riskReportingColumnList().filter(([key]) => key === 'actions' || !riskReportingState.hiddenColumns.includes(key));
+}
+
+function riskReportingFormatCell(row, key) {
+  if (key === 'actions') {
+    return `<div class="risk-row-actions">
+      <button onclick="event.stopPropagation(); riskReportingOpenRow('${row.row_id}')">Drill</button>
+    </div>`;
+  }
+  if (key === 'position_volume' || key === 'abs_position') return riskModuleNumber(row[key]);
+  if (key === 'notional_usd' || key === 'var_contribution' || key === 'stress_loss') return riskModuleMoney(row[key]);
+  if (key === 'priced_in_pct') return Number(row[key] || 0).toLocaleString(undefined, { style:'percent', maximumFractionDigits:0 });
+  if (key === 'status') return `<span class="status-badge ${riskModuleStatusClass(row.status)}">${escapeHtml(row.status)}</span>`;
+  return escapeHtml(row[key] || '');
+}
+
+function riskReportingRender() {
+  const copilotFab = document.getElementById('copilot-fab');
+  if (copilotFab) copilotFab.style.display = 'none';
+  const allRows = window.RISK_MODULE_STATE?.report_rows || [];
+  const rows = riskReportingVisibleRows();
+  const summary = riskReportingSummary(rows);
+  const activeReport = RISK_REPORTING_REPORTS.find(report => report.id === riskReportingState.report) || RISK_REPORTING_REPORTS[0];
+  const groupRows = riskReportingGroupRows(rows, riskReportingState.groupBy).slice(0, 12);
+  const issues = summary.issues;
+  const columns = riskReportingColumns();
+  const allColumns = riskReportingColumnList().filter(([key]) => key !== 'actions');
+  const root = document.getElementById('risk-module-root');
+  if (!root) return;
+
+  root.innerHTML = `
+    <div class="screen risk-reporting">
+      <div class="screen-header">
+        <div>
+          <div class="screen-title">Risk Reporting Center</div>
+          <div class="screen-subtitle">Export-style risk reports with filters, drill-down, review items, and deal-level detail.</div>
+        </div>
+        <div class="screen-actions">
+          <button class="btn btn-secondary btn-sm" onclick="riskReportingToggle('reportPanelOpen')">${riskReportingState.reportPanelOpen ? 'Hide Reports' : 'Show Reports'}</button>
+          <button class="btn btn-secondary btn-sm" onclick="riskReportingToggle('filtersOpen')">${riskReportingState.filtersOpen ? 'Hide Filters' : 'Show Filters'}</button>
+          <button class="btn btn-secondary btn-sm" onclick="riskReportingToggle('columnsOpen')">Columns</button>
+          <button class="btn btn-secondary btn-sm" onclick="riskReportingExportCsv()">Export CSV</button>
+          <button class="btn btn-primary btn-sm" onclick="runRiskModule()">Run Risk</button>
+        </div>
+      </div>
+
+      <div class="risk-report-shell ${riskReportingState.reportPanelOpen ? '' : 'reports-collapsed'}">
+        <aside class="risk-report-catalog ${riskReportingState.reportPanelOpen ? '' : 'is-collapsed'}">
+          <div class="risk-report-catalog-title">Reports</div>
+          ${RISK_REPORTING_REPORTS.map(report => `
+            <button class="risk-report-tab ${report.id === riskReportingState.report ? 'active' : ''}" onclick="riskReportingSetReport('${report.id}')">
+              <span>${escapeHtml(report.group)}</span>
+              <strong>${escapeHtml(report.label)}</strong>
+              <em>${escapeHtml(report.description)}</em>
+            </button>
+          `).join('')}
+        </aside>
+
+        <main class="risk-report-main">
+          <section class="risk-report-commandbar">
+            <div class="risk-report-titleblock">
+              <span>${escapeHtml(activeReport.group)} report</span>
+              <strong>${escapeHtml(activeReport.label)}</strong>
+            </div>
+            <div class="risk-command-summary">
+              <span>${rows.length} rows</span>
+              <span>Gross ${riskModuleNumber(summary.gross)}</span>
+              <span>Net ${riskModuleNumber(summary.net)}</span>
+              <span>${issues.length} review items</span>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="riskReportingToggle('filtersOpen')">${riskReportingState.filtersOpen ? 'Collapse Filters' : 'Criteria'}</button>
+            <button class="btn btn-secondary btn-sm" onclick="riskReportingToggle('drillOpen')">${riskReportingState.drillOpen ? 'Hide Drilldown' : 'Show Drilldown'}</button>
+            <button class="btn btn-secondary btn-sm" onclick="riskReportingOpenIssues()">Review Items</button>
+          </section>
+
+          <section class="risk-report-criteria ${riskReportingState.filtersOpen ? '' : 'is-collapsed'}">
+            <label><span>Our Company</span><select data-risk-report-filter="company" onchange="riskReportingSetFilter('company', this.value)">${riskReportingFilterOptions(allRows, 'our_company', riskReportingState.filters.company)}</select></label>
+            <label><span>Counterparty</span><select data-risk-report-filter="counterparty" onchange="riskReportingSetFilter('counterparty', this.value)">${riskReportingFilterOptions(allRows, 'their_company', riskReportingState.filters.counterparty)}</select></label>
+            <label><span>Risk Type</span><select data-risk-report-filter="risk_type" onchange="riskReportingSetFilter('risk_type', this.value)">${riskReportingFilterOptions(allRows, 'risk_type', riskReportingState.filters.risk_type)}</select></label>
+            <label><span>Product</span><select data-risk-report-filter="product" onchange="riskReportingSetFilter('product', this.value)">${riskReportingFilterOptions(allRows, 'product', riskReportingState.filters.product)}</select></label>
+            <label><span>Location</span><select data-risk-report-filter="location" onchange="riskReportingSetFilter('location', this.value)">${riskReportingFilterOptions(allRows, 'location', riskReportingState.filters.location)}</select></label>
+            <label><span>Curve</span><select data-risk-report-filter="curve" onchange="riskReportingSetFilter('curve', this.value)">${riskReportingFilterOptions(allRows, 'curve_child_product', riskReportingState.filters.curve)}</select></label>
+            <label><span>Source</span><select data-risk-report-filter="source" onchange="riskReportingSetFilter('source', this.value)">${riskReportingFilterOptions(allRows, 'source', riskReportingState.filters.source)}</select></label>
+            <label><span>Period</span><select data-risk-report-filter="period" onchange="riskReportingSetFilter('period', this.value)">${riskReportingFilterOptions(allRows, 'period_month', riskReportingState.filters.period)}</select></label>
+            <label><span>From Date</span><input type="date" value="${escapeHtml(riskReportingState.filters.date_from)}" onchange="riskReportingSetFilter('date_from', this.value)"></label>
+            <label><span>To Date</span><input type="date" value="${escapeHtml(riskReportingState.filters.date_to)}" onchange="riskReportingSetFilter('date_to', this.value)"></label>
+            <label class="risk-report-search"><span>Search Deals</span><input value="${escapeHtml(riskReportingState.filters.search)}" oninput="riskReportingSetFilter('search', this.value)" placeholder="Deal, company, curve, source"></label>
+            <button class="btn btn-secondary btn-sm" onclick="riskReportingResetFilters()">Reset</button>
+          </section>
+
+          <section class="risk-column-config ${riskReportingState.columnsOpen ? '' : 'is-collapsed'}">
+            <div class="risk-report-panel-head"><strong>Column Setup</strong><span>Add or remove columns for this report view.</span></div>
+            <div class="risk-column-list">
+              ${allColumns.map(([key, label]) => `
+                <label>
+                  <input type="checkbox" ${riskReportingState.hiddenColumns.includes(key) ? '' : 'checked'} onchange="riskReportingToggleColumn('${key}', this.checked)">
+                  <span>${escapeHtml(label)}</span>
+                </label>
+              `).join('')}
+            </div>
+          </section>
+
+          <section class="risk-report-grid-panel">
+            <div class="risk-report-panel-head">
+              <strong>${escapeHtml(activeReport.label)} - ${rows.length} rows</strong>
+              <span>Use Drill in the Actions column. Click headers to sort.</span>
+            </div>
+            <div class="risk-report-grid-wrap">
+              <table class="risk-report-grid">
+                <thead><tr>${columns.map(([key, label, align]) => `<th class="${align || ''}" onclick="riskReportingSort('${key}')">${escapeHtml(label)}</th>`).join('')}</tr></thead>
+                <tbody>
+                  ${rows.map(row => `
+                    <tr onclick="riskReportingOpenRow('${row.row_id}')">
+                      ${columns.map(([key, , align]) => `<td class="${align || ''}">${riskReportingFormatCell(row, key)}</td>`).join('')}
+                    </tr>
+                  `).join('') || `<tr><td colspan="${columns.length}" class="risk-empty-cell">No rows match the current criteria.</td></tr>`}
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="risk-report-summary risk-summary-compact">
+            <button onclick="riskReportingSetGroup('their_company')"><span>Gross Position</span><strong>${riskModuleNumber(summary.gross)}</strong><em>${rows.length} rows</em></button>
+            <button onclick="riskReportingSetGroup('period_month')"><span>Net Position</span><strong>${riskModuleNumber(summary.net)}</strong><em>filtered exposure</em></button>
+            <button onclick="riskReportingSetGroup('curve_child_product')"><span>Exposure Value</span><strong>${riskModuleMoney(summary.notional)}</strong><em>MTM proxy</em></button>
+            <button onclick="riskReportingSetGroup('risk_type')"><span>Priced-In</span><strong>${(summary.priced * 100).toFixed(0)}%</strong><em>average pricing</em></button>
+            <button onclick="riskReportingSetGroup('their_company')"><span>Counterparties</span><strong>${summary.counterparties}</strong><em>credit lens</em></button>
+            <button class="danger" onclick="riskReportingOpenIssues()"><span>Review Items</span><strong>${issues.length}</strong><em>optional review</em></button>
+          </section>
+
+          <section class="risk-report-drill ${riskReportingState.drillOpen ? '' : 'is-collapsed'}">
+            <div class="risk-report-panel">
+              <div class="risk-report-panel-head">
+                <strong>Drilldown</strong>
+                <select onchange="riskReportingSetGroup(this.value)">
+                  ${[
+                    ['their_company','Counterparty'], ['risk_type','Risk Type'], ['source','Source'], ['location','Location'],
+                    ['curve_child_product','Curve'], ['period_month','Period'], ['strategy','Strategy']
+                  ].map(([key, label]) => `<option value="${key}" ${riskReportingState.groupBy === key ? 'selected' : ''}>${label}</option>`).join('')}
+                </select>
+              </div>
+              <div class="risk-drill-list">
+                ${groupRows.map(group => `
+                  <button onclick="riskReportingApplyGroupFilter('${riskReportingState.groupBy}', ${escapeJsArg(group.label)})">
+                    <span>${escapeHtml(group.label)}</span>
+                    <strong>${riskModuleNumber(group.gross)}</strong>
+                    <em>${group.rows} rows | ${riskModuleMoney(group.notional)}</em>
+                  </button>
+                `).join('') || '<div class="risk-empty-state">No grouped rows for the current filters.</div>'}
+              </div>
+            </div>
+          </section>
+        </main>
+      </div>
+
+      <aside id="risk-ai-issues" class="risk-ai-issue-drawer ${riskReportingState.aiPanelOpen ? 'open' : ''}">
+        <div class="risk-drawer-head">
+          <div><span>Optional Review</span><strong>Review Items</strong></div>
+          <button onclick="riskReportingCloseIssues()">Close</button>
+        </div>
+        <div class="risk-issue-list">
+          ${issues.map(issue => `
+            <button class="risk-issue-card ${riskReportingIssueClass(issue.severity)}" onclick="riskReportingOpenIssue('${issue.id}')">
+              <span>${escapeHtml(issue.severity)}</span>
+              <strong>${escapeHtml(issue.title)}</strong>
+              <em>${escapeHtml(issue.body)}</em>
+              <small>${escapeHtml(issue.action)}</small>
+            </button>
+          `).join('') || '<div class="risk-empty-state">No review items in the current view.</div>'}
+        </div>
+      </aside>
+      <div id="risk-report-detail-drawer" class="risk-report-detail-drawer"></div>
+    </div>
+  `;
+}
+
+window.riskReportingSetReport = function(report) {
+  riskReportingState.report = report || 'current-exposure';
+  riskReportingRender();
+};
+
+window.riskReportingSetFilter = function(key, value) {
+  riskReportingState.filters[key] = value || (['search', 'date_from', 'date_to'].includes(key) ? '' : 'all');
+  riskReportingRender();
+};
+
+window.riskReportingResetFilters = function() {
+  riskReportingState.filters = { company:'all', counterparty:'all', risk_type:'all', product:'all', location:'all', curve:'all', source:'all', period:'all', date_from:'', date_to:'', search:'' };
+  riskReportingRender();
+};
+
+window.riskReportingToggle = function(key) {
+  riskReportingState[key] = !riskReportingState[key];
+  riskReportingRender();
+};
+
+window.riskReportingToggleColumn = function(key, checked) {
+  const hidden = new Set(riskReportingState.hiddenColumns);
+  if (checked) hidden.delete(key);
+  else hidden.add(key);
+  riskReportingState.hiddenColumns = Array.from(hidden);
+  riskReportingRender();
+};
+
+window.riskReportingSetGroup = function(key) {
+  riskReportingState.groupBy = key || 'their_company';
+  riskReportingRender();
+};
+
+window.riskReportingApplyGroupFilter = function(key, value) {
+  const mapping = { their_company:'counterparty', curve_child_product:'curve', period_month:'period' };
+  riskReportingState.filters[mapping[key] || key] = value;
+  riskReportingRender();
+};
+
+window.riskReportingSort = function(key) {
+  if (riskReportingState.sortKey === key) {
+    riskReportingState.sortDir = riskReportingState.sortDir === 'asc' ? 'desc' : 'asc';
+  } else {
+    riskReportingState.sortKey = key;
+    riskReportingState.sortDir = 'desc';
+  }
+  riskReportingRender();
+};
+
+window.riskReportingFocusIssues = function() {
+  riskReportingOpenIssues();
+};
+
+window.riskReportingOpenIssues = function() {
+  riskReportingState.aiPanelOpen = true;
+  riskReportingRender();
+};
+
+window.riskReportingCloseIssues = function() {
+  riskReportingState.aiPanelOpen = false;
+  riskReportingRender();
+};
+
+window.riskReportingOpenIssue = function(issueId) {
+  const rows = riskReportingVisibleRows();
+  const issue = riskReportingIssues(rows).find(item => item.id === issueId);
+  if (issue?.filter) {
+    riskReportingSetFilter(issue.filter.key, issue.filter.value);
+  } else {
+    riskReportingCloseIssues();
+  }
+};
+
+window.riskReportingOpenRow = function(rowId) {
+  const row = (window.RISK_MODULE_STATE?.report_rows || []).find(item => item.row_id === rowId);
+  const drawer = document.getElementById('risk-report-detail-drawer');
+  if (!row || !drawer) return;
+  drawer.innerHTML = `
+    <div class="risk-drawer-card">
+      <div class="risk-drawer-head">
+        <div><span>Deal Detail</span><strong>${escapeHtml(row.deal)}</strong></div>
+        <button onclick="riskReportingCloseDrawer()">Close</button>
+      </div>
+      <div class="risk-drawer-grid">
+        <div><span>Risk ID</span><strong>${escapeHtml(row.risk_id || 'n/a')}</strong></div>
+        <div><span>Detail ID</span><strong>${escapeHtml(row.deal_detail_id)}</strong></div>
+        <div><span>Counterparty</span><strong>${escapeHtml(row.their_company)}</strong></div>
+        <div><span>Position Group</span><strong>${escapeHtml(row.portfolio_position_group)}</strong></div>
+        <div><span>Risk Type</span><strong>${escapeHtml(row.risk_type)}</strong></div>
+        <div><span>Source</span><strong>${escapeHtml(row.source)}</strong></div>
+        <div><span>Location</span><strong>${escapeHtml(row.location)}</strong></div>
+        <div><span>Period</span><strong>${escapeHtml(row.period_group_start)} to ${escapeHtml(row.period_group_end)}</strong></div>
+        <div><span>Curve</span><strong>${escapeHtml(row.curve_child_product)}</strong></div>
+        <div><span>Volume</span><strong>${riskModuleNumber(row.position_volume)}</strong></div>
+        <div><span>MTM Proxy</span><strong>${riskModuleMoney(row.notional_usd)}</strong></div>
+        <div><span>Status</span><strong>${escapeHtml(row.status)}</strong></div>
+      </div>
+      <div class="risk-drawer-actions">
+        <button class="btn btn-secondary btn-sm" onclick="riskReportingSetFilter('counterparty', ${escapeJsArg(row.their_company)})">Drill Counterparty</button>
+        <button class="btn btn-secondary btn-sm" onclick="riskReportingSetFilter('curve', ${escapeJsArg(row.curve_child_product)})">Drill Curve</button>
+      </div>
+      <div class="risk-drawer-note"><strong>Review note</strong><p>${escapeHtml(riskReportingRowInsight(row))}</p></div>
+    </div>
+  `;
+  drawer.classList.add('open');
+};
+
+window.riskReportingCloseDrawer = function() {
+  const drawer = document.getElementById('risk-report-detail-drawer');
+  if (drawer) drawer.classList.remove('open');
+};
+
+function riskReportingRowInsight(row) {
+  if (!row.exposure_quote_date && /NYMEX|Diff|Forward/i.test(row.curve_child_product)) return 'Pricing is present but quote date is blank. Confirm the EOD quote feed before publishing the report.';
+  if (row.status === 'Breach') return 'This row is high priority because exposure size, hedge coverage, or stress contribution is outside the configured watch band.';
+  if (row.source === 'Planned Transfer') return 'Planned transfer exposure should be reconciled against actual movement and allocation before close.';
+  return 'No critical issue detected. Keep this row available for drill-down and export traceability.';
+}
+
+window.riskReportingAskAI = function(topic) {
+  const rows = riskReportingVisibleRows();
+  const summary = riskReportingSummary(rows);
+  const report = RISK_REPORTING_REPORTS.find(item => item.id === riskReportingState.report)?.label || 'Risk report';
+  openCopilot();
+  sendCopilotMessage(`Analyze the ${report}. Rows: ${rows.length}. Gross position: ${riskModuleNumber(summary.gross)}. Net position: ${riskModuleNumber(summary.net)}. Exposure value: ${riskModuleMoney(summary.notional)}. AI issues: ${summary.issues.map(issue => issue.title + ' - ' + issue.scope).join('; ') || 'none'}. Focus on exceptions, drill-down path, counterparty/credit risk, pricing issues, and recommended actions. ${topic || ''}`);
+};
+
+window.riskReportingExportCsv = function() {
+  const rows = riskReportingVisibleRows();
+  const columns = riskReportingColumns();
+  const csvRows = [columns.map(([, label]) => label).join(',')].concat(rows.map(row => columns.map(([key]) => {
+    const raw = key === 'priced_in_pct' ? Number(row[key] || 0) : (row[key] ?? '');
+    return `"${String(raw).replace(/"/g, '""')}"`;
+  }).join(',')));
+  const blob = new Blob([csvRows.join('\n')], { type:'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `${riskReportingState.report}-${new Date().toISOString().slice(0, 10)}.csv`;
+  link.click();
+  URL.revokeObjectURL(url);
+};
+
+function renderRiskModule(data) {
+  const root = document.getElementById('risk-module-root');
+  if (!root) return;
+  data.report_rows = riskReportingRows(data);
+  window.RISK_MODULE_STATE = data;
+  riskReportingRender();
+}
+
+window.loadRiskModule = async function(forceRun = false) {
+  const root = document.getElementById('risk-module-root');
+  if (root) root.innerHTML = '<div class="flex-center" style="height:240px"><span class="loading-spinner"></span></div>';
+  if (forceRun) {
+    await apiCall('/risk/run', { method: 'POST' });
+  }
+  const data = await apiCall('/risk/overview');
+  if (!data) {
+    if (root) root.innerHTML = '<div class="screen"><div class="card">Risk Module data could not be loaded.</div></div>';
+    return;
+  }
+  window.RISK_MODULE_STATE = data;
+  renderRiskModule(data);
+};
+
+window.runRiskModule = async function() {
+  await window.loadRiskModule(true);
+  if (typeof showToast === 'function') {
+    showToast('Risk Module', 'Risk run completed.', 'success');
+  }
+};
+
+SCREENS['risk-module'] = async function(main) {
+  main.innerHTML = '<div id="risk-module-root" class="screen"><div class="flex-center" style="height:240px"><span class="loading-spinner"></span></div></div>';
+  await window.loadRiskModule(false);
+};
+
 SCREENS['ai-studio'] = async function(main) {
   main.innerHTML = '<div id="ai-studio-root" class="screen"><div class="flex-center" style="height:240px"><span class="loading-spinner"></span></div></div>';
   await loadAIStudioOverview();
@@ -4777,4 +6071,521 @@ SCREENS['documentation'] = async function(main) {
 
   window.renderDocumentationScreen = renderDocumentationScreen;
   renderDocumentationScreen();
+};
+
+/* Atlas map screens: Trader MVT Atlas and Risk Atlas */
+let atlasMapInstance = null;
+let atlasLayerGroups = {};
+let atlasState = { nodes: [], routes: [], selected: null, summary: null, scenario: null };
+
+function atlasMoney(value) {
+  const n = Number(value || 0);
+  if (Math.abs(n) >= 1000000) return '$' + (n / 1000000).toFixed(1) + 'M';
+  if (Math.abs(n) >= 1000) return '$' + (n / 1000).toFixed(0) + 'K';
+  return '$' + n.toLocaleString();
+}
+
+function atlasNumber(value) {
+  const n = Number(value || 0);
+  if (Math.abs(n) >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+  if (Math.abs(n) >= 1000) return (n / 1000).toFixed(0) + 'K';
+  return n.toLocaleString();
+}
+
+function atlasStatusClass(status) {
+  status = String(status || '').toLowerCase();
+  if (status === 'breach' || status === 'break') return 'breach';
+  if (status === 'watch') return 'watch';
+  if (status === 'unknown') return 'unknown';
+  return 'ok';
+}
+
+function atlasColor(item) {
+  const status = atlasStatusClass(item.status);
+  if (status === 'breach') return '#DC2626';
+  if (status === 'watch') return '#D97706';
+  if (item.layer_key === 'positions' && Number(item.metric || 0) < 0) return '#7C3AED';
+  if (item.layer_key === 'pricing') return '#0891B2';
+  if (item.layer_key === 'deals') return '#2563EB';
+  if (item.layer_key === 'basis') return '#9333EA';
+  return '#16A34A';
+}
+
+function atlasFeatureLabel(item) {
+  const labels = {
+    'F-01': 'Deal pin', 'F-03': 'Deal thread', 'F-06': 'Transport', 'F-07': 'Dwell ring',
+    'F-14': 'Net hub', 'F-16': 'Obligation', 'F-17': 'Concentration', 'F-18': 'VaR heat',
+    'F-19': 'Basis vol', 'F-20': 'Scenario', 'F-24': 'Index hub', 'F-25': 'Basis diff',
+    'F-26': 'Unpriced flag', 'F-43': 'Recon', 'F-44': 'Lineage', 'F-45': 'AI anomaly'
+  };
+  return labels[item.feature_id] || item.feature_id || 'Atlas';
+}
+
+function atlasSafe(value) {
+  return typeof escapeHtml === 'function' ? escapeHtml(value) : String(value ?? '');
+}
+
+async function loadAtlasPayload() {
+  const [summary, nodesPayload, routesPayload, layersPayload] = await Promise.all([
+    apiCall('/atlas/summary'),
+    apiCall('/atlas/nodes'),
+    apiCall('/atlas/routes'),
+    apiCall('/atlas/layers')
+  ]);
+  atlasState.summary = summary || {
+    data_state: 'demo',
+    active_deals: 1,
+    mapped_routes: 3,
+    net_exposure: 82000,
+    risk_watch_count: 2,
+    anomalies: 1,
+    reconciliation: { reconciled: 2, watch: 1, break: 0 }
+  };
+  atlasState.nodes = (nodesPayload && nodesPayload.nodes) || [];
+  atlasState.routes = (routesPayload && routesPayload.routes) || [];
+  atlasState.layers = (layersPayload && layersPayload.layers) || [];
+  if (!atlasState.nodes.length || !atlasState.routes.length) {
+    const fallback = atlasFallbackObjects();
+    atlasState.nodes = atlasState.nodes.length ? atlasState.nodes : fallback.nodes;
+    atlasState.routes = atlasState.routes.length ? atlasState.routes : fallback.routes;
+    atlasState.summary = { ...atlasState.summary, data_state: 'demo' };
+  }
+  return atlasState;
+}
+
+function atlasFallbackObjects() {
+  const stamp = new Date().toISOString();
+  const node = (id, feature_id, layer_key, object_type, name, lat, lon, metric, unit, status, detail) => ({
+    id, feature_id, layer_key, object_type, name, lat, lon, metric, unit, status,
+    severity: status === 'breach' ? 'high' : status === 'watch' ? 'medium' : 'low',
+    source_system: 'Frontend Atlas demo fallback',
+    source_timestamp: stamp,
+    is_demo: true,
+    detail: detail || {}
+  });
+  const route = (id, feature_id, layer_key, name, coords, metric, unit, status, detail) => ({
+    id, feature_id, layer_key, object_type: 'route', name,
+    geometry: { type: 'LineString', coordinates: coords.map(pair => [pair[1], pair[0]]) },
+    metric, unit, status,
+    severity: status === 'breach' ? 'high' : status === 'watch' ? 'medium' : 'low',
+    source_system: 'Frontend Atlas demo fallback',
+    source_timestamp: stamp,
+    is_demo: true,
+    detail: detail || {}
+  });
+  return {
+    nodes: [
+      node('fallback_deal_marcus', 'F-01', 'deals', 'pin', 'RMVT-0234 deal pin', 39.819, -75.418, 50000, 'bbl', 'watch', { unpriced_volume_flag: true, lineage: ['frontend fallback deal'] }),
+      node('fallback_hub_brent', 'F-14', 'positions', 'hub', 'Brent net long hub', 60.9, 1.5, 82000, 'bbl net', 'ok', { position_direction: 'long', concentration_score: 82, lineage: ['frontend fallback position'] }),
+      node('fallback_risk_gulf', 'F-18', 'risk', 'heat', 'Gulf Coast VaR heat', 29.9, -94.2, 2400000, 'USD VaR', 'breach', { drivers: ['prompt delta', 'basis volatility'], lineage: ['frontend fallback risk'] }),
+      node('fallback_price_nwe', 'F-24', 'pricing', 'hub', 'NWE Naphtha index', 51.95, 4.13, 612, 'USD/t', 'watch', { forward_curve: [612, 618, 616, 610], lineage: ['frontend fallback price'] }),
+      node('fallback_anomaly_rafnes', 'F-45', 'ai-anomalies', 'anomaly', 'Unpriced volume anomaly', 59.24, 9.85, 41000, 'bbl', 'watch', { confidence_pct: 84, lineage: ['frontend fallback anomaly'] })
+    ],
+    routes: [
+      route('fallback_route_marine', 'F-06', 'logistics', 'Marcus Hook to Rafnes', [[39.819, -75.418], [50, -35], [59.1, 9.65]], 480000, 'USD margin', 'watch', { transport_mode: 'marine', reconciliation_status: 'watch', lineage: ['frontend fallback route'] }),
+      route('fallback_basis_hh_ttf', 'F-19', 'basis', 'HH to TTF basis volatility', [[30.3, -92.04], [42, -40], [52.25, 5.27]], 41, 'vol pct', 'breach', { transport_mode: 'basis', basis_volatility_pct: 41, reconciliation_status: 'break', lineage: ['frontend fallback basis'] })
+    ]
+  };
+}
+
+function atlasKpiStrip(summary, riskMode) {
+  const recon = summary.reconciliation || {};
+  const cards = riskMode
+    ? [
+        ['VaR watch', summary.risk_watch_count || 0, 'watch'],
+        ['Scenario breaks', atlasState.scenario?.summary?.breaches || 0, 'breach'],
+        ['Basis connectors', atlasState.routes.filter(r => r.layer_key === 'basis').length, 'ok'],
+        ['AI anomalies', summary.anomalies || 0, 'watch'],
+        ['Recon breaks', recon.break || 0, recon.break ? 'breach' : 'ok']
+      ]
+    : [
+        ['Active deals', summary.active_deals || 0, 'ok'],
+        ['Mapped routes', summary.mapped_routes || 0, 'ok'],
+        ['Net exposure', atlasNumber(summary.net_exposure || 0), Number(summary.net_exposure || 0) < 0 ? 'watch' : 'ok'],
+        ['Risk watches', summary.risk_watch_count || 0, 'watch'],
+        ['AI anomalies', summary.anomalies || 0, 'breach']
+      ];
+  return '<div class="atlas-kpis">' + cards.map(card => `
+    <button class="atlas-kpi ${card[2]}" onclick="sendCopilotMessage('Explain the ${atlasSafe(card[0])} Atlas KPI')">
+      <span>${atlasSafe(card[0])}</span><strong>${atlasSafe(card[1])}</strong>
+    </button>
+  `).join('') + '</div>';
+}
+
+function atlasLayerControls(riskMode) {
+  const traderLayers = [
+    ['deals', 'Deals'], ['logistics', 'Logistics'], ['vessels', 'Vessels'], ['positions', 'Positions'],
+    ['risk', 'Risk'], ['pricing', 'Pricing'], ['basis', 'Basis'], ['trust', 'Trust'], ['ai-anomalies', 'AI Anomalies']
+  ];
+  const riskLayers = [
+    ['risk', 'VaR Heat'], ['basis', 'Basis Vol'], ['positions', 'Exposure Hubs'], ['logistics', 'Obligations'],
+    ['pricing', 'Index Hubs'], ['trust', 'Trust'], ['ai-anomalies', 'AI Anomalies']
+  ];
+  return (riskMode ? riskLayers : traderLayers).map(([key, label]) => `
+    <label class="atlas-layer-toggle">
+      <input type="checkbox" data-atlas-layer="${key}" checked onchange="toggleAtlasLayer('${key}', this.checked)">
+      <span>${atlasSafe(label)}</span>
+    </label>
+  `).join('');
+}
+
+function atlasLegend() {
+  return `
+    <div class="atlas-legend">
+      <span><i class="ok"></i> healthy</span>
+      <span><i class="watch"></i> watch</span>
+      <span><i class="breach"></i> breach</span>
+      <span><i class="demo"></i> demo/mixed</span>
+    </div>
+  `;
+}
+
+function renderAtlasShell(main, riskMode) {
+  const title = riskMode ? 'Risk Atlas' : 'MVT Atlas';
+  const subtitle = riskMode
+    ? 'Spatial risk view for VaR heat, basis volatility, scenarios, and control drilldowns'
+    : 'Trader map for deals, physical routes, logistics dwell, hub exposure, pricing, trust, and AI anomalies';
+  main.innerHTML = `<div class="screen atlas-screen ${riskMode ? 'risk-atlas-screen' : ''}">
+    <div class="screen-header">
+      <div>
+        <div class="screen-title">${title}</div>
+        <div class="screen-subtitle">${subtitle}</div>
+      </div>
+      <div class="screen-actions">
+        <button class="btn btn-secondary btn-sm" onclick="reloadAtlasScreen(${riskMode})">Refresh</button>
+        <button class="btn btn-primary btn-sm" onclick="openCopilot(); sendCopilotMessage('${riskMode ? 'Run scenario summary for the Risk Atlas' : 'Summarize the MVT Atlas map for the morning meeting'}')">Ask AI</button>
+      </div>
+    </div>
+    <div id="atlas-kpi-host"></div>
+    <div class="atlas-workbench">
+      <aside class="atlas-controls">
+        <div class="atlas-panel-title">Layers</div>
+        <div class="atlas-layer-list">${atlasLayerControls(riskMode)}</div>
+        ${riskMode ? `
+          <div class="atlas-panel-title mt-12">Scenario</div>
+          <select class="form-select" id="atlas-scenario-select">
+            <option value="brent_down_5">Brent down 5%</option>
+            <option value="basis_widen_15">Basis widens 15%</option>
+            <option value="freight_delay_24h">Freight delay 24h</option>
+            <option value="ngl_rally_7">NGL rally 7%</option>
+          </select>
+          <button class="btn btn-primary btn-sm w-full mt-8" onclick="runAtlasScenario()">Apply Overlay</button>
+          <div id="atlas-scenario-summary" class="atlas-scenario-summary">No scenario overlay applied.</div>
+        ` : `
+          <div class="atlas-panel-title mt-12">Transport Modes</div>
+          <div class="atlas-mode-list"><span>Marine</span><span>Pipeline</span><span>Rail</span><span>Truck</span></div>
+        `}
+        <div class="atlas-panel-title mt-12">Legend</div>
+        ${atlasLegend()}
+        <div class="atlas-data-label">Data state: <strong id="atlas-data-state">mixed</strong></div>
+      </aside>
+      <section class="atlas-map-wrap">
+        <div id="${riskMode ? 'risk-atlas-map' : 'trader-atlas-map'}" class="atlas-map"></div>
+      </section>
+      <aside class="atlas-drawer" id="atlas-detail-drawer">
+        <div class="atlas-empty-detail">
+          <strong>Select a map object</strong>
+          <span>Click a deal, hub, route, risk heat zone, basis connector, pricing node, anomaly, or reconciliation status.</span>
+        </div>
+      </aside>
+    </div>
+    <div class="atlas-bottom-grid">
+      <div class="card">
+        <div class="card-title mb-8">${riskMode ? 'Top Risk Hubs' : 'Open Delivery Obligations'}</div>
+        <div id="atlas-hub-list" class="atlas-list"></div>
+      </div>
+      <div class="card">
+        <div class="card-title mb-8">${riskMode ? 'Basis Volatility Connectors' : 'Deal-to-Physical Threads'}</div>
+        <div id="atlas-route-list" class="atlas-list"></div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function initAtlasMap(riskMode) {
+  const mapId = riskMode ? 'risk-atlas-map' : 'trader-atlas-map';
+  const mapEl = document.getElementById(mapId);
+  if (!mapEl) return;
+  if (typeof L === 'undefined') {
+    renderAtlasFallbackMap(mapEl, riskMode);
+    return;
+  }
+  if (atlasMapInstance) {
+    atlasMapInstance.remove();
+    atlasMapInstance = null;
+  }
+  atlasLayerGroups = {};
+  atlasMapInstance = L.map(mapEl, { zoomControl: true, scrollWheelZoom: true }).setView([47, -20], 3);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: 'OpenStreetMap',
+    maxZoom: 10
+  }).addTo(atlasMapInstance);
+  ['deals','logistics','vessels','positions','risk','pricing','basis','trust','ai-anomalies'].forEach(key => {
+    atlasLayerGroups[key] = L.layerGroup().addTo(atlasMapInstance);
+  });
+  renderAtlasObjects(riskMode);
+  setTimeout(() => atlasMapInstance && atlasMapInstance.invalidateSize(), 80);
+}
+
+function atlasProject(lat, lon) {
+  const minLon = -105;
+  const maxLon = 18;
+  const minLat = 24;
+  const maxLat = 64;
+  return {
+    x: Math.max(2, Math.min(98, ((Number(lon) - minLon) / (maxLon - minLon)) * 100)),
+    y: Math.max(2, Math.min(98, (1 - ((Number(lat) - minLat) / (maxLat - minLat))) * 100))
+  };
+}
+
+function renderAtlasFallbackMap(mapEl, riskMode) {
+  const riskAllowed = riskMode ? new Set(['risk','basis','positions','logistics','pricing','trust','ai-anomalies']) : null;
+  const routes = atlasState.routes.filter(route => !riskAllowed || riskAllowed.has(route.layer_key));
+  const nodes = atlasState.nodes.filter(node => !riskAllowed || riskAllowed.has(node.layer_key));
+  const routeLines = routes.map(route => {
+    const coords = route.geometry?.coordinates || [];
+    const points = coords.map(pair => {
+      const pos = atlasProject(pair[1], pair[0]);
+      return `${pos.x},${pos.y}`;
+    }).join(' ');
+    return `<polyline points="${points}" stroke="${atlasColor(route)}" stroke-width="${route.layer_key === 'basis' ? 0.9 : 0.65}" fill="none" stroke-linecap="round" stroke-dasharray="${route.layer_key === 'basis' ? '2 2' : route.detail?.transport_mode === 'marine' ? '1 1.8' : '0'}" onclick="selectAtlasObjectById('${route.id}')"></polyline>`;
+  }).join('');
+  const nodeButtons = nodes.map(node => {
+    if (node.lat == null || node.lon == null) return '';
+    const pos = atlasProject(node.lat, node.lon);
+    const size = node.object_type === 'heat' ? 32 : node.object_type === 'hub' ? 26 : 20;
+    const label = node.object_type === 'anomaly' ? 'AI' : node.layer_key === 'deals' ? 'D' : node.layer_key === 'pricing' ? '$' : node.layer_key === 'vessels' ? 'V' : node.layer_key === 'positions' ? 'H' : 'N';
+    return `<button class="atlas-fallback-node ${atlasStatusClass(node.status)}" style="left:${pos.x}%;top:${pos.y}%;width:${size}px;height:${size}px;--atlas-color:${atlasColor(node)}" onclick="selectAtlasObjectById('${node.id}')" title="${atlasSafe(node.name)}">${label}</button>`;
+  }).join('');
+  mapEl.innerHTML = `
+    <div class="atlas-fallback-map">
+      <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="Atlas fallback map">
+        <rect width="100" height="100" fill="#E7EEF7"></rect>
+        <path d="M4,18 C13,10 27,8 34,18 C42,30 36,44 26,48 C18,51 9,42 5,32 Z" fill="#C8D7E8" opacity=".8"></path>
+        <path d="M34,8 C43,5 52,9 56,18 C60,30 52,38 43,36 C35,34 30,22 34,8 Z" fill="#C8D7E8" opacity=".75"></path>
+        <path d="M55,10 C70,3 91,7 96,22 C88,32 71,34 59,28 Z" fill="#C8D7E8" opacity=".8"></path>
+        <path d="M58,34 C65,42 68,58 63,76 C57,91 47,84 45,63 C43,49 48,39 58,34 Z" fill="#C8D7E8" opacity=".72"></path>
+        <g class="atlas-fallback-routes">${routeLines}</g>
+      </svg>
+      ${nodeButtons}
+      <div class="atlas-fallback-note">Fallback map active: CDN map tiles unavailable, Atlas objects remain clickable.</div>
+    </div>
+  `;
+}
+
+function atlasNodeHtml(item) {
+  const color = atlasColor(item);
+  const size = item.object_type === 'heat' ? 34 : item.object_type === 'hub' ? 28 : item.object_type === 'anomaly' ? 24 : 20;
+  const label = item.object_type === 'anomaly' ? 'AI' : item.layer_key === 'deals' ? 'D' : item.layer_key === 'pricing' ? '$' : item.layer_key === 'vessels' ? 'V' : item.layer_key === 'positions' ? 'H' : 'N';
+  const pulse = item.status === 'breach' || item.feature_id === 'F-07' || item.object_type === 'anomaly' ? ' pulse' : '';
+  return `<div class="atlas-marker${pulse}" style="--atlas-color:${color};width:${size}px;height:${size}px">${label}</div>`;
+}
+
+function addAtlasNode(item) {
+  if (item.lat == null || item.lon == null) return;
+  const key = item.layer_key || 'logistics';
+  const group = atlasLayerGroups[key] || atlasLayerGroups.logistics;
+  if (item.object_type === 'heat') {
+    const radius = Math.max(35000, Math.min(190000, Number(item.metric || 0) / 13));
+    L.circle([item.lat, item.lon], {
+      radius,
+      color: atlasColor(item),
+      fillColor: atlasColor(item),
+      fillOpacity: item.status === 'breach' ? 0.24 : 0.15,
+      weight: 1.5
+    }).addTo(group).on('click', () => selectAtlasObject(item));
+  }
+  const marker = L.marker([item.lat, item.lon], {
+    icon: L.divIcon({ className: '', html: atlasNodeHtml(item), iconSize: [34, 34], iconAnchor: [17, 17] })
+  }).addTo(group);
+  marker.bindTooltip(`<strong>${atlasSafe(item.name)}</strong><br>${atlasSafe(atlasFeatureLabel(item))}: ${atlasSafe(atlasNumber(item.metric))} ${atlasSafe(item.unit || '')}`, { className: 'vessel-tooltip' });
+  marker.on('click', () => selectAtlasObject(item));
+  const markerEl = marker.getElement && marker.getElement();
+  if (markerEl) {
+    markerEl.addEventListener('click', event => {
+      event.stopPropagation();
+      selectAtlasObject(item);
+    });
+  }
+}
+
+function addAtlasRoute(item) {
+  const coords = item.geometry?.coordinates;
+  if (!Array.isArray(coords) || coords.length < 2) return;
+  const latLngs = coords.map(pair => [pair[1], pair[0]]);
+  const key = item.layer_key || 'logistics';
+  const group = atlasLayerGroups[key] || atlasLayerGroups.logistics;
+  const isBasis = key === 'basis';
+  const poly = L.polyline(latLngs, {
+    color: atlasColor(item),
+    weight: isBasis ? 4 : 3,
+    opacity: item.status === 'breach' ? 0.9 : 0.72,
+    dashArray: isBasis ? '8,6' : (item.detail?.transport_mode === 'marine' ? '3,7' : null)
+  }).addTo(group);
+  poly.bindTooltip(`<strong>${atlasSafe(item.name)}</strong><br>${atlasSafe(atlasFeatureLabel(item))}: ${atlasSafe(atlasNumber(item.metric))} ${atlasSafe(item.unit || '')}`, { className: 'vessel-tooltip' });
+  poly.on('click', () => selectAtlasObject(item));
+  const pathEl = poly.getElement && poly.getElement();
+  if (pathEl) {
+    pathEl.addEventListener('click', event => {
+      event.stopPropagation();
+      selectAtlasObject(item);
+    });
+  }
+}
+
+function renderAtlasObjects(riskMode) {
+  Object.values(atlasLayerGroups).forEach(group => group.clearLayers());
+  const riskAllowed = riskMode ? new Set(['risk','basis','positions','logistics','pricing','trust','ai-anomalies']) : null;
+  atlasState.routes.forEach(route => {
+    if (riskAllowed && !riskAllowed.has(route.layer_key)) return;
+    addAtlasRoute(route);
+  });
+  atlasState.nodes.forEach(node => {
+    if (riskAllowed && !riskAllowed.has(node.layer_key)) return;
+    addAtlasNode(node);
+  });
+  if (atlasState.scenario?.objects) {
+    atlasState.scenario.objects.forEach(obj => {
+      if (obj.object_type === 'route') addAtlasRoute(obj);
+      else addAtlasNode(obj);
+    });
+  }
+}
+
+function renderAtlasLists(riskMode) {
+  const hubs = document.getElementById('atlas-hub-list');
+  const routes = document.getElementById('atlas-route-list');
+  if (hubs) {
+    const list = atlasState.nodes
+      .filter(n => riskMode ? ['risk','positions'].includes(n.layer_key) : ['positions','logistics'].includes(n.layer_key))
+      .slice(0, 6);
+    hubs.innerHTML = list.map(n => `
+      <button class="atlas-list-row" onclick="selectAtlasObjectById('${n.id}')">
+        <span><b>${atlasSafe(n.name)}</b><small>${atlasSafe(atlasFeatureLabel(n))} - ${atlasSafe(n.source_system)}</small></span>
+        <em class="${atlasStatusClass(n.status)}">${atlasSafe(atlasNumber(n.metric))}</em>
+      </button>
+    `).join('');
+  }
+  if (routes) {
+    const list = atlasState.routes.filter(r => riskMode ? r.layer_key === 'basis' : true).slice(0, 6);
+    routes.innerHTML = list.map(r => `
+      <button class="atlas-list-row" onclick="selectAtlasObjectById('${r.id}')">
+        <span><b>${atlasSafe(r.name)}</b><small>${atlasSafe(r.detail?.transport_mode || r.layer_key)} - ${atlasSafe(r.feature_id)}</small></span>
+        <em class="${atlasStatusClass(r.status)}">${atlasSafe(atlasNumber(r.metric))}</em>
+      </button>
+    `).join('');
+  }
+}
+
+function selectAtlasObjectById(id) {
+  const obj = atlasState.nodes.concat(atlasState.routes).concat(atlasState.scenario?.objects || []).find(item => item.id === id);
+  if (obj) selectAtlasObject(obj);
+}
+
+async function selectAtlasObject(item) {
+  atlasState.selected = item;
+  if (typeof setSelectedEntity === 'function') {
+    setSelectedEntity({ type: item.object_type || 'atlas', id: item.id, label: item.name });
+  }
+  const drawer = document.getElementById('atlas-detail-drawer');
+  if (!drawer) return;
+  let lineage = await apiCall(`/atlas/lineage/${item.object_type}/${item.id}`);
+  if (!lineage) {
+    lineage = {
+      source_system: item.source_system,
+      source_timestamp: item.source_timestamp,
+      is_demo: item.is_demo,
+      reconciliation_status: item.status,
+      lineage: item.detail?.lineage || []
+    };
+  }
+  const detailRows = Object.entries(item.detail || {})
+    .filter(([key, value]) => value !== null && value !== undefined && key !== 'lineage')
+    .slice(0, 9)
+    .map(([key, value]) => `<div><span>${atlasSafe(key.replaceAll('_', ' '))}</span><strong>${atlasSafe(Array.isArray(value) ? value.join(', ') : value)}</strong></div>`)
+    .join('');
+  drawer.innerHTML = `
+    <div class="atlas-drawer-header">
+      <div>
+        <div class="atlas-eyebrow">${atlasSafe(atlasFeatureLabel(item))} - ${atlasSafe(item.object_type)}</div>
+        <h3>${atlasSafe(item.name)}</h3>
+      </div>
+      <span class="atlas-status ${atlasStatusClass(item.status)}">${atlasSafe(item.status)}</span>
+    </div>
+    <div class="atlas-metric-main"><strong>${atlasSafe(atlasNumber(item.metric))}</strong><span>${atlasSafe(item.unit || '')}</span></div>
+    <div class="atlas-detail-grid">${detailRows}</div>
+    <div class="atlas-lineage">
+      <div class="atlas-panel-title">Lineage</div>
+      <p><b>${atlasSafe(lineage.source_system)}</b> - ${atlasSafe(lineage.is_demo ? 'demo-backed mapping' : 'source-backed')}</p>
+      <p>${atlasSafe(lineage.source_timestamp || item.source_timestamp || '')}</p>
+      <p>Recon: <b>${atlasSafe(lineage.reconciliation_status || item.status)}</b></p>
+      <ul>${(lineage.lineage || []).map(x => `<li>${atlasSafe(x)}</li>`).join('')}</ul>
+    </div>
+    <div class="atlas-ai-actions">
+      ${['Explain this map object','What changed?','Draft control note','What should I investigate first?','What should I hedge first?','Identify data quality issues'].map(action => `
+        <button class="btn btn-secondary btn-sm" onclick="askAtlasAI('${action.replace(/'/g, "\\'")}')">${atlasSafe(action)}</button>
+      `).join('')}
+    </div>
+  `;
+}
+
+function askAtlasAI(action) {
+  const item = atlasState.selected;
+  const context = item ? `${action}: ${item.name} (${item.object_type}, ${item.feature_id}). Metric ${item.metric} ${item.unit}. Status ${item.status}. Source ${item.source_system}. Detail ${JSON.stringify(item.detail || {})}` : action;
+  if (item && typeof setSelectedEntity === 'function') setSelectedEntity({ type: item.object_type || 'atlas', id: item.id, label: item.name });
+  openCopilot();
+  sendCopilotMessage(context);
+}
+
+function toggleAtlasLayer(key, enabled) {
+  const group = atlasLayerGroups[key];
+  if (!group || !atlasMapInstance) return;
+  if (enabled) group.addTo(atlasMapInstance);
+  else atlasMapInstance.removeLayer(group);
+}
+
+async function runAtlasScenario() {
+  const select = document.getElementById('atlas-scenario-select');
+  const scenarioKey = select?.value || 'brent_down_5';
+  const result = await apiCall('/atlas/risk/scenario-overlay', {
+    method: 'POST',
+    body: JSON.stringify({ scenario_key: scenarioKey })
+  });
+  if (!result) {
+    showToast('Scenario', 'Scenario overlay could not be loaded.', 'warning');
+    return;
+  }
+  atlasState.scenario = result;
+  const summary = document.getElementById('atlas-scenario-summary');
+  if (summary) {
+    summary.innerHTML = `<strong>${atlasSafe(result.scenario_key)}</strong><br>${atlasSafe(result.summary.impacted_objects)} objects impacted - ${atlasMoney(result.summary.estimated_pnl_or_var_impact)} estimated impact`;
+  }
+  const host = document.getElementById('atlas-kpi-host');
+  if (host) host.innerHTML = atlasKpiStrip(atlasState.summary || {}, true);
+  renderAtlasObjects(true);
+  showToast('Scenario overlay', 'Map recolored for selected shock.', 'success');
+}
+
+function reloadAtlasScreen(riskMode) {
+  if (riskMode) SCREENS['risk-atlas'](document.getElementById('main'));
+  else SCREENS['atlas'](document.getElementById('main'));
+}
+
+async function renderAtlasScreen(main, riskMode) {
+  renderAtlasShell(main, riskMode);
+  const state = await loadAtlasPayload();
+  const dataState = document.getElementById('atlas-data-state');
+  if (dataState) dataState.textContent = state.summary?.data_state || 'mixed';
+  const host = document.getElementById('atlas-kpi-host');
+  if (host) host.innerHTML = atlasKpiStrip(state.summary || {}, riskMode);
+  initAtlasMap(riskMode);
+  renderAtlasLists(riskMode);
+}
+
+SCREENS['atlas'] = async function(main) {
+  await renderAtlasScreen(main, false);
+};
+
+SCREENS['risk-atlas'] = async function(main) {
+  await renderAtlasScreen(main, true);
 };

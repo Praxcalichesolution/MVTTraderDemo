@@ -19,7 +19,7 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 
 from database.db import init_db, run_migrations
-from shell_app_factory import _render_index
+from shell_app_factory import _html_response, _render_index
 
 # ── Configure logging ────────────────────────────────────────────────────────
 logging.basicConfig(
@@ -293,6 +293,8 @@ from api.configuration import router as configuration_router
 from api.news          import router as news_router
 from api.dashboard     import router as dashboard_router
 from api.ai_studio     import router as ai_studio_router
+from api.risk          import router as risk_router
+from api.atlas         import router as atlas_router
 
 app.include_router(auth_router,           prefix="/api/auth",           tags=["Auth"])
 app.include_router(users_router,          prefix="/api/users",          tags=["Users"])
@@ -313,6 +315,8 @@ app.include_router(configuration_router,  prefix="/api/configuration",  tags=["C
 app.include_router(news_router,           prefix="/api/news",           tags=["News"])
 app.include_router(dashboard_router,      prefix="/api/dashboard",      tags=["Dashboard"])
 app.include_router(ai_studio_router,      prefix="/api/ai-studio",      tags=["AI Studio"])
+app.include_router(risk_router,           prefix="/api/risk",           tags=["Risk Module"])
+app.include_router(atlas_router,          prefix="/api/atlas",          tags=["Atlas"])
 
 
 # ── Additional route aliases ─────────────────────────────────────────────────
@@ -331,7 +335,7 @@ if os.path.isdir(HELP_DOCS_DIR):
 @app.get("/", include_in_schema=False)
 async def serve_root():
     """Serve frontend - no auth required."""
-    return HTMLResponse(_render_index("trader"))
+    return _html_response(_render_index("trader"))
 
 @app.get("/favicon.ico", include_in_schema=False)
 async def serve_favicon():
@@ -342,7 +346,7 @@ async def spa_catch_all(full_path: str, request: Request):
     """Serve the SPA index.html for all non-API routes."""
     if full_path.startswith("api/"):
         return JSONResponse({"detail": "Not Found"}, status_code=404)
-    return HTMLResponse(_render_index("trader"))
+    return _html_response(_render_index("trader"))
 
 
 # ── Dev entry point ───────────────────────────────────────────────────────────
