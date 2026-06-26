@@ -1,0 +1,85 @@
+app:
+  name: Radiant-MVT
+  tagline: "Trading Intelligence Platform — INEOS Trading & Shipping"
+  version: "1.0.0"
+
+ai:
+  provider: claude
+  model: claude-3-5-sonnet-20241022
+  local_url: http://localhost:1234/v1
+  local_model: llama-3.1-8b-instruct
+  stream: true
+  max_tokens: 4096
+  temperature: 0.3
+  system_prompt_prefix: "You are Radiant, an AI trading intelligence assistant for INEOS Trading & Shipping."
+
+database:
+  url: mssql+pyodbc://USERNAME:PASSWORD@localhost:1433/MVT_Trader?driver=ODBC+Driver+18+for+SQL+Server&TrustServerCertificate=yes
+  wal_mode: false
+  timeout: 30
+  pool_size: 10
+
+feeds:
+  market_data_interval: 60
+  news_interval: 300
+  etrm_interval: 180
+  vessel_interval: 180
+  anomaly_check_interval: 120
+  forward_curve_interval: 600
+
+market:
+  commodities:
+    - Ethane
+    - Propane
+    - Butane
+    - Naphtha
+    - LNG
+    - Crude Oil
+    - Natural Gas
+    - Ethylene
+    - Gasoline
+    - Fuel Oil
+
+trading:
+  books:
+    - name: Ethane Americas
+      commodity: Ethane
+      strategy: "Cross-Atlantic arbitrage"
+    - name: LPG Europe
+      commodity: Propane
+      strategy: "Regional supply optimisation"
+    - name: Naphtha Asia
+      commodity: Naphtha
+      strategy: "Crack spread and arb"
+    - name: Natural Gas UK
+      commodity: Natural Gas
+      strategy: "Hub basis trading"
+    - name: LNG Global
+      commodity: LNG
+      strategy: "Spot and term optimisation"
+  annual_pnl_target: 36000000
+  var_limit: 8000000
+  stop_loss_pct: 15
+  margin_call_threshold_pct: 85
+
+vessels:
+  demurrage_rate: 45000
+  bog_rate_min: 0.001
+  bog_rate_max: 0.0015
+  ethane_mt_to_bbl: 72.37
+  default_capacity_m3: 27500
+  default_laytime_hours: 36
+
+alerts:
+  pnl_spike_sigma: 2.0
+  margin_warning_pct: 80
+  margin_breach_pct: 95
+  var_utilisation_warning_pct: 75
+  var_utilisation_breach_pct: 90
+  price_move_threshold_pct: 3.0
+  credit_warning_pct: 80
+
+auth:
+  token_expire_minutes: 480
+  algorithm: HS256
+  bcrypt_rounds: 12

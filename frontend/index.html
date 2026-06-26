@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>__APP_TITLE__</title>
+  <link rel="stylesheet" href="/static/css/main.css?v=1781747908">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+</head>
+<body>
+__APP_BOOTSTRAP__
+
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo" id="login-brand">__APP_TITLE__</div>
+    <div class="login-tagline" id="login-tagline">The decision intelligence platform for commodity teams</div>
+    <div id="login-error" style="display:none;color:#F87171;font-size:13px;margin-bottom:12px"></div>
+    <form class="login-form" onsubmit="handleLogin(event)">
+      <div class="form-group">
+        <label>EMAIL ADDRESS</label>
+        <input type="email" id="login-email" required autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label>PASSWORD</label>
+        <input type="password" id="login-password" required autocomplete="current-password">
+      </div>
+      <button type="submit" class="btn btn-primary w-full btn-lg" id="login-btn">Sign In</button>
+    </form>
+    <div class="login-hint" id="login-hint"></div>
+  </div>
+</div>
+
+<div id="app-shell" style="display:none">
+  <header id="topbar">
+    <div class="tb-left">
+      <div class="tb-logo" id="topbar-brand">__APP_TITLE__</div>
+      <button class="tb-nav-toggle" onclick="toggleNav()" title="Toggle sidebar">&#9776;</button>
+    </div>
+    <div class="tb-kpis">
+      <div class="tb-kpi" id="tb-pnl">
+        <div class="tb-kpi-label" id="tb-kpi-label-1">Today P&amp;L</div>
+        <div class="tb-kpi-value positive" id="tb-pnl-val">+$1.24M</div>
+      </div>
+      <div class="tb-kpi" id="tb-var">
+        <div class="tb-kpi-label" id="tb-kpi-label-2">VaR Util</div>
+        <div class="tb-kpi-value" id="tb-var-val">62%</div>
+      </div>
+      <div class="tb-kpi clickable" id="tb-kpi-3" onclick="navigateTo('decision-queue')">
+        <div class="tb-kpi-label" id="tb-kpi-label-3">Decisions</div>
+        <div class="tb-kpi-value warning" id="tb-decisions-val">3</div>
+      </div>
+      <div class="tb-kpi clickable" id="tb-kpi-4" onclick="navigateTo('ai')">
+        <div class="tb-kpi-label" id="tb-kpi-label-4">Alerts</div>
+        <div class="tb-kpi-value negative" id="tb-alerts-val">2</div>
+      </div>
+    </div>
+    <div class="tb-right">
+      <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Switch color mode" aria-label="Switch color mode">
+        <span class="theme-toggle-label" id="theme-toggle-label">Dark mode</span>
+      </button>
+      <div class="ai-status-badge" onclick="navigateTo('admin')">
+        <span class="ai-dot"></span>
+        <span id="ai-provider-label">Radiant AI</span>
+      </div>
+      <div class="tb-user" onclick="handleUserMenu()">
+        <div class="tb-avatar" id="user-avatar">A</div>
+        <div class="tb-user-info">
+          <span class="tb-user-name" id="user-name-display">Alex Chen</span>
+          <span class="tb-user-role" id="user-role-display">trader</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <nav id="nav">
+    <div class="nav-inner" id="nav-inner"></div>
+    <div class="nav-foot">
+      <span id="nav-ver">__APP_TITLE__ v2.1</span>
+      <a href="#" onclick="logout();return false">Sign out</a>
+    </div>
+  </nav>
+
+  <main id="main"></main>
+
+  <aside id="market-panel">
+    <div class="mp-header">
+      <div class="mp-header-left">
+        <span class="mp-title">Market Watch</span>
+        <span class="mp-agent-status" id="mp-agent-status">
+          <span class="mp-agent-dot"></span>
+          <span id="mp-last-run">Agent initializing...</span>
+        </span>
+      </div>
+      <div class="mp-header-right">
+        <button class="mp-btn" onclick="refreshMarketIntelligence()" title="Refresh all">&#8635;</button>
+        <button class="mp-btn" onclick="openConfig()" title="Configure">&#9881;</button>
+        <button class="mp-btn mp-collapse-btn" onclick="toggleMarketPanel()" title="Collapse">&#9654;</button>
+      </div>
+    </div>
+
+    <div class="mp-agent-strip" id="mp-agent-strip">
+      <span id="mp-analyses-count">-</span> analyses · <span id="mp-opps-count">-</span> opportunities
+      <span class="mp-agent-log-link" onclick="openAgentLog()">View agent log -></span>
+    </div>
+
+    <div class="mp-prices" id="mp-prices"></div>
+
+    <div class="mp-news">
+      <div class="mp-news-header">
+        <span class="mp-news-title">Related News</span>
+        <span class="mp-news-count" id="mp-news-count">-</span>
+      </div>
+      <div id="mp-news-items"></div>
+    </div>
+  </aside>
+
+  <div id="market-tab" class="market-tab" onclick="toggleMarketPanel()" style="display:none">
+    <span>Market Watch</span>
+  </div>
+
+  <div id="intel-backdrop" onclick="closeIntelReport()"></div>
+  <div id="intel-panel">
+    <div class="intel-header">
+      <div>
+        <div class="intel-title" id="intel-title">Commodity Intelligence</div>
+        <div class="intel-subtitle" id="intel-subtitle">AI Analysis Report</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <button id="intel-maximize-btn" onclick="maximizeIntelPanel()" title="Fullscreen" style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:0 6px">&#10529;</button>
+        <button onclick="closeIntelReport()" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;padding:0">&#10005;</button>
+      </div>
+    </div>
+    <div class="intel-body" id="intel-body">
+      <div class="flex-center" style="height:200px"><span class="loading-spinner"></span></div>
+    </div>
+  </div>
+
+  <div id="config-backdrop" onclick="closeConfig()"></div>
+  <div id="config-panel">
+    <div class="config-header">
+      <div>
+        <div class="config-title">&#9881; Market Watch Configuration</div>
+        <div class="config-subtitle">Manage commodities, currencies and alert thresholds</div>
+      </div>
+      <button class="config-close" onclick="closeConfig()">&#10005;</button>
+    </div>
+    <div class="config-tabs">
+      <button class="config-tab active" onclick="switchConfigTab('watchlist', this)">My Watchlist</button>
+      <button class="config-tab" onclick="switchConfigTab('add', this)">Add Instrument</button>
+      <button class="config-tab" onclick="switchConfigTab('presets', this)">Presets</button>
+    </div>
+    <div class="config-tab-content active" id="config-tab-watchlist">
+      <div class="config-section-label">Active instruments - click to edit thresholds</div>
+      <div id="config-watchlist-items">
+        <div class="config-loading">Loading watchlist...</div>
+      </div>
+      <div class="config-tip">&#128161; Drag to reorder. AI agent analyzes each instrument every 30 minutes.</div>
+    </div>
+    <div class="config-tab-content" id="config-tab-add">
+      <div class="config-add-search">
+        <input type="text" id="config-search" placeholder="Search: crude, ethane, AED, SAR..." oninput="filterConfigCatalog(this.value)">
+      </div>
+      <div id="config-validation-result" style="display:none"></div>
+      <div class="config-custom-add">
+        <div class="config-section-label">Or add a custom symbol</div>
+        <div class="config-custom-row">
+          <input type="text" id="config-custom-symbol" placeholder="e.g. USDAED, Dubai, JKM" style="flex:1">
+          <button class="btn btn-secondary btn-sm" onclick="validateCustomSymbol()">Validate</button>
+          <button class="btn btn-primary btn-sm" id="config-add-custom-btn" onclick="addCustomToWatchlist()" disabled>Add</button>
+        </div>
+      </div>
+      <div id="config-catalog">
+        <div class="config-section-label">Crude Oil</div>
+        <div class="config-catalog-grid" id="cat-crude"></div>
+        <div class="config-section-label">NGLs &amp; Products</div>
+        <div class="config-catalog-grid" id="cat-ngl"></div>
+        <div class="config-section-label">Gas &amp; Carbon</div>
+        <div class="config-catalog-grid" id="cat-gas"></div>
+        <div class="config-section-label">FX - G10</div>
+        <div class="config-catalog-grid" id="cat-fx-g10"></div>
+        <div class="config-section-label">Middle East Currencies</div>
+        <div class="config-catalog-grid" id="cat-fx-me"></div>
+        <div class="config-section-label">FX - Asia &amp; Other</div>
+        <div class="config-catalog-grid" id="cat-fx-other"></div>
+        <div class="config-section-label">Freight</div>
+        <div class="config-catalog-grid" id="cat-freight"></div>
+      </div>
+    </div>
+    <div class="config-tab-content" id="config-tab-presets">
+      <div class="config-section-label">Apply a preset watchlist - replaces your current list</div>
+      <div id="config-presets-list"></div>
+    </div>
+  </div>
+
+  <div id="agent-log-backdrop" onclick="closeAgentLog()"></div>
+  <div id="agent-log-modal">
+    <div class="wl-header">
+      <span>Market Intelligence Agent - Activity Log</span>
+      <button onclick="closeAgentLog()">&#10005;</button>
+    </div>
+    <div id="agent-log-body" class="agent-log-body"></div>
+  </div>
+
+  <footer id="bottombar">
+    <div class="cb-icon">AI</div>
+    <div class="cb-content">
+      <div class="cb-label">AI CONCIERGE</div>
+      <div class="cb-text" id="concierge-text">Ready. Actionable insights will appear here.</div>
+    </div>
+    <div class="cb-actions" id="concierge-actions">
+      <button class="btn btn-sm btn-secondary" onclick="openCopilot()">Ask AI</button>
+    </div>
+  </footer>
+</div>
+
+<div id="news-backdrop" onclick="closeNewsPanel()"></div>
+<div id="news-panel">
+  <div class="news-panel-header">
+    <div>
+      <div class="news-panel-source" id="np-source">Reuters</div>
+      <div class="news-panel-headline" id="np-headline">Loading...</div>
+      <div class="news-panel-meta">
+        <span id="np-time">-</span>
+        <span id="np-commodity-tags"></span>
+        <span id="np-impact-badge"></span>
+      </div>
+    </div>
+    <button class="news-panel-close" onclick="closeNewsPanel()">&#10005;</button>
+  </div>
+  <div class="news-panel-actions">
+    <button class="btn btn-primary btn-sm" onclick="summarizeCurrentNews()">AI Summarize</button>
+    <button class="btn btn-secondary btn-sm" onclick="maximizeNewsPanel()">Maximize</button>
+    <button class="btn btn-secondary btn-sm" onclick="sendCopilotMessage('Tell me more about this news and its impact on my positions: ' + currentNewsHeadline)">Ask Copilot</button>
+  </div>
+  <div class="news-panel-body" id="np-body">
+    <div class="flex-center" style="height:200px"><span class="loading-spinner"></span></div>
+  </div>
+</div>
+
+<div id="copilot-backdrop" onclick="closeCopilot()"></div>
+<div id="copilot-panel">
+  <div class="cp-header">
+    <div class="cp-title">Radiant AI</div>
+    <div style="display:flex;align-items:center;gap:6px;margin-left:auto">
+      <div id="ai-model-toggle" class="ai-model-toggle">
+        <button id="toggle-claude" onclick="switchAIProvider('claude')" style="padding:3px 10px;border:none;border-radius:16px;font-size:10px;font-weight:700;cursor:pointer;transition:all .2s;letter-spacing:.04em">Claude</button>
+        <button id="toggle-local" onclick="switchAIProvider('local')" style="padding:3px 10px;border:none;border-radius:16px;font-size:10px;font-weight:700;cursor:pointer;transition:all .2s;letter-spacing:.04em">Local LLM</button>
+      </div>
+      <span id="ai-conn-status" style="font-size:9px;font-weight:700;letter-spacing:.06em;padding:2px 6px;border-radius:10px;background:#16a34a22;color:#4ade80">ONLINE</span>
+    </div>
+    <button onclick="maximizeCopilot()" id="cp-maximize-btn" title="Maximize" style="background:none;border:none;color:#94A3B8;font-size:16px;cursor:pointer;padding:0 4px;margin-left:4px">&#10529;</button>
+    <button onclick="closeCopilot()" style="background:none;border:none;color:#94A3B8;font-size:20px;cursor:pointer;padding:0 4px">&#10005;</button>
+  </div>
+  <div class="cp-context" id="copilot-context-banner">You're viewing this workspace. Ask me anything about it.</div>
+  <div class="cp-messages" id="copilot-messages">
+    <div class="cp-msg ai">
+      <div class="cp-bubble">Hello. I am your Radiant AI copilot. Ask me about decisions, exposures, controls, or market context.</div>
+    </div>
+  </div>
+  <div class="cp-suggestions" id="copilot-suggestions"></div>
+  <div class="cp-input-row">
+    <textarea id="copilot-input" placeholder="Ask anything about your workspace..." rows="2" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendCopilotMessage(document.getElementById('copilot-input').value)}"></textarea>
+    <button class="btn btn-primary btn-sm" onclick="sendCopilotMessage(document.getElementById('copilot-input').value)">Send</button>
+  </div>
+</div>
+
+<button id="copilot-fab" onclick="openCopilot()">AI<span id="fab-badge" class="fab-badge">3</span></button>
+<div id="toast-container"></div>
+
+<script src="/static/js/app.js?v=1781747906"></script>
+<script src="/static/js/screens/screens.js?v=1781747908"></script>
+<script src="/static/js/help.js?v=1781747906"></script>
+<script>
+function repairSidebarNav(force) {
+  const nav = document.getElementById('nav-inner');
+  const appMode = window.__APP_MODE__ || {};
+  if (!nav || !appMode.nav_sections) return;
+  if (!force && nav.querySelectorAll('.nav-item').length > 0) return;
+
+  const storagePrefix = appMode.storage_prefix || `radiant_${appMode.id || 'trader'}`;
+  const role = localStorage.getItem(`${storagePrefix}_role`) || (Array.isArray(appMode.allowed_roles) ? appMode.allowed_roles[0] : 'trader');
+  const allowedScreens = Array.isArray(appMode.allowed_screens) ? appMode.allowed_screens : [];
+  const screenMeta = appMode.screen_meta || {};
+  const activeScreen = (window.location.hash || '').replace('#', '') || appMode.default_screen || '';
+
+  const html = appMode.nav_sections.map(section => {
+    const items = (section.items || []).map(entry => {
+      const key = typeof entry === 'string' ? entry : entry.screen;
+      const roles = typeof entry === 'string' ? null : (entry.roles || null);
+      if (!key || !allowedScreens.includes(key)) return null;
+      if (roles && !roles.includes(role)) return null;
+      const meta = screenMeta[key] || {};
+      return { key, label: meta.label || key, icon: meta.icon || '' };
+    }).filter(Boolean);
+
+    if (!items.length) return '';
+    return `
+      <div class="nav-section">${section.label}</div>
+      ${items.map(item => `
+        <a class="nav-item ${item.key === activeScreen ? 'active' : ''}" data-screen="${item.key}" onclick="navigateTo('${item.key}')">
+          <span class="ni">${item.icon}</span><span class="nl">${item.label}</span>
+        </a>
+      `).join('')}
+    `;
+  }).join('');
+
+  nav.innerHTML = html;
+}
+
+async function handleLogin(e) {
+  e.preventDefault();
+  const btn = document.getElementById('login-btn');
+  const errEl = document.getElementById('login-error');
+  btn.disabled = true;
+  btn.textContent = 'Signing in...';
+  errEl.style.display = 'none';
+
+  const email = document.getElementById('login-email').value;
+  const password = document.getElementById('login-password').value;
+
+  try {
+    const success = await login(email, password);
+    if (success) {
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('app-shell').style.display = 'grid';
+      initApp();
+      setTimeout(() => repairSidebarNav(true), 80);
+    } else {
+      errEl.textContent = 'Incorrect credentials or this account cannot access this workspace.';
+      errEl.style.display = 'block';
+    }
+  } catch (err) {
+    errEl.textContent = 'Login error: ' + err.message;
+    errEl.style.display = 'block';
+  }
+
+  btn.disabled = false;
+  btn.textContent = (window.__APP_MODE__ && window.__APP_MODE__.login_button) || 'Sign In';
+}
+
+function handleUserMenu() {
+  const name = document.getElementById('user-name-display').textContent;
+  showToast && showToast('Account', 'Signed in as ' + name + ' (' + currentRole() + ')', 'info');
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  repairSidebarNav(true);
+  setTimeout(() => repairSidebarNav(), 120);
+  setTimeout(() => repairSidebarNav(), 600);
+});
+
+window.addEventListener('hashchange', () => repairSidebarNav(true));
+window.addEventListener('focus', () => repairSidebarNav());
+</script>
+</body>
+</html>

@@ -1,0 +1,869 @@
+"""
+SQLAlchemy ORM models for Radiant-MVT Trading Intelligence Platform.
+All 18 tables matching schema.sql exactly.
+"""
+from sqlalchemy.types import REAL as Real
+from sqlalchemy import (
+    Column, Integer, Text, Boolean, ForeignKey, String,
+    CheckConstraint, Index, DateTime, Date
+)
+from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
+from database.db import Base
+
+
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    email = Column(Text, unique=True, nullable=False)
+    hashed_password = Column(Text, nullable=False)
+    full_name = Column(Text, nullable=False)
+    role = Column(Text, nullable=False)
+    desk = Column(Text)
+    title = Column(Text)
+    is_active = Column(Integer, default=1)
+    last_login = Column(DateTime)
+    created_at = Column(DateTime, server_default=func.now())
+
+    __table_args__ = (
+        CheckConstraint("role IN ('trader','risk','executive','admin')", name="chk_user_role"),
+    )
+
+    trades = relationship("Trade", back_populates="trader", foreign_keys="Trade.trader_id")
+    books = relationship("Book", back_populates="trader")
+    alerts_assigned = relationship("Alert", back_populates="assigned_user")
+    chat_messages = relationship("ChatHistory", back_populates="user")
+    desk_decisions = relationship("DeskDecision", back_populates="trader")
+    ai_recommendations = relationship("AIRecommendation", back_populates="user")
+    monthly_actuals = relationship("MonthlyActual", back_populates="trader")
+    emails = relationship("Email", back_populates="user")
+    decision_queue = relationship("DecisionQueue", back_populates="user")
+    audit_logs = relationship("AuditLog", back_populates="user")
+
+    def __repr__(self):
+        return f"<User id={self.id} email={self.email} role={self.role}>"
+
+
+class Book(Base):
+    __tablename__ = "books"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(Text, nullable=False)
+    commodity = Column(Text, nullable=False)
+    trader_id = Column(Integer, ForeignKey("users.id"))
+    annual_target = Column(Real)
+    strategy = Column(Text)
+    is_active = Column(Integer, default=1)
+
+    trader = relationship("User", back_populates="books")
+    trades = relationship("Trade", back_populates="book")
+    positions = relationship("Position", back_populates="book")
+    monthly_actuals = relationship("MonthlyActual", back_populates="book")
+    performance_targets = relationship("PerformanceTarget", back_populates="book")
+    desk_decisions = relationship("DeskDecision", back_populates="book")
+
+    def __repr__(self):
+        return f"<Book id={self.id} name={self.name} commodity={self.commodity}>"
+
+
+class Counterparty(Base):
+    __tablename__ = "counterparties"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(Text, nullable=False)
+    short_name = Column(Text)
+    country = Column(Text)
+    credit_limit = Column(Real)
+    credit_used = Column(Real, default=0)
+    isda_status = Column(Text, default="Signed")
+    typical_trade_size_bbl = Column(Real)
+    preferred_commodities = Column(Text)
+    avg_response_hours = Column(Real)
+    seasonal_activity = Column(Text)
+    relationship_since = Column(Integer)
+    contact_name = Column(Text)
+    contact_email = Column(Text)
+
+    trades = relationship("Trade", back_populates="counterparty")
+    vessels = relationship("Vessel", back_populates="booked_counterparty")
+    desk_decisions = relationship("DeskDecision", back_populates="counterparty")
+
+    def __repr__(self):
+        return f"<Counterparty id={self.id} name={self.name}>"
+
+
+class Vessel(Base):
+    __tablename__ = "vessels"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(Text, nullable=False)
+    imo_number = Column(Text)
+    capacity_m3 = Column(Real, default=27500)
+    vessel_type = Column(Text, default="Multi-gas carrier")
+    flag = Column(Text, default="Bahamas")
+    current_lat = Column(Real)
+    current_lon = Column(Real)
+    origin_port = Column(Text)
+    destination_port = Column(Text)
+    eta = Column(DateTime)
+    original_eta = Column(DateTime)
+    delay_hours = Column(Real, default=0)
+    status = Column(Text, default="En Route")
+    cargo_commodity = Column(Text, default="Ethane")
+    cargo_volume_mt = Column(Real)
+    charter_party_rate = Column(Real, default=45000)
+    allowed_laytime_hours = Column(Real, default=36)
+    booked_counterparty_id = Column(Integer, ForeignKey("counterparties.id"))
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
+    booked_counterparty = relationship("Counterparty", back_populates="vessels")
+    emails_linked = relationship("Email", back_populates="linked_vessel")
+    decision_queue_items = relationship("DecisionQueue", back_populates="related_vessel")
+
+    def __repr__(self):
+        return f"<Vessel id={self.id} name={self.name} status={self.status}>"
+
+
+class Trade(Base):
+    __tablename__ = "trades"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    trade_ref = Column(Text, unique=True, nullable=False)
+    book_id = Column(Integer, ForeignKey("books.id"))
+    trader_id = Column(Integer, ForeignKey("users.id"))
+    counterparty_id = Column(Integer, ForeignKey("counterparties.id"))
+    commodity = Column(Text, nullable=False)
+    trade_type = Column(Text, nullable=False)
+    direction = Column(Text, nullable=False)
+    volume = Column(Real, nullable=False)
+    volume_unit = Column(Text, default="bbl")
+    price = Column(Real)
+    price_basis = Column(Text)
+    currency = Column(Text, default="USD")
+    trade_date = Column(Date)
+    delivery_start = Column(Date)
+    delivery_end = Column(Date)
+    delivery_location = Column(Text)
+    incoterms = Column(Text)
+    status = Column(Text, default="Confirmed")
+    source_system = Column(Text, default="RightAngle")
+    strategy_type = Column(Text)
+    pnl_realised = Column(Real, default=0)
+    pnl_unrealised = Column(Real, default=0)
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+    is_anomalous = Column(Integer, default=0)
+    anomaly_reason = Column(Text)
+
+    __table_args__ = (
+        CheckConstraint("trade_type IN ('Physical','Paper','Exchange','Swap','Option')", name="chk_trade_type"),
+        CheckConstraint("direction IN ('Buy','Sell')", name="chk_direction"),
+        CheckConstraint("status IN ('Pending','Confirmed','Amended','Novated','Cancelled','Settled')", name="chk_trade_status"),
+        CheckConstraint("strategy_type IN ('Directional','Spread','Basis','Arb','Hedge') OR strategy_type IS NULL", name="chk_strategy"),
+    )
+
+    book = relationship("Book", back_populates="trades")
+    trader = relationship("User", back_populates="trades", foreign_keys=[trader_id])
+    counterparty = relationship("Counterparty", back_populates="trades")
+    alerts = relationship("Alert", back_populates="affected_trade")
+    emails_linked = relationship("Email", back_populates="linked_trade")
+    decision_queue_items = relationship("DecisionQueue", back_populates="related_trade")
+
+    def __repr__(self):
+        return f"<Trade id={self.id} ref={self.trade_ref} {self.direction} {self.volume} {self.commodity}>"
+
+
+class Position(Base):
+    __tablename__ = "positions"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    book_id = Column(Integer, ForeignKey("books.id"))
+    commodity = Column(Text, nullable=False)
+    region = Column(Text)
+    tenor = Column(Text)
+    delivery_month = Column(Text)
+    physical_volume = Column(Real, default=0)
+    paper_volume = Column(Real, default=0)
+    exchange_volume = Column(Real, default=0)
+    net_volume = Column(Real, default=0)
+    volume_unit = Column(Text, default="bbl")
+    avg_price = Column(Real)
+    mtm_price = Column(Real)
+    mtm_pnl = Column(Real, default=0)
+    hedge_ratio = Column(Real, default=0)
+    var_contribution = Column(Real, default=0)
+    as_of = Column(DateTime, server_default=func.now())
+
+    book = relationship("Book", back_populates="positions")
+
+    def __repr__(self):
+        return f"<Position id={self.id} book_id={self.book_id} commodity={self.commodity} net={self.net_volume}>"
+
+
+class MarketData(Base):
+    __tablename__ = "market_data"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    commodity = Column(Text, nullable=False)
+    price = Column(Real, nullable=False)
+    price_unit = Column(Text, default="USD/bbl")
+    source = Column(Text, default="yfinance")
+    change_1d = Column(Real)
+    change_pct_1d = Column(Real)
+    high_1d = Column(Real)
+    low_1d = Column(Real)
+    volume = Column(Real)
+    timestamp = Column(DateTime, server_default=func.now())
+
+    __table_args__ = (
+        Index("idx_market_data_commodity_ts", "commodity", "timestamp"),
+    )
+
+    def __repr__(self):
+        return f"<MarketData id={self.id} commodity={self.commodity} price={self.price}>"
+
+
+class RiskNormalizedExposure(Base):
+    __tablename__ = "risk_normalized_exposures"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    book_id = Column(Integer, ForeignKey("books.id"))
+    position_id = Column(Integer, ForeignKey("positions.id"))
+    book_name = Column(Text)
+    commodity = Column(Text, nullable=False)
+    region = Column(Text)
+    tenor = Column(Text)
+    source_type = Column(Text, default="Mixed")
+    physical_volume = Column(Real, default=0)
+    financial_volume = Column(Real, default=0)
+    net_volume = Column(Real, default=0)
+    delta_equivalent = Column(Real, default=0)
+    basis_bucket = Column(Text)
+    location_basis = Column(Text)
+    hedge_effectiveness = Column(Real, default=0)
+    normalized_price = Column(Real, default=0)
+    notional_usd = Column(Real, default=0)
+    as_of = Column(DateTime, server_default=func.now())
+
+    def __repr__(self):
+        return f"<RiskNormalizedExposure id={self.id} commodity={self.commodity} delta={self.delta_equivalent}>"
+
+
+class RiskMetricRun(Base):
+    __tablename__ = "risk_metric_runs"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    run_date = Column(DateTime, server_default=func.now())
+    confidence = Column(Real, nullable=False)
+    horizon_days = Column(Integer, nullable=False)
+    method = Column(Text, default="Historical Simulation")
+    var_amount = Column(Real, default=0)
+    expected_shortfall = Column(Real, default=0)
+    portfolio_value = Column(Real, default=0)
+    observations = Column(Integer, default=0)
+    exceptions_count = Column(Integer, default=0)
+    status = Column(Text, default="Complete")
+    generated_by = Column(Text)
+    payload_json = Column(Text)
+
+    def __repr__(self):
+        return f"<RiskMetricRun id={self.id} conf={self.confidence} horizon={self.horizon_days}>"
+
+
+class RiskStressRun(Base):
+    __tablename__ = "risk_stress_runs"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    scenario_name = Column(Text, nullable=False)
+    scenario_type = Column(Text)
+    total_pnl_impact = Column(Real, default=0)
+    worst_book = Column(Text)
+    payload_json = Column(Text)
+    created_at = Column(DateTime, server_default=func.now())
+
+    def __repr__(self):
+        return f"<RiskStressRun id={self.id} scenario={self.scenario_name}>"
+
+
+class RiskBacktestObservation(Base):
+    __tablename__ = "risk_backtest_observations"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    observation_date = Column(Date, nullable=False)
+    confidence = Column(Real, default=0.99)
+    horizon_days = Column(Integer, default=1)
+    predicted_var = Column(Real, default=0)
+    realized_pnl = Column(Real, default=0)
+    exception_flag = Column(Integer, default=0)
+    exception_amount = Column(Real, default=0)
+    notes = Column(Text)
+
+    def __repr__(self):
+        return f"<RiskBacktestObservation date={self.observation_date} exception={self.exception_flag}>"
+
+
+class RiskLimit(Base):
+    __tablename__ = "risk_limits"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    scope_type = Column(Text, default="Portfolio")
+    scope_name = Column(Text, nullable=False)
+    metric = Column(Text, nullable=False)
+    limit_amount = Column(Real, nullable=False)
+    warning_pct = Column(Real, default=80)
+    breach_pct = Column(Real, default=100)
+    current_value = Column(Real, default=0)
+    utilization_pct = Column(Real, default=0)
+    status = Column(Text, default="OK")
+    escalation = Column(Text)
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
+    def __repr__(self):
+        return f"<RiskLimit scope={self.scope_name} metric={self.metric} status={self.status}>"
+
+
+class RiskReport(Base):
+    __tablename__ = "risk_reports"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    report_date = Column(Date, nullable=False)
+    report_type = Column(Text, nullable=False)
+    title = Column(Text, nullable=False)
+    status = Column(Text, default="Ready")
+    methodology = Column(Text)
+    summary_json = Column(Text)
+    created_at = Column(DateTime, server_default=func.now())
+
+    def __repr__(self):
+        return f"<RiskReport id={self.id} type={self.report_type} date={self.report_date}>"
+
+
+class ForwardCurve(Base):
+    __tablename__ = "forward_curves"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    commodity = Column(Text, nullable=False)
+    tenor = Column(Text, nullable=False)
+    delivery_month = Column(Text, nullable=False)
+    price = Column(Real, nullable=False)
+    basis_vs_prompt = Column(Real, default=0)
+    curve_date = Column(Date)
+    source = Column(Text, default="Simulated")
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
+    def __repr__(self):
+        return f"<ForwardCurve id={self.id} commodity={self.commodity} tenor={self.tenor} price={self.price}>"
+
+
+class News(Base):
+    __tablename__ = "news"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    headline = Column(Text, nullable=False)
+    source = Column(Text)
+    url = Column(Text)
+    published_at = Column(DateTime)
+    summary = Column(Text)
+    sentiment_score = Column(Real)
+    commodities_tagged = Column(Text)
+    regions_tagged = Column(Text)
+    counterparties_tagged = Column(Text)
+    market_impact = Column(Text)
+    relevance_score = Column(Real, default=0)
+    ingested_at = Column(DateTime, server_default=func.now())
+
+    __table_args__ = (
+        CheckConstraint("market_impact IN ('Bullish','Bearish','Neutral','Unknown') OR market_impact IS NULL", name="chk_market_impact"),
+    )
+
+    def __repr__(self):
+        return f"<News id={self.id} headline={self.headline[:40]}>"
+
+
+class Alert(Base):
+    __tablename__ = "alerts"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    alert_type = Column(Text, nullable=False)
+    severity = Column(Text, nullable=False)
+    title = Column(Text, nullable=False)
+    description = Column(Text)
+    affected_trade_id = Column(Integer, ForeignKey("trades.id"))
+    affected_book = Column(Text)
+    estimated_impact = Column(Real)
+    ai_explanation = Column(Text)
+    ai_draft_action = Column(Text)
+    status = Column(Text, default="Open")
+    assigned_to = Column(Integer, ForeignKey("users.id"))
+    created_at = Column(DateTime, server_default=func.now())
+    resolved_at = Column(DateTime)
+
+    __table_args__ = (
+        CheckConstraint("severity IN ('Critical','High','Medium','Low')", name="chk_alert_severity"),
+        CheckConstraint("status IN ('Open','Acknowledged','Resolved','Dismissed')", name="chk_alert_status"),
+    )
+
+    affected_trade = relationship("Trade", back_populates="alerts")
+    assigned_user = relationship("User", back_populates="alerts_assigned")
+    decision_queue_items = relationship("DecisionQueue", back_populates="related_alert")
+
+    def __repr__(self):
+        return f"<Alert id={self.id} severity={self.severity} title={self.title[:40]}>"
+
+
+class AuditLog(Base):
+    __tablename__ = "audit_log"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    action_type = Column(Text, nullable=False)
+    entity_type = Column(Text)
+    entity_id = Column(Integer)
+    description = Column(Text)
+    old_value = Column(Text)
+    new_value = Column(Text)
+    ai_involved = Column(Integer, default=0)
+    ai_recommendation = Column(Text)
+    ai_accepted = Column(Integer)
+    ip_address = Column(Text)
+    timestamp = Column(DateTime, server_default=func.now())
+
+    user = relationship("User", back_populates="audit_logs")
+
+    def __repr__(self):
+        return f"<AuditLog id={self.id} action={self.action_type} entity={self.entity_type}:{self.entity_id}>"
+
+
+class ChatHistory(Base):
+    __tablename__ = "chat_history"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    session_id = Column(Text)
+    role = Column(Text, nullable=False)
+    content = Column(Text, nullable=False)
+    screen_context = Column(Text)
+    selected_entity_type = Column(Text)
+    selected_entity_id = Column(Text)
+    selected_entity_label = Column(Text)
+    agent_key = Column(Text)
+    sources_cited = Column(Text)
+    timestamp = Column(DateTime, server_default=func.now())
+
+    __table_args__ = (
+        CheckConstraint("role IN ('user','assistant')", name="chk_chat_role"),
+    )
+
+    user = relationship("User", back_populates="chat_messages")
+
+    def __repr__(self):
+        return f"<ChatHistory id={self.id} user_id={self.user_id} role={self.role}>"
+
+
+class AIAgentDefinition(Base):
+    __tablename__ = "ai_agent_definitions"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    agent_key = Column(String(120), unique=True, nullable=False)
+    name = Column(Text, nullable=False)
+    description = Column(Text)
+    category = Column(Text, default="general")
+    purpose = Column(Text)
+    instructions = Column(Text)
+    system_prompt_template = Column(Text, nullable=False)
+    user_prompt_template = Column(Text)
+    model_provider = Column(Text, default="claude")
+    model_name = Column(Text, default="claude-sonnet-4-6")
+    temperature = Column(Real, default=0.2)
+    max_tokens = Column(Integer, default=1400)
+    provider_settings = Column(Text)
+    allowed_tools = Column(Text)
+    allowed_screens = Column(Text)
+    output_format = Column(Text, default="narrative")
+    response_style = Column(Text)
+    is_active = Column(Integer, default=1)
+    is_chat_default = Column(Integer, default=0)
+    version = Column(Integer, default=1)
+    created_by_user_id = Column(Integer, ForeignKey("users.id"))
+    updated_by_user_id = Column(Integer, ForeignKey("users.id"))
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
+    def __repr__(self):
+        return f"<AIAgentDefinition id={self.id} key={self.agent_key} version={self.version}>"
+
+
+class AIAgentVersion(Base):
+    __tablename__ = "ai_agent_versions"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    agent_id = Column(Integer, ForeignKey("ai_agent_definitions.id"), nullable=False)
+    version_number = Column(Integer, nullable=False)
+    change_summary = Column(Text)
+    snapshot_json = Column(Text, nullable=False)
+    changed_by_user_id = Column(Integer, ForeignKey("users.id"))
+    created_at = Column(DateTime, server_default=func.now())
+
+    def __repr__(self):
+        return f"<AIAgentVersion agent_id={self.agent_id} version={self.version_number}>"
+
+
+class AIUserContextProfile(Base):
+    __tablename__ = "ai_user_context_profiles"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id"), unique=True, nullable=False)
+    role_profile = Column(Text)
+    desk_team = Column(Text)
+    industries_covered = Column(Text)
+    commodities_covered = Column(Text)
+    regions_covered = Column(Text)
+    preferred_answer_style = Column(Text)
+    risk_appetite = Column(Text)
+    review_posture = Column(Text)
+    default_focus_areas = Column(Text)
+    analyst_preferences = Column(Text)
+    persistent_notes = Column(Text)
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
+    def __repr__(self):
+        return f"<AIUserContextProfile user_id={self.user_id}>"
+
+
+class AISessionMemory(Base):
+    __tablename__ = "ai_session_memory"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    session_id = Column(String(255), nullable=False)
+    last_screen = Column(Text)
+    selected_entity_type = Column(Text)
+    selected_entity_id = Column(Text)
+    selected_entity_label = Column(Text)
+    memory_summary = Column(Text)
+    recent_user_goal = Column(Text)
+    last_agent_key = Column(Text)
+    last_message_at = Column(DateTime)
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
+    __table_args__ = (
+        Index("idx_ai_session_memory_user_session", "user_id", "session_id", unique=True),
+    )
+
+    def __repr__(self):
+        return f"<AISessionMemory user_id={self.user_id} session_id={self.session_id}>"
+
+
+class DeskDecision(Base):
+    __tablename__ = "desk_decisions"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    decision_date = Column(Date, nullable=False)
+    trader_id = Column(Integer, ForeignKey("users.id"))
+    book_id = Column(Integer, ForeignKey("books.id"))
+    commodity = Column(Text)
+    strategy_type = Column(Text)
+    structure_description = Column(Text, nullable=False)
+    rationale = Column(Text)
+    market_context = Column(Text)
+    volume = Column(Real)
+    entry_price = Column(Real)
+    exit_price = Column(Real)
+    hold_days = Column(Integer)
+    pnl_realised = Column(Real)
+    outcome = Column(Text)
+    lessons_learned = Column(Text)
+    failure_mode = Column(Text)
+    tags = Column(Text)
+    counterparty_id = Column(Integer, ForeignKey("counterparties.id"))
+    similarity_hash = Column(Text)
+
+    __table_args__ = (
+        CheckConstraint("outcome IN ('Profitable','Loss','Breakeven','Ongoing') OR outcome IS NULL", name="chk_outcome"),
+    )
+
+    trader = relationship("User", back_populates="desk_decisions")
+    book = relationship("Book", back_populates="desk_decisions")
+    counterparty = relationship("Counterparty", back_populates="desk_decisions")
+
+    def __repr__(self):
+        return f"<DeskDecision id={self.id} date={self.decision_date} outcome={self.outcome}>"
+
+
+class AIRecommendation(Base):
+    __tablename__ = "ai_recommendations"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    recommendation_type = Column(Text, nullable=False)
+    title = Column(Text)
+    content = Column(Text, nullable=False)
+    factors = Column(Text)
+    confidence_factors = Column(Text)
+    ai_provider = Column(Text, default="claude")
+    status = Column(Text, default="Pending")
+    rejection_reason = Column(Text)
+    actual_outcome = Column(Real)
+    created_at = Column(DateTime, server_default=func.now())
+    actioned_at = Column(DateTime)
+
+    __table_args__ = (
+        CheckConstraint("status IN ('Pending','Accepted','Rejected','Modified','Expired')", name="chk_rec_status"),
+    )
+
+    user = relationship("User", back_populates="ai_recommendations")
+
+    def __repr__(self):
+        return f"<AIRecommendation id={self.id} type={self.recommendation_type} status={self.status}>"
+
+
+class PerformanceTarget(Base):
+    __tablename__ = "performance_targets"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    year = Column(Integer, nullable=False)
+    book_id = Column(Integer, ForeignKey("books.id"))
+    trader_id = Column(Integer, ForeignKey("users.id"))
+    annual_target = Column(Real, nullable=False)
+    q1_target = Column(Real)
+    q2_target = Column(Real)
+    q3_target = Column(Real)
+    q4_target = Column(Real)
+    volume_target = Column(Real)
+    return_on_capital_target = Column(Real)
+
+    book = relationship("Book", back_populates="performance_targets")
+
+    def __repr__(self):
+        return f"<PerformanceTarget id={self.id} year={self.year} annual={self.annual_target}>"
+
+
+class MonthlyActual(Base):
+    __tablename__ = "monthly_actuals"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    year = Column(Integer, nullable=False)
+    month = Column(Integer, nullable=False)
+    book_id = Column(Integer, ForeignKey("books.id"))
+    trader_id = Column(Integer, ForeignKey("users.id"))
+    pnl = Column(Real, default=0)
+    volume_traded = Column(Real, default=0)
+    trades_count = Column(Integer, default=0)
+    win_count = Column(Integer, default=0)
+    loss_count = Column(Integer, default=0)
+    best_trade_pnl = Column(Real)
+    worst_trade_pnl = Column(Real)
+    var_avg = Column(Real)
+    notes = Column(Text)
+
+    book = relationship("Book", back_populates="monthly_actuals")
+    trader = relationship("User", back_populates="monthly_actuals")
+
+    def __repr__(self):
+        return f"<MonthlyActual id={self.id} {self.year}-{self.month:02d} pnl={self.pnl}>"
+
+
+class Email(Base):
+    __tablename__ = "emails"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    direction = Column(Text, nullable=False)
+    from_email = Column(Text)
+    from_name = Column(Text)
+    to_email = Column(Text)
+    subject = Column(Text, nullable=False)
+    body = Column(Text)
+    received_at = Column(DateTime, server_default=func.now())
+    ai_summary = Column(Text)
+    ai_priority = Column(Text)
+    ai_action_required = Column(Text)
+    ai_draft_reply = Column(Text)
+    ai_linked_trade_id = Column(Integer, ForeignKey("trades.id"))
+    ai_linked_vessel_id = Column(Integer, ForeignKey("vessels.id"))
+    ai_suggested_contacts = Column(Text)
+    deadline = Column(DateTime)
+    status = Column(Text, default="Unread")
+    thread_id = Column(Text)
+
+    __table_args__ = (
+        CheckConstraint("direction IN ('Inbound','Outbound')", name="chk_email_direction"),
+        CheckConstraint("ai_priority IN ('Critical','High','Medium','Low','FYI') OR ai_priority IS NULL", name="chk_ai_priority"),
+        CheckConstraint("status IN ('Unread','Read','Actioned','Replied','Dismissed')", name="chk_email_status"),
+    )
+
+    user = relationship("User", back_populates="emails")
+    linked_trade = relationship("Trade", back_populates="emails_linked", foreign_keys=[ai_linked_trade_id])
+    linked_vessel = relationship("Vessel", back_populates="emails_linked", foreign_keys=[ai_linked_vessel_id])
+
+    def __repr__(self):
+        return f"<Email id={self.id} subject={self.subject[:40]} status={self.status}>"
+
+
+class DecisionQueue(Base):
+    __tablename__ = "decision_queue"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    title = Column(Text, nullable=False)
+    description = Column(Text)
+    decision_type = Column(Text)
+    potential_impact = Column(Real)
+    impact_description = Column(Text)
+    urgency = Column(Text)
+    deadline = Column(DateTime)
+    related_trade_id = Column(Integer, ForeignKey("trades.id"))
+    related_vessel_id = Column(Integer, ForeignKey("vessels.id"))
+    related_alert_id = Column(Integer, ForeignKey("alerts.id"))
+    status = Column(Text, default="Pending")
+    snooze_until = Column(DateTime)
+    created_at = Column(DateTime, server_default=func.now())
+    completed_at = Column(DateTime)
+    reasoning_text = Column(Text)           # Pre-generated AI reasoning (cached)
+    reasoning_generated_at = Column(DateTime)  # When reasoning was last generated
+
+    __table_args__ = (
+        CheckConstraint("urgency IN ('Critical','High','Medium','Low') OR urgency IS NULL", name="chk_dq_urgency"),
+        CheckConstraint("status IN ('Pending','Snoozed','Delegated','Completed','Dismissed')", name="chk_dq_status"),
+    )
+
+    user = relationship("User", back_populates="decision_queue")
+    related_trade = relationship("Trade", back_populates="decision_queue_items")
+    related_vessel = relationship("Vessel", back_populates="decision_queue_items")
+    related_alert = relationship("Alert", back_populates="decision_queue_items")
+
+    def __repr__(self):
+        return f"<DecisionQueue id={self.id} title={self.title[:40]} urgency={self.urgency}>"
+
+
+class RegulatoryFiling(Base):
+    __tablename__ = "regulatory_filings"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    regulation = Column(Text, nullable=False)
+    filing_type = Column(Text)
+    status = Column(Text, default="Current")
+    next_deadline = Column(DateTime)
+    last_submitted = Column(DateTime)
+    notes = Column(Text)
+    missing_fields = Column(Text)
+
+    __table_args__ = (
+        CheckConstraint("regulation IN ('EMIR','REMIT','MiFID II','Dodd-Frank')", name="chk_regulation"),
+        CheckConstraint("status IN ('Current','Due Soon','Overdue','Submitted')", name="chk_reg_status"),
+    )
+
+    def __repr__(self):
+        return f"<RegulatoryFiling id={self.id} regulation={self.regulation} status={self.status}>"
+
+
+class DemoScenario(Base):
+    __tablename__ = "demo_scenarios"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    scenario_key = Column(Text, unique=True, nullable=False)
+    title = Column(Text, nullable=False)
+    description = Column(Text)
+    payload = Column(Text, nullable=False)
+    trigger_type = Column(Text)
+    is_active = Column(Integer, default=1)
+
+    def __repr__(self):
+        return f"<DemoScenario id={self.id} key={self.scenario_key}>"
+
+
+class AppConfig(Base):
+    __tablename__ = "app_config"
+
+    key = Column(Text, primary_key=True)
+    value = Column(Text)
+    description = Column(Text)
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
+    def __repr__(self):
+        return f"<AppConfig key={self.key} value={self.value}>"
+
+
+
+
+class ExternalConnector(Base):
+    __tablename__ = "external_connectors"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(Text, nullable=False)
+    connector_type = Column(Text, nullable=False)   # etrm | market_data | news | ai_model
+    provider = Column(Text, nullable=False)          # RightAngle | Bloomberg | NewsAPI | LMStudio
+    host_url = Column(Text)
+    api_key = Column(Text)
+    extra_config = Column(Text)                      # JSON blob
+    polling_interval_sec = Column(Integer, default=60)
+    is_active = Column(Integer, default=1)
+    last_connected_at = Column(DateTime)
+    last_status = Column(Text, default="Not tested")
+    last_error = Column(Text)
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
+    def __repr__(self):
+        return f"<ExternalConnector id={self.id} name={self.name} type={self.connector_type}>"
+
+
+class MarketIntelligence(Base):
+    __tablename__ = "market_intelligence"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    commodity = Column(Text, nullable=False)
+    analysis_datetime = Column(DateTime, server_default=func.now())
+    outlook = Column(Text, nullable=False)
+    outlook_score = Column(Real, default=50)
+    key_drivers = Column(Text)
+    key_risks = Column(Text)
+    price_at_analysis = Column(Real)
+    change_24h = Column(Real)
+    trend_5d = Column(Real)
+    trend_30d = Column(Real)
+    news_count_analysed = Column(Integer, default=0)
+    top_news = Column(Text)
+    opportunity_flag = Column(Integer, default=0)
+    opportunity_description = Column(Text)
+    agent_run_id = Column(Integer)
+    created_at = Column(DateTime, server_default=func.now())
+
+    def __repr__(self):
+        return f"<MarketIntelligence id={self.id} commodity={self.commodity} outlook={self.outlook}>"
+
+
+class AgentRun(Base):
+    __tablename__ = "agent_runs"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    run_datetime = Column(DateTime, server_default=func.now())
+    agent_name = Column(Text, nullable=False)
+    commodities_analysed = Column(Integer, default=0)
+    duration_seconds = Column(Real, default=0)
+    news_items_read = Column(Integer, default=0)
+    analyses_produced = Column(Integer, default=0)
+    opportunities_found = Column(Integer, default=0)
+    status = Column(Text, default="running")
+    notes = Column(Text)
+
+    def __repr__(self):
+        return f"<AgentRun id={self.id} agent={self.agent_name} status={self.status}>"
+
+
+class MarketWatchlist(Base):
+    __tablename__ = "market_watchlist"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    commodity = Column(Text, nullable=False)
+    alert_threshold_pct = Column(Real, default=2.0)
+    is_active = Column(Integer, default=1)
+    display_order = Column(Integer, default=0)
+    created_at = Column(DateTime, server_default=func.now())
+
+    def __repr__(self):
+        return f"<MarketWatchlist id={self.id} user_id={self.user_id} commodity={self.commodity}>"

@@ -1,0 +1,742 @@
+{
+  "overview": "Radiant-MVT is an AI-assisted trading intelligence platform for commodity trading teams. It brings decision management, live risk, market analysis, vessel operations, communications, compliance, AI tooling, and executive visibility into one workspace.",
+  "chat_capabilities": [
+    "Explain what each screen does and where a feature lives.",
+    "Navigate directly to the correct page when a request is explicit.",
+    "Run supported in-app tasks such as generating briefings, refreshing market data, applying curve shifts, opening emails, sending drafted replies, testing connectors, switching AI providers, and launching scenarios.",
+    "Use the currently selected decision, email, connector, or alert when a request depends on a specific record."
+  ],
+  "screens": [
+    {
+      "key": "decision-queue",
+      "title": "Decision Queue",
+      "aliases": ["decision queue", "decisions", "priority list", "action list"],
+      "summary": "Your prioritised list of decisions for the day, ordered by urgency, deadline, and potential impact.",
+      "features": [
+        "Urgency-ranked decision cards with countdowns and estimated impact.",
+        "AI Decision Briefing panel for a market-aware summary of what matters most.",
+        "Decision reasoning modal that explains why a recommendation matters.",
+        "Quick actions such as review, snooze, and follow-up."
+      ],
+      "tasks": [
+        "Generate the AI decision briefing.",
+        "Open a specific decision and review the reasoning.",
+        "Complete or snooze a decision item."
+      ],
+      "chat_examples": [
+        "Generate my morning decision briefing.",
+        "What is the most urgent decision right now?",
+        "Open the Urals hedge decision."
+      ],
+      "related_screens": ["dashboard", "positions", "comms"],
+      "sections": [
+        {
+          "title": "What you see",
+          "items": [
+            "A greeting bar with live date, time, and key decision KPIs.",
+            "Decision cards grouped by urgency with deadlines and impact.",
+            "An AI briefing area for a narrative morning summary."
+          ]
+        },
+        {
+          "title": "How to use it",
+          "items": [
+            "Start with the top critical card and review the reasoning if context is needed.",
+            "Use the primary action to open the next step in your workflow.",
+            "Snooze non-urgent items so the queue reflects real priorities."
+          ]
+        },
+        {
+          "title": "AI can help with",
+          "items": [
+            "Summarising the queue into a short trader briefing.",
+            "Explaining why a decision has been prioritised.",
+            "Opening the relevant area of the app for the selected decision."
+          ]
+        }
+      ]
+    },
+    {
+      "key": "dashboard",
+      "title": "Trader Dashboard",
+      "aliases": ["dashboard", "home", "overview", "trader dashboard"],
+      "summary": "A live overview of desk performance, current exposures, alerts, news, and activity in one place.",
+      "features": [
+        "Role-aware KPI strip for P&L, VaR, decisions, and alerts.",
+        "Customisable tile layout with drag-and-drop ordering.",
+        "Book P&L, intraday chart, heat maps, alerts, news, and blotter tiles.",
+        "Fast drill-down into current trading hotspots."
+      ],
+      "tasks": [
+        "Refresh the desk overview.",
+        "Reorder or hide dashboard tiles.",
+        "Inspect alerts, blotter activity, or heat map hotspots."
+      ],
+      "chat_examples": [
+        "What is driving today's P&L?",
+        "Show me my top risk from the dashboard.",
+        "Open Positions & Risk."
+      ],
+      "related_screens": ["positions", "ai", "market"],
+      "sections": [
+        {
+          "title": "What you see",
+          "items": [
+            "Headline desk KPIs at the top of the page.",
+            "A grid of tiles covering P&L, alerts, heat maps, news, and blotter.",
+            "Layout controls so each user can tune their workspace."
+          ]
+        },
+        {
+          "title": "How to use it",
+          "items": [
+            "Use this page as the first stop after login to understand the desk state.",
+            "Rearrange tiles so the most important views stay above the fold.",
+            "Drill into Positions, AI Intelligence, or Market Data when something stands out."
+          ]
+        },
+        {
+          "title": "AI can help with",
+          "items": [
+            "Explaining unusual P&L moves.",
+            "Summarising the most important alerts and news.",
+            "Pointing you to the next page to investigate."
+          ]
+        }
+      ]
+    },
+    {
+      "key": "positions",
+      "title": "Positions & Risk",
+      "aliases": ["positions", "risk", "positions and risk", "book risk"],
+      "summary": "Detailed position, hedge, exposure, and VaR analysis across the desk.",
+      "features": [
+        "Physical, financial, and all-position filters.",
+        "Position grid with exposure, mark, P&L, hedge ratio, and VaR.",
+        "Exposure-by-tenor, counterparty, and forward curve views.",
+        "VaR explainer with stressed VaR and board-limit utilisation."
+      ],
+      "tasks": [
+        "Refresh the position book.",
+        "Filter positions by type.",
+        "Review hedge ratios and commodity VaR."
+      ],
+      "chat_examples": [
+        "Which position needs hedging most?",
+        "Show me my largest exposure.",
+        "Take me to the Brent curve."
+      ],
+      "related_screens": ["dashboard", "market", "ai"],
+      "sections": [
+        {
+          "title": "What you see",
+          "items": [
+            "A detailed book-level view of open positions and risk metrics.",
+            "Supporting charts that explain how risk is distributed.",
+            "Forward-curve context to connect position risk with market structure."
+          ]
+        },
+        {
+          "title": "How to use it",
+          "items": [
+            "Filter between physical and financial exposures to narrow the book.",
+            "Use the grid to identify outsized risk, weak hedges, or large VaR contributors.",
+            "Move to Market Data or AI Intelligence when you need scenario or hedge analysis."
+          ]
+        },
+        {
+          "title": "AI can help with",
+          "items": [
+            "Highlighting the biggest exposure on the screen.",
+            "Explaining risk concentration in plain English.",
+            "Sending you to the next page for action."
+          ]
+        }
+      ]
+    },
+    {
+      "key": "ai",
+      "title": "AI Intelligence Centre",
+      "aliases": ["ai intelligence", "ai intelligence centre", "hedge advisor", "trade ideas", "anomaly alerts"],
+      "summary": "The desk's AI workspace for hedge advice, trade ideas, anomalies, forecasts, and pre-mortems.",
+      "features": [
+        "Hedge Advisor with factor attribution and recommended structures.",
+        "Trade idea scanner and anomaly alert summary panels.",
+        "Pre-mortem workflow for testing the current book against failure scenarios.",
+        "Forecast narrative generation for supported commodities."
+      ],
+      "tasks": [
+        "Run Hedge Advisor for a selected commodity.",
+        "Run the pre-mortem on the current book.",
+        "Generate a forecast narrative."
+      ],
+      "chat_examples": [
+        "Run a pre-mortem on my book.",
+        "Explain the top trade idea.",
+        "Generate a forecast narrative for Brent."
+      ],
+      "related_screens": ["positions", "market", "decision-intelligence"],
+      "sections": [
+        {
+          "title": "What you see",
+          "items": [
+            "AI modules focused on recommendation, anomaly detection, and explanation.",
+            "Commodity selectors and action buttons that trigger specific analyses.",
+            "Narrative panels that turn market and position context into guidance."
+          ]
+        },
+        {
+          "title": "How to use it",
+          "items": [
+            "Select the relevant commodity or book area before running an analysis.",
+            "Use Hedge Advisor when exposure is known and you want a response structure.",
+            "Use Pre-mortem when you want to stress a current idea before acting."
+          ]
+        },
+        {
+          "title": "AI can help with",
+          "items": [
+            "Running the supported modules directly from chat.",
+            "Explaining output in trader-friendly language.",
+            "Connecting AI findings to the relevant screen for execution."
+          ]
+        }
+      ]
+    },
+    {
+      "key": "performance",
+      "title": "Performance & Analytics",
+      "aliases": ["performance", "analytics", "pnl target", "opportunity cost"],
+      "summary": "Performance tracking against plan, including run rate, attribution, and missed-opportunity context.",
+      "features": [
+        "YTD P&L, target attainment, and forecast metrics.",
+        "Monthly charts and waterfall-style attribution.",
+        "Opportunity-cost and shortfall investigation hooks.",
+        "Desk-level performance comparison views."
+      ],
+      "tasks": [
+        "Refresh performance charts.",
+        "Review shortfall drivers.",
+        "Investigate missed opportunity themes."
+      ],
+      "chat_examples": [
+        "Why are we behind target?",
+        "What is the run-rate forecast?",
+        "Show me the opportunity cost."
+      ],
+      "related_screens": ["decision-intelligence", "dashboard", "boardroom"],
+      "sections": [
+        {
+          "title": "What you see",
+          "items": [
+            "Summary KPIs for current progress versus plan.",
+            "Trend and attribution views for performance analysis.",
+            "Signals that link underperformance to behaviour or market conditions."
+          ]
+        },
+        {
+          "title": "How to use it",
+          "items": [
+            "Start with target attainment and forecast to judge current trajectory.",
+            "Use attribution to understand what drove gains or shortfalls.",
+            "Move into Decision Intelligence when you need forensic explanation."
+          ]
+        },
+        {
+          "title": "AI can help with",
+          "items": [
+            "Summarising why the desk is ahead or behind plan.",
+            "Explaining the biggest contributors to performance.",
+            "Guiding you toward missed-opportunity analysis."
+          ]
+        }
+      ]
+    },
+    {
+      "key": "decision-intelligence",
+      "title": "Decision Intelligence",
+      "aliases": ["decision intelligence", "forensics", "desk brain", "institutional memory"],
+      "summary": "Forensic review of missed decisions and institutional memory search for similar situations.",
+      "features": [
+        "AI forensics workflow for reviewing what the desk missed.",
+        "Desk Brain search for prior trade patterns and comparable decisions.",
+        "Narrative explanation of decision quality and missed value."
+      ],
+      "tasks": [
+        "Run the AI forensics investigation.",
+        "Search Desk Brain for similar trades.",
+        "Review missed-opportunity narratives."
+      ],
+      "chat_examples": [
+        "Walk me through Q1 forensics.",
+        "What did we miss last quarter?",
+        "Search Desk Brain for Urals arb history."
+      ],
+      "related_screens": ["performance", "ai", "boardroom"],
+      "sections": [
+        {
+          "title": "What you see",
+          "items": [
+            "A forensics area focused on missed opportunities and decision timing.",
+            "A Desk Brain search tool for institutional memory retrieval.",
+            "AI narrative output that explains patterns, not just numbers."
+          ]
+        },
+        {
+          "title": "How to use it",
+          "items": [
+            "Run forensics when you want a structured post-mortem of desk behaviour.",
+            "Use Desk Brain when you need precedent or pattern recall.",
+            "Cross-reference with Performance and Boardroom for management-level storytelling."
+          ]
+        },
+        {
+          "title": "AI can help with",
+          "items": [
+            "Launching forensics from chat.",
+            "Searching historical structures through Desk Brain.",
+            "Summarising why an opportunity was missed."
+          ]
+        }
+      ]
+    },
+    {
+      "key": "market",
+      "title": "Market Data & Curves",
+      "aliases": ["market", "market data", "curves", "forward curve", "curve shifter", "prices"],
+      "summary": "Live market prices, curve structure, spreads, and scenario testing for key commodities.",
+      "features": [
+        "Live prices and spread panels with refresh controls.",
+        "Forward curves for Brent, WTI, Ethane, Naphtha, and EUA.",
+        "Natural-language curve shifter for scenario testing.",
+        "Market headlines linked to the active commodity."
+      ],
+      "tasks": [
+        "Refresh prices.",
+        "Switch the active market curve.",
+        "Apply a natural-language curve scenario."
+      ],
+      "chat_examples": [
+        "Refresh market data and open the Brent curve.",
+        "Shift Brent up $3 and show the impact.",
+        "What is moving EUA today?"
+      ],
+      "related_screens": ["positions", "ai", "dashboard"],
+      "sections": [
+        {
+          "title": "What you see",
+          "items": [
+            "Current pricing and spread context for major traded markets.",
+            "A forward-curve chart with quick curve selectors.",
+            "A scenario input for natural-language market shocks."
+          ]
+        },
+        {
+          "title": "How to use it",
+          "items": [
+            "Pick a curve and review current shape before running scenarios.",
+            "Use the scenario box to describe a price or structure move in plain language.",
+            "Compare the output with Positions & Risk when testing book sensitivity."
+          ]
+        },
+        {
+          "title": "AI can help with",
+          "items": [
+            "Navigating to the correct commodity curve.",
+            "Applying supported curve shifts for you.",
+            "Explaining current market moves and related headlines."
+          ]
+        }
+      ]
+    },
+    {
+      "key": "vessels",
+      "title": "Vessels & Logistics",
+      "aliases": ["vessels", "logistics", "voyage", "fleet", "shipping"],
+      "summary": "Operational view of fleet activity, cargo timing, route status, and voyage economics.",
+      "features": [
+        "Vessel cards with route and timing context.",
+        "Interactive map and delay visibility.",
+        "Voyage economics views and cargo pipeline awareness.",
+        "Operational context tied back to trading impact."
+      ],
+      "tasks": [
+        "Inspect vessel route and voyage economics.",
+        "Review delay impact on trading decisions.",
+        "Monitor cargo timing and vessel status."
+      ],
+      "chat_examples": [
+        "Will the Innovation delay affect my hedge?",
+        "Show me voyage economics for Hermod.",
+        "Explain the impact of current vessel delays."
+      ],
+      "related_screens": ["positions", "comms", "market"],
+      "sections": [
+        {
+          "title": "What you see",
+          "items": [
+            "Fleet status and route visibility for operationally sensitive cargoes.",
+            "Map-based tracking that highlights delays and route context.",
+            "Voyage economics information for commercially relevant review."
+          ]
+        },
+        {
+          "title": "How to use it",
+          "items": [
+            "Check this page whenever vessel timing could change exposure or execution.",
+            "Focus on delay signals and then review linked operational impact.",
+            "Move to Communications or Positions if a delay requires an action."
+          ]
+        },
+        {
+          "title": "AI can help with",
+          "items": [
+            "Explaining whether a delay matters to the desk.",
+            "Summarising voyage economics in plain language.",
+            "Guiding you to the next operational or trading step."
+          ]
+        }
+      ]
+    },
+    {
+      "key": "comms",
+      "title": "Communications Hub",
+      "aliases": ["communications", "comms", "inbox", "emails", "mail", "reply"],
+      "summary": "Action-oriented inbox with AI summaries, linked trade context, and drafted responses.",
+      "features": [
+        "Priority inbox with urgency filters.",
+        "Message detail panel with AI analysis and linked business context.",
+        "Drafted reply workflow for supported communications.",
+        "Mark-actioned flow for operational follow-up."
+      ],
+      "tasks": [
+        "Open a specific email.",
+        "Send the drafted reply for the selected email.",
+        "Mark a communication as actioned."
+      ],
+      "chat_examples": [
+        "Open the Vitol confirmation email.",
+        "Send the drafted reply.",
+        "Summarise my inbox."
+      ],
+      "related_screens": ["decision-queue", "vessels", "configuration"],
+      "sections": [
+        {
+          "title": "What you see",
+          "items": [
+            "A prioritised inbox rather than a generic mail view.",
+            "AI-generated message context to reduce reading time.",
+            "A detail panel with trade, vessel, or operational context where available."
+          ]
+        },
+        {
+          "title": "How to use it",
+          "items": [
+            "Start with critical and high-priority items first.",
+            "Open a message to review the AI summary and draft response.",
+            "Use mark-actioned after the operational step has been completed."
+          ]
+        },
+        {
+          "title": "AI can help with",
+          "items": [
+            "Opening a specific email for you.",
+            "Sending a prepared reply on supported records.",
+            "Summarising the inbox into an action list."
+          ]
+        }
+      ]
+    },
+    {
+      "key": "compliance",
+      "title": "Compliance & Audit",
+      "aliases": ["compliance", "audit", "regulatory", "emir", "filings"],
+      "summary": "Regulatory status, filing awareness, and audit trail visibility for desk operations.",
+      "features": [
+        "Regulatory filing status and upcoming deadlines.",
+        "Audit trail for platform and AI actions.",
+        "Desk-level compliance review support and controls."
+      ],
+      "tasks": [
+        "Refresh compliance data.",
+        "Review filing status.",
+        "Inspect the audit trail."
+      ],
+      "chat_examples": [
+        "Am I EMIR compliant?",
+        "Show me the audit trail.",
+        "What is my next filing deadline?"
+      ],
+      "related_screens": ["comms", "configuration", "admin"],
+      "sections": [
+        {
+          "title": "What you see",
+          "items": [
+            "A compact operational view of regulatory obligations and evidence trails.",
+            "Audit information that supports accountability for human and AI actions.",
+            "Deadline visibility for time-sensitive reporting."
+          ]
+        },
+        {
+          "title": "How to use it",
+          "items": [
+            "Use this page for confidence checks before or after sensitive actions.",
+            "Review the audit trail when you need to confirm who did what and when.",
+            "Follow upcoming deadlines proactively rather than waiting for escalation."
+          ]
+        },
+        {
+          "title": "AI can help with",
+          "items": [
+            "Summarising current compliance posture.",
+            "Pointing you to the next filing or review item.",
+            "Explaining how audit information is organised."
+          ]
+        }
+      ]
+    },
+    {
+      "key": "configuration",
+      "title": "External Systems Configuration",
+      "aliases": ["configuration", "connectors", "external systems", "feeds", "ai models", "etrm"],
+      "summary": "Control centre for connectors that power feeds, AI providers, and external trading systems.",
+      "features": [
+        "Connector dashboard grouped by source type.",
+        "Create, update, test, and remove connector records.",
+        "Provider-aware status and connectivity testing.",
+        "Credential and integration management workflow."
+      ],
+      "tasks": [
+        "Load connector status.",
+        "Test a connector.",
+        "Save or update connector credentials."
+      ],
+      "chat_examples": [
+        "Show me connector health.",
+        "Test the LM Studio connector.",
+        "Where do I update API keys?"
+      ],
+      "related_screens": ["ai-studio", "admin", "comms"],
+      "sections": [
+        {
+          "title": "What you see",
+          "items": [
+            "A list of integrations grouped by functional category.",
+            "Health and status visibility for connectors that drive the platform.",
+            "Action buttons for test, edit, and lifecycle management."
+          ]
+        },
+        {
+          "title": "How to use it",
+          "items": [
+            "Open this page whenever feeds or AI providers need setup or validation.",
+            "Use test actions after updating credentials or endpoints.",
+            "Keep connector naming clear so AI and users can reference them consistently."
+          ]
+        },
+        {
+          "title": "AI can help with",
+          "items": [
+            "Taking you straight to Configuration from chat.",
+            "Testing a supported connector for you.",
+            "Explaining which connector powers which capability."
+          ]
+        }
+      ]
+    },
+    {
+      "key": "ai-studio",
+      "title": "AI Studio",
+      "aliases": ["ai studio", "prompt studio", "agents", "copilot settings"],
+      "summary": "The enterprise control plane for AI prompts, agent definitions, tool permissions, and user context.",
+      "features": [
+        "Agent list with default-chat selection and version history.",
+        "Prompt templates, tool scope, screen scope, and model settings.",
+        "Safe test harness for prompt and agent output.",
+        "Persistent user AI profile editing."
+      ],
+      "tasks": [
+        "Inspect the current chat copilot configuration.",
+        "Edit or save an agent definition.",
+        "Run a safe test against a selected screen context."
+      ],
+      "chat_examples": [
+        "What context does Chat Copilot see?",
+        "Test the Daily Briefing agent.",
+        "How should I tune this prompt safely?"
+      ],
+      "related_screens": ["configuration", "documentation", "admin"],
+      "sections": [
+        {
+          "title": "What you see",
+          "items": [
+            "A workspace for managing AI agents instead of using hidden config files.",
+            "Version and setting visibility for prompts, models, and tool permissions.",
+            "A test area for validating changes before broader use."
+          ]
+        },
+        {
+          "title": "How to use it",
+          "items": [
+            "Inspect the default chat agent before changing prompts or permissions.",
+            "Use the test harness after every meaningful agent change.",
+            "Update the user profile to improve how AI responds across the app."
+          ]
+        },
+        {
+          "title": "AI can help with",
+          "items": [
+            "Explaining what the current chat agent can access.",
+            "Guiding you to the relevant AI Studio control.",
+            "Helping you validate whether a prompt change is safe."
+          ]
+        }
+      ]
+    },
+    {
+      "key": "documentation",
+      "title": "Help Center",
+      "aliases": ["help center", "documentation", "help", "help docs", "user guide", "app guide", "knowledge base"],
+      "summary": "Built-in help workspace that explains every screen, workflow, and supported AI action inside the app.",
+      "features": [
+        "Two-panel layout with grouped navigation on the left and detailed guidance on the right.",
+        "Feature, workflow, and chat prompt documentation for each area of the app.",
+        "Direct links into the relevant screen.",
+        "AI-assisted task buttons for supported actions."
+      ],
+      "tasks": [
+        "Browse grouped documentation without leaving the app.",
+        "Open a linked screen from the guide.",
+        "Ask Radiant AI to explain or perform a supported task."
+      ],
+      "chat_examples": [
+        "How do I use the Decision Queue?",
+        "Take me to Positions & Risk.",
+        "Show me where connectors are configured."
+      ],
+      "related_screens": ["ai-studio", "configuration", "decision-queue"],
+      "sections": [
+        {
+          "title": "What you see",
+          "items": [
+            "A navigation tree that groups the platform by workflow area.",
+            "A detailed content panel with features, tasks, and AI prompts.",
+            "Quick actions to open the destination screen or continue in chat."
+          ]
+        },
+        {
+          "title": "How to use it",
+          "items": [
+            "Pick a workflow area on the left to explore the related screens.",
+            "Use the detail panel to understand what the screen does before navigating.",
+            "Trigger the AI task buttons when you want help or automation."
+          ]
+        },
+        {
+          "title": "AI can help with",
+          "items": [
+            "Answering questions about any screen in the guide.",
+            "Navigating you to the page you need.",
+            "Performing supported in-app actions directly from chat."
+          ]
+        }
+      ]
+    },
+    {
+      "key": "boardroom",
+      "title": "Boardroom View",
+      "aliases": ["boardroom", "executive", "management"],
+      "summary": "Executive summary view of desk performance, strategic upside, and capital efficiency.",
+      "features": [
+        "Top-quartile gap analysis and strategic performance context.",
+        "Executive-friendly summaries for cross-book comparison.",
+        "Capital-efficiency and uplift framing for management review."
+      ],
+      "tasks": [
+        "Review executive summary metrics.",
+        "Assess top-quartile uplift potential.",
+        "Compare desk or book performance at a higher level."
+      ],
+      "chat_examples": [
+        "Give me an executive summary.",
+        "What is the top-quartile uplift potential?",
+        "Compare the books for management."
+      ],
+      "related_screens": ["performance", "decision-intelligence", "dashboard"],
+      "sections": [
+        {
+          "title": "What you see",
+          "items": [
+            "A management-facing version of desk performance and opportunity context.",
+            "Simplified visuals designed for strategic review rather than execution.",
+            "Uplift framing to support planning and board conversations."
+          ]
+        },
+        {
+          "title": "How to use it",
+          "items": [
+            "Use this page when the audience is executive rather than trading.",
+            "Start with uplift and gap analysis before drilling into source screens.",
+            "Move to Performance or Decision Intelligence for supporting detail."
+          ]
+        },
+        {
+          "title": "AI can help with",
+          "items": [
+            "Producing a concise management summary.",
+            "Explaining uplift potential and performance gaps.",
+            "Pointing you to the supporting operational detail."
+          ]
+        }
+      ]
+    },
+    {
+      "key": "admin",
+      "title": "Admin / Demo Control",
+      "aliases": ["admin", "demo control", "scenarios", "system status"],
+      "summary": "Operational control area for scenarios, system health, and administrative shortcuts.",
+      "features": [
+        "Scenario launcher for demo and incident-style cases.",
+        "AI configuration and health shortcuts.",
+        "System status visibility for supporting services."
+      ],
+      "tasks": [
+        "Trigger a named scenario.",
+        "Check system status.",
+        "Review AI connectivity and demo controls."
+      ],
+      "chat_examples": [
+        "Trigger the Urals scenario.",
+        "Show me system status.",
+        "Test the AI connection."
+      ],
+      "related_screens": ["configuration", "ai-studio", "compliance"],
+      "sections": [
+        {
+          "title": "What you see",
+          "items": [
+            "Operational buttons designed for support, demo, and administrative flows.",
+            "System checks that confirm whether core services are healthy.",
+            "Scenario shortcuts for presenting the product or simulating incidents."
+          ]
+        },
+        {
+          "title": "How to use it",
+          "items": [
+            "Use this page for environment confidence checks and demo control.",
+            "Trigger scenarios carefully because they change what other screens show.",
+            "Review service health before debugging missing AI or data behaviour."
+          ]
+        },
+        {
+          "title": "AI can help with",
+          "items": [
+            "Launching supported scenarios for you.",
+            "Guiding you to the right admin control.",
+            "Explaining which environment issue to check next."
+          ]
+        }
+      ]
+    }
+  ]
+}

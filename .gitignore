@@ -1,0 +1,11 @@
+.runtime/
+logs/
+__pycache__/
+*.pyc
+.env
+*.db
+*.log
+uvicorn-*.out.log
+uvicorn-*.err.log
+__MACOSX/
+~$*
