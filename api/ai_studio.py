@@ -81,8 +81,8 @@ class ProfilePayload(BaseModel):
 
 
 def _require_agent_admin(current_user: dict):
-    if current_user.get("role") not in ("admin", "executive", "risk"):
-        raise HTTPException(status_code=403, detail="AI Studio administration requires admin, executive, or risk role")
+    if current_user.get("role") not in ("admin", "executive"):
+        raise HTTPException(status_code=403, detail="AI Studio administration requires admin or executive role")
 
 
 def _load_agent(db: Session, agent_id: int) -> AIAgentDefinition:
@@ -106,7 +106,7 @@ async def get_ai_studio_overview(
     profile = get_or_create_user_profile(db, current_user)
     default_chat_agent = get_default_chat_agent(db)
     users = []
-    if current_user.get("role") in ("admin", "executive", "risk"):
+    if current_user.get("role") in ("admin", "executive"):
         users = [
             {
                 "id": user.id,

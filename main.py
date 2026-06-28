@@ -293,7 +293,6 @@ from api.configuration import router as configuration_router
 from api.news          import router as news_router
 from api.dashboard     import router as dashboard_router
 from api.ai_studio     import router as ai_studio_router
-from api.risk          import router as risk_router
 from api.atlas         import router as atlas_router
 
 app.include_router(auth_router,           prefix="/api/auth",           tags=["Auth"])
@@ -315,7 +314,6 @@ app.include_router(configuration_router,  prefix="/api/configuration",  tags=["C
 app.include_router(news_router,           prefix="/api/news",           tags=["News"])
 app.include_router(dashboard_router,      prefix="/api/dashboard",      tags=["Dashboard"])
 app.include_router(ai_studio_router,      prefix="/api/ai-studio",      tags=["AI Studio"])
-app.include_router(risk_router,           prefix="/api/risk",           tags=["Risk Module"])
 app.include_router(atlas_router,          prefix="/api/atlas",          tags=["Atlas"])
 
 

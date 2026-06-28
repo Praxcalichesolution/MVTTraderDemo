@@ -10,7 +10,7 @@ CREATE TABLE users (
     email NVARCHAR(255) UNIQUE NOT NULL,
     hashed_password NVARCHAR(MAX) NOT NULL,
     full_name NVARCHAR(255) NOT NULL,
-    role NVARCHAR(50) NOT NULL CHECK(role IN ('trader','risk','executive','admin')),
+    role NVARCHAR(50) NOT NULL CHECK(role IN ('trader','executive','admin')),
     desk NVARCHAR(255) DEFAULT 'INEOS Trading & Shipping',
     title NVARCHAR(255),
     is_active INT DEFAULT 1,

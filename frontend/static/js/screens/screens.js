@@ -1,8 +1,8 @@
-/* ============================================================
-   Radiant-MVT™ — screens.js  All Screen Renderers
+﻿/* ============================================================
+   Radiant-MVTâ„¢ â€” screens.js  All Screen Renderers
    ============================================================ */
 
-/* ── SCREEN 1: DECISION QUEUE ── */
+/* â”€â”€ SCREEN 1: DECISION QUEUE â”€â”€ */
 const SCREEN_APP_MODE = window.getAppMode ? window.getAppMode() : {};
 const SCREEN_APP_ID = window.currentAppId ? window.currentAppId() : 'trader';
 const SCREEN_STORAGE_KEYS = window.appStorageKeys || { dashboardLayout: 'radiant_dashboard_layout_v2', aiProvider: 'radiant_ai_provider', token: 'radiant_token' };
@@ -25,19 +25,19 @@ SCREENS['decision-queue'] = async function(main) {
       <div class="greeting-right">
         <div class="kpi-card" style="min-width:120px;text-align:center">
           <div class="kpi-label">Decisions Today</div>
-          <div class="kpi-value accent" id="dq-count">—</div>
+          <div class="kpi-value accent" id="dq-count">â€”</div>
         </div>
         <div class="kpi-card" style="min-width:120px;text-align:center">
           <div class="kpi-label">Value at Stake</div>
-          <div class="kpi-value positive" id="dq-value">—</div>
+          <div class="kpi-value positive" id="dq-value">â€”</div>
         </div>
       </div>
     </div>
     <div class="screen-header">
-      <div><div class="screen-title">📋 Decision Queue</div><div class="screen-subtitle">Your prioritised action list — sorted by deadline and impact</div></div>
+      <div><div class="screen-title">ðŸ“‹ Decision Queue</div><div class="screen-subtitle">Your prioritised action list â€” sorted by deadline and impact</div></div>
       <div class="screen-actions">
-        <button class="btn btn-secondary btn-sm" onclick="loadDecisionQueue()">⟳ Refresh</button>
-        <button class="btn btn-primary btn-sm" onclick="generateDecisionBriefing()">🤖 Generate AI Briefing</button>
+        <button class="btn btn-secondary btn-sm" onclick="loadDecisionQueue()">âŸ³ Refresh</button>
+        <button class="btn btn-primary btn-sm" onclick="generateDecisionBriefing()">ðŸ¤– Generate AI Briefing</button>
       </div>
     </div>
     <div id="decision-cards-container">
@@ -45,7 +45,7 @@ SCREENS['decision-queue'] = async function(main) {
     </div>
     <div class="ai-briefing-box">
       <div class="ai-briefing-header">
-        <div class="ai-briefing-title">🤖 AI Decision Briefing</div>
+        <div class="ai-briefing-title">ðŸ¤– AI Decision Briefing</div>
         <button class="btn btn-primary btn-sm" onclick="generateDecisionBriefing()">Generate Briefing</button>
       </div>
       <div class="ai-briefing-content" id="ai-briefing-content">Click "Generate Briefing" to get your AI-powered morning briefing...</div>
@@ -57,8 +57,8 @@ SCREENS['decision-queue'] = async function(main) {
 window.loadDecisionQueue = async function() {
   const container = document.getElementById('decision-cards-container');
   if (!container) return;
-  
-  // Show demo data IMMEDIATELY — no loading spinner
+
+  // Show demo data IMMEDIATELY â€” no loading spinner
   const demoDecisions = getDemoDecisions();
   const dq_count = document.getElementById('dq-count');
   const dq_value = document.getElementById('dq-value');
@@ -66,7 +66,7 @@ window.loadDecisionQueue = async function() {
   if (dq_value) dq_value.textContent = '$3.4M';
   container.innerHTML = demoDecisions.map((d,i) => renderDecisionCard(d,i)).join('') +
     '<div class="secondary small mt-8">+ 1 more decision queued for this afternoon</div>';
-  
+
   // Then try to load real data in background
   const data = await apiCall('/decisions/queue').catch(() => null);
   let rawDecisions = Array.isArray(data) ? data : (data?.decisions || []);
@@ -74,8 +74,8 @@ window.loadDecisionQueue = async function() {
     id: d.id || i+1,
     priority: (d.priority || d.urgency || 'medium').toLowerCase(),
     title: d.title || 'Action required',
-    deadline: d.deadline ? new Date(d.deadline).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) : '—',
-    countdown: d.deadline ? countdownStr(d.deadline) : '—',
+    deadline: d.deadline ? new Date(d.deadline).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) : 'â€”',
+    countdown: d.deadline ? countdownStr(d.deadline) : 'â€”',
     potential_impact: d.impact_description || (d.potential_impact ? '$' + Number(d.potential_impact).toLocaleString() : 'Review required'),
     context: d.description || d.impact_description || '',
     actions: (d.urgency||d.priority||'').toLowerCase() === 'critical' ? ['Review Now','Snooze 30m'] : ['See Options','Snooze 1h']
@@ -91,24 +91,24 @@ window.loadDecisionQueue = async function() {
 function getDemoDecisions() {
   return [
     { id:1, priority:'critical', title:'Review Urals hedge coverage before OPEC+ announcement', deadline:'09:30', countdown:'1h 56m', potential_impact:'$2,400,000', context:'OPEC+ meets at 10:00. Current hedge covers 61%. Analyst consensus: 70% probability of production cut announcement.', actions:['Review Now','Snooze 30m'] },
-    { id:2, priority:'high',     title:'JS Ineos Innovation — choose response to 14h delay', deadline:'11:00', countdown:'3h 26m', potential_impact:'$480,000', context:'Three options costed. Terminal at Rafnes needs response. Ethane cargo delivery impacted. Option C (reroute via Stenungsund) is lowest cost.', actions:['See Options','Snooze 1h'] },
-    { id:3, priority:'medium',   title:'Vitol trade confirmation outstanding — RMVT-0234', deadline:'15:00', countdown:'7h 26m', potential_impact:'Counterparty dispute risk', context:'Draft reply ready. One click to send. Trade was agreed verbally on 28-May. Written confirmation overdue by 24h.', actions:['Send Now','Review Draft'] },
-    { id:4, priority:'low',      title:'Monthly performance review — submit to Risk by 17:00', deadline:'17:00', countdown:'9h 26m', potential_impact:'Reporting obligation', context:'Template pre-filled. Requires sign-off signature only.', actions:['Open Report','Delegate'] }
+    { id:2, priority:'high',     title:'JS Ineos Innovation â€” choose response to 14h delay', deadline:'11:00', countdown:'3h 26m', potential_impact:'$480,000', context:'Three options costed. Terminal at Rafnes needs response. Ethane cargo delivery impacted. Option C (reroute via Stenungsund) is lowest cost.', actions:['See Options','Snooze 1h'] },
+    { id:3, priority:'medium',   title:'Vitol trade confirmation outstanding â€” RMVT-0234', deadline:'15:00', countdown:'7h 26m', potential_impact:'Counterparty dispute risk', context:'Draft reply ready. One click to send. Trade was agreed verbally on 28-May. Written confirmation overdue by 24h.', actions:['Send Now','Review Draft'] },
+    { id:4, priority:'low',      title:'Monthly performance review â€” submit to Risk by 17:00', deadline:'17:00', countdown:'9h 26m', potential_impact:'Reporting obligation', context:'Template pre-filled. Requires sign-off signature only.', actions:['Open Report','Delegate'] }
   ];
 }
 
 function renderDecisionCard(d, i) {
-  const priorityEmoji = { critical:'🔴', high:'🟠', medium:'🟡', low:'🟢' };
+  const priorityEmoji = { critical:'ðŸ”´', high:'ðŸŸ ', medium:'ðŸŸ¡', low:'ðŸŸ¢' };
   const isUrgent = d.priority === 'critical';
   return `<div class="decision-card ${d.priority}" style="animation-delay:${i*0.08}s">
     <div class="decision-header">
-      <div class="decision-title">${priorityEmoji[d.priority]||'🔵'} DECISION ${i+1} — ${d.priority.toUpperCase()}</div>
+      <div class="decision-title">${priorityEmoji[d.priority]||'ðŸ”µ'} DECISION ${i+1} â€” ${d.priority.toUpperCase()}</div>
       <div class="decision-deadline ${isUrgent?'urgent':''}">Deadline: ${d.deadline} (${d.countdown})</div>
     </div>
     <div style="font-size:13px;font-weight:600;color:var(--text-primary);margin-bottom:5px">${d.title}</div>
     <div class="decision-impact">Potential impact: ${d.potential_impact}</div>
     <div class="decision-body">${d.context}</div>
-    <button class="btn btn-ghost btn-sm" style="margin-bottom:8px;color:#6366f1;border-color:#6366f1" onclick="showDecisionReasoning(${d.id}, '${(d.title||'').replace(/'/g,"\\'")}')">🔍 Why this recommendation?</button>
+    <button class="btn btn-ghost btn-sm" style="margin-bottom:8px;color:#6366f1;border-color:#6366f1" onclick="showDecisionReasoning(${d.id}, '${(d.title||'').replace(/'/g,"\\'")}')">ðŸ” Why this recommendation?</button>
     <div class="decision-actions">
       ${d.actions.map((a,ai) => `<button class="btn ${ai===0?'btn-primary':'btn-secondary'} btn-sm" onclick="handleDecisionAction(${d.id},'${a}')">${a}</button>`).join('')}
     </div>
@@ -117,7 +117,7 @@ function renderDecisionCard(d, i) {
 
 window.handleDecisionAction = function(id, action) {
   if (typeof setSelectedEntity === 'function') setSelectedEntity({ type: 'decision', id: String(id), label: `Decision ${id}` });
-  showToast('Action', `Decision ${id}: "${action}" — opening details...`, 'info');
+  showToast('Action', `Decision ${id}: "${action}" â€” opening details...`, 'info');
   if (action.toLowerCase().includes('review') || action.toLowerCase().includes('see')) openCopilot();
 };
 
@@ -143,10 +143,10 @@ window.showDecisionReasoning = async function(decisionId, title) {
     <div style="background:#1a1f2e;border:1px solid #2d3748;border-radius:12px;width:100%;max-width:680px;max-height:85vh;display:flex;flex-direction:column;overflow:hidden">
       <div style="padding:20px 24px;border-bottom:1px solid #2d3748;display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
         <div>
-          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#6366f1;margin-bottom:4px">🔍 AI Reasoning & Evidence</div>
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#6366f1;margin-bottom:4px">ðŸ” AI Reasoning & Evidence</div>
           <div style="font-size:15px;font-weight:600;color:#f1f5f9">${title}</div>
         </div>
-        <button onclick="document.getElementById('reasoning-modal').remove()" style="background:none;border:none;color:#94a3b8;cursor:pointer;font-size:20px;line-height:1;padding:0">×</button>
+        <button onclick="document.getElementById('reasoning-modal').remove()" style="background:none;border:none;color:#94a3b8;cursor:pointer;font-size:20px;line-height:1;padding:0">Ã—</button>
       </div>
       <div id="reasoning-content" style="padding:24px;overflow-y:auto;flex:1;font-size:14px;line-height:1.7;color:#cbd5e1">
         <div style="display:flex;align-items:center;gap:8px;color:#6366f1">
@@ -156,7 +156,7 @@ window.showDecisionReasoning = async function(decisionId, title) {
       </div>
       <div style="padding:12px 24px;border-top:1px solid #2d3748;font-size:11px;color:#475569;display:flex;align-items:center;justify-content:space-between">
         <span id="reasoning-source-label">Based on live positions, market data, and alerts</span>
-        <button id="reasoning-refresh-btn" onclick="window._refreshReasoning && window._refreshReasoning()" style="font-size:11px;color:#6366f1;background:none;border:1px solid #6366f133;border-radius:4px;padding:2px 8px;cursor:pointer;display:none">↻ Refresh</button>
+        <button id="reasoning-refresh-btn" onclick="window._refreshReasoning && window._refreshReasoning()" style="font-size:11px;color:#6366f1;background:none;border:1px solid #6366f133;border-radius:4px;padding:2px 8px;cursor:pointer;display:none">â†» Refresh</button>
       </div>
     </div>
   `;
@@ -200,7 +200,7 @@ window.showDecisionReasoning = async function(decisionId, title) {
               const srcLabel = document.getElementById('reasoning-source-label');
               const refreshBtn = document.getElementById('reasoning-refresh-btn');
               const genAt = parsed.generated_at ? new Date(parsed.generated_at).toLocaleTimeString() : '';
-              if (srcLabel) srcLabel.innerHTML = '⚡ Cached reasoning' + (genAt ? ' · generated ' + genAt : '');
+              if (srcLabel) srcLabel.innerHTML = 'âš¡ Cached reasoning' + (genAt ? ' Â· generated ' + genAt : '');
               if (refreshBtn) refreshBtn.style.display = 'inline-block';
             } else if (parsed.chunk) {
               accumulated += parsed.chunk;
@@ -224,7 +224,7 @@ window.showDecisionReasoning = async function(decisionId, title) {
   }
 };
 
-/* ── SCREEN 2: DASHBOARD ── */
+/* â”€â”€ SCREEN 2: DASHBOARD â”€â”€ */
 const DASHBOARD_LAYOUT_KEY = SCREEN_STORAGE_KEYS.dashboardLayout || 'radiant_dashboard_layout_v2';
 const DASHBOARD_TILE_ORDER = ['kpis','book-pnl','top-performer','intraday','market-curve','heatmaps','alerts','news','blotter'];
 const DASHBOARD_TILE_META = {
@@ -419,7 +419,7 @@ function renderDashboardCustomizer() {
     var meta = DASHBOARD_TILE_META[id];
     var hidden = layout.hidden.includes(id);
     return '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">'
-      + '<div><div style="font-size:12px;font-weight:700;color:var(--text)">' + meta.label + '</div><div style="font-size:11px;color:var(--muted)">' + (hidden ? 'Hidden' : 'Visible') + ' · drag visible tiles to reorder</div></div>'
+      + '<div><div style="font-size:12px;font-weight:700;color:var(--text)">' + meta.label + '</div><div style="font-size:11px;color:var(--muted)">' + (hidden ? 'Hidden' : 'Visible') + ' Â· drag visible tiles to reorder</div></div>'
       + '<button class="btn btn-secondary btn-sm" onclick="toggleDashboardTileVisibility(\'' + id + '\')">' + (hidden ? 'Add Tile' : 'Hide Tile') + '</button>'
       + '</div>';
   }).join('');
@@ -512,16 +512,15 @@ window.resetDashboardLayout = function() {
 
 SCREENS['dashboard'] = async function(main) {
   var dateStr = new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'short'});
-  var isRiskApp = SCREEN_APP_ID === 'risk';
-  var dashTitle = isRiskApp ? 'Risk Dashboard' : 'Trader Dashboard';
-  var dashSubtitle = isRiskApp ? 'Exposure, VaR, and control overview - ' + dateStr : 'Live book overview - ' + dateStr;
+  var dashTitle = 'Trader Dashboard';
+  var dashSubtitle = 'Live book overview - ' + dateStr;
   main.innerHTML = '<div class="screen" style="padding:12px 14px">'
     + '<div class="screen-header" style="margin-bottom:10px">'
     + '<div><div class="screen-title">&#128202; ' + dashTitle + '</div><div class="screen-subtitle">' + dashSubtitle + '</div></div>'
     + '<div class="screen-actions" style="display:flex;gap:8px;flex-wrap:wrap">'
     + '<select class="form-select" style="width:130px" id="dash-book-filter" onchange="onDashboardBookFilterChange()"><option value="">All Books</option><option>Crude</option><option>NGL/Ethane</option><option>Naphtha</option><option>Carbon</option></select>'
-    + '<button class="btn btn-secondary btn-sm" onclick="toggleDashboardCustomizer()">' + (isRiskApp ? 'Customize View' : 'Customize Layout') + '</button>'
-    + '<button class="btn btn-secondary btn-sm" onclick="resetDashboardLayout()">' + (isRiskApp ? 'Reset View' : 'Reset Layout') + '</button>'
+    + '<button class="btn btn-secondary btn-sm" onclick="toggleDashboardCustomizer()">Customize Layout</button>'
+    + '<button class="btn btn-secondary btn-sm" onclick="resetDashboardLayout()">Reset Layout</button>'
     + '<button class="btn btn-secondary btn-sm" onclick="loadDashboardData()">&#8635; Refresh</button>'
     + '</div></div>'
     + '<div id="dashboard-customizer-panel" class="card" style="padding:12px;margin-bottom:12px;display:none">'
@@ -585,7 +584,7 @@ function renderBooks(data) {
   ];
   var total = books.reduce(function(s,b){ return s+(b.pnl||0); }, 0);
   var el = document.getElementById('total-pnl-val');
-  if (el) { el.textContent = (total>=0?'+$':'−$') + (Math.abs(total)/1e6).toFixed(1)+'M'; el.style.color = total>=0?'#16A34A':'#DC2626'; }
+  if (el) { el.textContent = (total>=0?'+$':'âˆ’$') + (Math.abs(total)/1e6).toFixed(1)+'M'; el.style.color = total>=0?'#16A34A':'#DC2626'; }
   var container = document.getElementById('book-cards');
   if (!container) return;
   var maxAbs = Math.max.apply(null, books.map(function(b){ return Math.abs(b.pnl); }));
@@ -778,8 +777,8 @@ function getDemoTrades() {
 function renderAlerts(data) {
   var raw = (data && (data.alerts || data)) || [];
   var alerts = raw.length ? raw : [
-    { severity:'critical', icon:'&#128308;', title:'Fat-finger — Ethane Americas', body:'RMVT-95378: 5,002 MT @ $58.71 — 4× typical volume. P&L +$420K in 15 min.', time:'02:41' },
-    { severity:'high',     icon:'&#128992;', title:'JS Ineos Insight — demurrage risk', body:'14h delay past laytime. Est. demurrage $26,250. Three options costed.', time:'Yesterday' },
+    { severity:'critical', icon:'&#128308;', title:'Fat-finger â€” Ethane Americas', body:'RMVT-95378: 5,002 MT @ $58.71 â€” 4Ã— typical volume. P&L +$420K in 15 min.', time:'02:41' },
+    { severity:'high',     icon:'&#128992;', title:'JS Ineos Insight â€” demurrage risk', body:'14h delay past laytime. Est. demurrage $26,250. Three options costed.', time:'Yesterday' },
     { severity:'medium',   icon:'&#128993;', title:'Vitol credit limit 88%', body:'$142M of $160M limit. Two trades pending settlement could push to 97%.', time:'08:15' },
   ];
   var el = document.getElementById('dash-alerts');
@@ -797,7 +796,7 @@ function renderAlerts(data) {
       + '<div data-expand style="display:none;margin-top:8px;padding-top:8px;border-top:1px solid '+c.bc+'20">'
       + '<div style="font-size:11px;font-weight:700;color:'+c.tc+';margin-bottom:4px">Full context</div>'
       + '<div style="font-size:11px;color:var(--text2);line-height:1.5">'+(a.body||a.description||'No additional detail available.')+'</div>'
-      + '<button onclick="event.stopPropagation();window.sendCopilotMessage&&window.sendCopilotMessage(\'Tell me more about: '+(a.title||'').replace(/'/g,"\\'")+'\')" style="margin-top:6px;font-size:11px;padding:3px 10px;border:1px solid '+c.bc+';background:var(--card);color:'+c.tc+';border-radius:5px;cursor:pointer">Ask AI →</button>'
+      + '<button onclick="event.stopPropagation();window.sendCopilotMessage&&window.sendCopilotMessage(\'Tell me more about: '+(a.title||'').replace(/'/g,"\\'")+'\')" style="margin-top:6px;font-size:11px;padding:3px 10px;border:1px solid '+c.bc+';background:var(--card);color:'+c.tc+';border-radius:5px;cursor:pointer">Ask AI â†’</button>'
       + '</div>'
       + '</div>';
   }).join('');
@@ -971,11 +970,11 @@ function renderHeatMapLegacy() {
   var el = document.getElementById('heat-map-grid');
   if (!el) return;
 
-  // Commodity × Region exposure matrix
+  // Commodity Ã— Region exposure matrix
   var commodities = ['Brent','Urals','WTI','Ethane','NGLs','EUA'];
   var regions = ['NW Europe','Med','US Gulf','Asia'];
 
-  // net exposure values ($M) — positive=long(blue), negative=short(red), 0=flat(grey)
+  // net exposure values ($M) â€” positive=long(blue), negative=short(red), 0=flat(grey)
   var matrix = {
     'Brent':  {'NW Europe':214, 'Med':0,    'US Gulf':-118, 'Asia':0},
     'Urals':  {'NW Europe':0,   'Med':62,   'US Gulf':0,    'Asia':0},
@@ -1000,18 +999,18 @@ function renderHeatMapLegacy() {
       var intensity = Math.min(abs / 250, 1);
       var bg, fc;
       if (val > 0) {
-        // Long — blue scale
+        // Long â€” blue scale
         var blue = Math.round(200 - intensity * 140);
         bg = 'rgba(37,99,235,' + (0.12 + intensity * 0.55) + ')';
         fc = intensity > 0.5 ? '#fff' : '#1e40af';
       } else if (val < 0) {
-        // Short — red scale
+        // Short â€” red scale
         bg = 'rgba(220,38,38,' + (0.12 + intensity * 0.55) + ')';
         fc = intensity > 0.5 ? '#fff' : '#991b1b';
       } else {
         bg = '#F9FAFB'; fc = '#D1D5DB';
       }
-      var label = val !== 0 ? (val > 0 ? '+' : '') + '$' + (abs >= 1 ? abs.toFixed(0) : val.toFixed(0)) + 'M' : '—';
+      var label = val !== 0 ? (val > 0 ? '+' : '') + '$' + (abs >= 1 ? abs.toFixed(0) : val.toFixed(0)) + 'M' : 'â€”';
       html += '<td style="text-align:center;padding:4px 6px;background:' + bg + ';border-radius:5px;color:' + fc + ';font-weight:700;min-width:60px;cursor:' + (val !== 0 ? 'pointer' : 'default') + '" onclick="showPositionDetail(\'' + c + '\',\'' + r + '\')">' + label + '</td>';
     });
     html += '</tr>';
@@ -1162,19 +1161,19 @@ function renderNews(data) {
         headline: a.headline || a.title || '',
         source: a.source || 'Reuters',
         sentiment: impact === 'bullish' ? 'bullish' : (impact === 'bearish' ? 'bearish' : 'neutral'),
-        time: a.published_at ? new Date(a.published_at).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) + ' · 4 Jun' : '',
+        time: a.published_at ? new Date(a.published_at).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}) + ' Â· 4 Jun' : '',
         url: a.url || ''
       };
     });
   }
   if (!articles.length) {
     articles = [
-      {id:9,  headline:'Brent surges to $96.97 as UAE signals OPEC exit talks',          sentiment:'bullish', source:'Reuters',    time:'10:14 · 4 Jun', url:''},
-      {id:10, headline:'EIA reports 7.97M bbl draw — sixth consecutive weekly reduction', sentiment:'bullish', source:'EIA',       time:'09:30 · 4 Jun', url:''},
-      {id:11, headline:'European gas spikes 12% on Russian transit disruption',           sentiment:'bullish', source:'Platts',     time:'08:55 · 4 Jun', url:''},
-      {id:12, headline:'Ethane-naphtha spread widens to 14-month high on US supply surge',sentiment:'bullish', source:'ICIS',      time:'08:20 · 4 Jun', url:''},
-      {id:13, headline:'China petrochemical imports hit 18-month high in May',            sentiment:'bullish', source:'Argus',     time:'07:45 · 4 Jun', url:''},
-      {id:14, headline:'IMO carbon levy $150/tonne advances — 2027 implementation',      sentiment:'bearish', source:"Lloyd's",   time:'06:30 · 4 Jun', url:''},
+      {id:9,  headline:'Brent surges to $96.97 as UAE signals OPEC exit talks',          sentiment:'bullish', source:'Reuters',    time:'10:14 Â· 4 Jun', url:''},
+      {id:10, headline:'EIA reports 7.97M bbl draw â€” sixth consecutive weekly reduction', sentiment:'bullish', source:'EIA',       time:'09:30 Â· 4 Jun', url:''},
+      {id:11, headline:'European gas spikes 12% on Russian transit disruption',           sentiment:'bullish', source:'Platts',     time:'08:55 Â· 4 Jun', url:''},
+      {id:12, headline:'Ethane-naphtha spread widens to 14-month high on US supply surge',sentiment:'bullish', source:'ICIS',      time:'08:20 Â· 4 Jun', url:''},
+      {id:13, headline:'China petrochemical imports hit 18-month high in May',            sentiment:'bullish', source:'Argus',     time:'07:45 Â· 4 Jun', url:''},
+      {id:14, headline:'IMO carbon levy $150/tonne advances â€” 2027 implementation',      sentiment:'bearish', source:"Lloyd's",   time:'06:30 Â· 4 Jun', url:''},
     ];
   }
 
@@ -1592,20 +1591,20 @@ window.applyCurveShift = async function() {
   }
 };
 
-/* ── SCREEN 8: VESSELS & LOGISTICS ── */
+/* â”€â”€ SCREEN 8: VESSELS & LOGISTICS â”€â”€ */
 SCREENS['vessels'] = async function(main) {
   main.innerHTML = `<div class="screen">
     <div class="screen-header">
-      <div><div class="screen-title">🚢 Vessels & Logistics</div><div class="screen-subtitle">Dragon Fleet tracking · Voyage economics · Cargo pipeline</div></div>
+      <div><div class="screen-title">ðŸš¢ Vessels & Logistics</div><div class="screen-subtitle">Dragon Fleet tracking Â· Voyage economics Â· Cargo pipeline</div></div>
       <div class="screen-actions">
-        <button class="btn btn-secondary btn-sm" onclick="loadVessels()">⟳ Refresh Fleet</button>
+        <button class="btn btn-secondary btn-sm" onclick="loadVessels()">âŸ³ Refresh Fleet</button>
       </div>
     </div>
     <div class="vessel-grid" id="vessel-cards"></div>
     <div class="grid-2">
       <div>
         <div class="card mb-8">
-          <div class="card-header"><span class="card-title">⚓ Voyage Economics Calculator</span></div>
+          <div class="card-header"><span class="card-title">âš“ Voyage Economics Calculator</span></div>
           <div class="flex gap-8 mb-8">
             <select class="form-select" id="voyage-vessel" style="flex:1">
               <option>Select vessel...</option>
@@ -1623,14 +1622,14 @@ SCREENS['vessels'] = async function(main) {
                 <div><div class="xsmall muted">Days</div><div class="mono semibold">${[25,28,14][i]}d</div></div>
                 <div><div class="xsmall muted">P&L Impact</div><div class="mono ${i===2?'negative':'positive'}">${['+$180K','+$240K','-$480K'][i]}</div></div>
               </div>
-              ${i===1?'<div class="badge badge-info mt-8">⭐ Recommended by AI</div>':''}
+              ${i===1?'<div class="badge badge-info mt-8">â­ Recommended by AI</div>':''}
             </div>`).join('')}
           </div>
         </div>
       </div>
       <div>
         <div class="card">
-          <div class="card-title mb-8">📦 Cargo Pipeline</div>
+          <div class="card-title mb-8">ðŸ“¦ Cargo Pipeline</div>
           <div class="table-container">
             <table class="trading-table"><thead><tr><th>Vessel</th><th>Cargo</th><th class="right">Volume</th><th>ETA</th><th>Status</th><th>Risk</th></tr></thead>
             <tbody id="cargo-tbody"></tbody></table>
@@ -1642,25 +1641,25 @@ SCREENS['vessels'] = async function(main) {
     <div style="background:white;border:1px solid #E5E7EB;border-radius:12px;overflow:hidden;margin-top:16px">
       <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid #F1F5F9">
         <div>
-          <span style="font-size:15px;font-weight:700;color:#111827">🗺 Fleet Position Map</span>
-          <span style="font-size:12px;color:#6B7280;margin-left:10px">North Atlantic · Real geography via OpenStreetMap</span>
+          <span style="font-size:15px;font-weight:700;color:#111827">ðŸ—º Fleet Position Map</span>
+          <span style="font-size:12px;color:#6B7280;margin-left:10px">North Atlantic Â· Real geography via OpenStreetMap</span>
         </div>
         <div style="display:flex;align-items:center;gap:14px">
           <label style="display:flex;align-items:center;gap:6px;font-size:13px;color:#374151;cursor:pointer">
             <input type="checkbox" id="ais-traffic-toggle" onchange="toggleAISLayer(this.checked)"
               style="width:16px;height:16px;accent-color:#0066CC">
-            <span>🚢 Show vessel traffic</span>
+            <span>ðŸš¢ Show vessel traffic</span>
           </label>
           <div style="font-size:11px;color:#94A3B8" id="ais-traffic-note"></div>
         </div>
       </div>
       <div id="vessel-leaflet-map" style="height:480px;width:100%"></div>
       <div style="padding:10px 18px;background:#F8FAFC;border-top:1px solid #F1F5F9;display:flex;gap:18px;font-size:12px">
-        <span>🔴 Delayed</span>
-        <span>🔵 En Route</span>
-        <span>🟠 Loading</span>
-        <span>⚫ Ballast (empty)</span>
-        <span style="margin-left:auto;color:#6B7280">Hover vessel for details · Click for full info</span>
+        <span>ðŸ”´ Delayed</span>
+        <span>ðŸ”µ En Route</span>
+        <span>ðŸŸ  Loading</span>
+        <span>âš« Ballast (empty)</span>
+        <span style="margin-left:auto;color:#6B7280">Hover vessel for details Â· Click for full info</span>
       </div>
     </div>
   </div>`;
@@ -1669,21 +1668,21 @@ SCREENS['vessels'] = async function(main) {
 
 window.loadVessels = async function() {
   const raw = await apiCall('/vessels/').catch(() => null);
-  
+
   // Normalize API field names to internal format
   let vessels;
   if (raw && Array.isArray(raw) && raw.length > 0 && raw[0].origin_port !== undefined) {
     vessels = raw.map(v => {
       const isDelayed = v.delay_hours > 0 || v.status === 'En Route (Delayed)';
-      const eta = v.eta ? new Date(v.eta).toLocaleDateString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) : '—';
+      const eta = v.eta ? new Date(v.eta).toLocaleDateString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) : 'â€”';
       const pct = estimateVoyagePct(v.current_lat, v.current_lon, v.origin_port, v.destination_port);
       return {
         name: v.name,
         status: isDelayed ? 'DELAYED' : (v.status||'EN ROUTE').toUpperCase().replace('EN ROUTE','EN ROUTE'),
-        route: `${(v.origin_port||'').split(',')[0]} → ${(v.destination_port||'').split(',')[0]}`,
+        route: `${(v.origin_port||'').split(',')[0]} â†’ ${(v.destination_port||'').split(',')[0]}`,
         eta: isDelayed ? eta + ' (+' + Math.round(v.delay_hours) + 'h)' : eta,
         cargo: v.cargo_commodity || 'Ethane',
-        volume: v.cargo_volume_mt ? (v.cargo_volume_mt.toLocaleString() + ' MT') : '—',
+        volume: v.cargo_volume_mt ? (v.cargo_volume_mt.toLocaleString() + ' MT') : 'â€”',
         pct: pct,
         delayed: isDelayed,
         lat: v.current_lat,
@@ -1697,7 +1696,7 @@ window.loadVessels = async function() {
   } else {
     vessels = getDemoVessels();
   }
-  
+
   renderVesselCards(vessels);
   renderCargoPipeline(vessels);
   initLeafletMap(vessels);
@@ -1718,21 +1717,21 @@ function estimateVoyagePct(lat, lon, origin, dest) {
 function initLeafletMap(vessels) {
   const mapEl = document.getElementById('vessel-leaflet-map');
   if (!mapEl || typeof L === 'undefined') return;
-  
+
   // Remove old map if exists
   if (mapEl._leafletMap) { mapEl._leafletMap.remove(); }
-  
+
   // Initialize Leaflet centered on North Atlantic
   const map = L.map(mapEl, { zoomControl: true, scrollWheelZoom: false })
     .setView([50, -30], 3);
   mapEl._leafletMap = map;
-  
+
   // OpenStreetMap tiles (free, no key)
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap contributors',
+    attribution: 'Â© OpenStreetMap contributors',
     maxZoom: 10
   }).addTo(map);
-  
+
   // Port locations
   const ports = {
     'Marcus Hook, PA, USA': [39.8, -75.4],
@@ -1740,57 +1739,57 @@ function initLeafletMap(vessels) {
     'Rafnes, Norway': [59.1, 9.9],
     'Grangemouth, Scotland': [56.0, -3.7]
   };
-  
+
   // Draw port markers
   Object.entries(ports).forEach(([name, coords]) => {
     L.circleMarker(coords, {radius:6, color:'#1A2332', fillColor:'#64748B', fillOpacity:0.9, weight:2})
       .addTo(map)
       .bindTooltip(`<strong>${name.split(',')[0]}</strong>`, {permanent:false, className:'vessel-tooltip'});
   });
-  
+
   // Draw routes (dashed lines)
   const routeColors = { 'DELAYED':'#DC2626', 'EN ROUTE':'#0066CC', 'LOADING':'#D97706', 'BALLAST':'#6B7280' };
-  
+
   vessels.forEach(v => {
     if (!v.lat || !v.lon) return;
     const color = routeColors[v.status] || '#0066CC';
     const isDelayed = v.status === 'DELAYED';
-    
-    // Origin → vessel position (dashed, lighter)
+
+    // Origin â†’ vessel position (dashed, lighter)
     const originCoords = ports[v.origin_port] || ports[Object.keys(ports).find(k => (v.origin_port||'').includes(k.split(',')[0])) || ''];
     const destCoords = ports[v.destination_port] || ports[Object.keys(ports).find(k => (v.destination_port||'').includes(k.split(',')[0])) || ''];
-    
+
     if (originCoords) {
       L.polyline([originCoords, [v.lat, v.lon]], {
         color, weight:2, opacity:0.4, dashArray:'5,5'
       }).addTo(map);
     }
-    
+
     if (destCoords) {
       L.polyline([[v.lat, v.lon], destCoords], {
         color, weight:2, opacity:0.25, dashArray:'3,8'
       }).addTo(map);
     }
-    
+
     // Vessel marker
     const vesselIcon = L.divIcon({
       className: '',
-      html: `<div style="background:${color};width:${isDelayed?16:12}px;height:${isDelayed?16:12}px;border-radius:50%;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;font-size:8px">🚢</div>`,
+      html: `<div style="background:${color};width:${isDelayed?16:12}px;height:${isDelayed?16:12}px;border-radius:50%;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;font-size:8px">ðŸš¢</div>`,
       iconSize: [isDelayed?16:12, isDelayed?16:12],
       iconAnchor: [isDelayed?8:6, isDelayed?8:6]
     });
-    
+
     const shortName = v.name.replace('JS Ineos ','');
     L.marker([v.lat, v.lon], {icon: vesselIcon})
       .addTo(map)
       .bindPopup(`
         <div style="font-family:-apple-system,sans-serif;min-width:180px">
-          <div style="font-weight:700;font-size:13px;margin-bottom:6px">🚢 ${v.name}</div>
+          <div style="font-weight:700;font-size:13px;margin-bottom:6px">ðŸš¢ ${v.name}</div>
           <div style="font-size:12px;color:#374151;margin-bottom:3px"><strong>Status:</strong> <span style="color:${color}">${v.status}</span></div>
           <div style="font-size:12px;color:#374151;margin-bottom:3px"><strong>Route:</strong> ${v.route}</div>
-          <div style="font-size:12px;color:#374151;margin-bottom:3px"><strong>Cargo:</strong> ${v.cargo} · ${v.volume}</div>
+          <div style="font-size:12px;color:#374151;margin-bottom:3px"><strong>Cargo:</strong> ${v.cargo} Â· ${v.volume}</div>
           <div style="font-size:12px;color:#374151"><strong>ETA:</strong> <span style="color:${isDelayed?'#DC2626':'#374151'}">${v.eta}</span></div>
-          ${isDelayed ? '<div style="margin-top:6px;padding:5px;background:#FEE2E2;border-radius:4px;font-size:11px;color:#DC2626">⚠ 14h delay — cargo impact flagged</div>' : ''}
+          ${isDelayed ? '<div style="margin-top:6px;padding:5px;background:#FEE2E2;border-radius:4px;font-size:11px;color:#DC2626">âš  14h delay â€” cargo impact flagged</div>' : ''}
         </div>
       `);
   });
@@ -1798,12 +1797,12 @@ function initLeafletMap(vessels) {
 
 function getDemoVessels() {
   return [
-    {name:'JS Ineos Innovation', status:'DELAYED',  route:'Marcus Hook → Rafnes',    eta:'01 Jun +14h', cargo:'Ethane',  volume:'21,500MT', pct:72, delayed:true},
-    {name:'JS Ineos Endeavour',  status:'EN ROUTE', route:'Rafnes → Stenungsund',    eta:'02 Jun 06:00', cargo:'Ethane', volume:'22,000MT', pct:45},
+    {name:'JS Ineos Innovation', status:'DELAYED',  route:'Marcus Hook â†’ Rafnes',    eta:'01 Jun +14h', cargo:'Ethane',  volume:'21,500MT', pct:72, delayed:true},
+    {name:'JS Ineos Endeavour',  status:'EN ROUTE', route:'Rafnes â†’ Stenungsund',    eta:'02 Jun 06:00', cargo:'Ethane', volume:'22,000MT', pct:45},
     {name:'JS Ineos Intrepid',   status:'LOADING',  route:'Marcus Hook (Loading)',   eta:'04 Jun 08:00', cargo:'Ethane', volume:'21,800MT', pct:15},
-    {name:'JS Ineos Insight',    status:'BALLAST',  route:'Rafnes → Marcus Hook',    eta:'—',            cargo:'Ballast',volume:'—',        pct:30},
-    {name:'JS Ineos Igloo',      status:'EN ROUTE', route:'Freeport LNG → Brunsbüttel', eta:'06 Jun',   cargo:'LNG',    volume:'74,000M³', pct:60},
-    {name:'JS Ineos Inspiration',status:'EN ROUTE', route:'Arzew → Rafnes',          eta:'03 Jun 14:00', cargo:'Ethane', volume:'21,200MT', pct:55}
+    {name:'JS Ineos Insight',    status:'BALLAST',  route:'Rafnes â†’ Marcus Hook',    eta:'â€”',            cargo:'Ballast',volume:'â€”',        pct:30},
+    {name:'JS Ineos Igloo',      status:'EN ROUTE', route:'Freeport LNG â†’ BrunsbÃ¼ttel', eta:'06 Jun',   cargo:'LNG',    volume:'74,000MÂ³', pct:60},
+    {name:'JS Ineos Inspiration',status:'EN ROUTE', route:'Arzew â†’ Rafnes',          eta:'03 Jun 14:00', cargo:'Ethane', volume:'21,200MT', pct:55}
   ];
 }
 
@@ -1812,7 +1811,7 @@ function renderVesselCards(vessels) {
   if (!el) return;
   el.innerHTML = vessels.map(v=>`<div class="vessel-card ${v.delayed||v.status==='DELAYED'?'delayed':''}">
     <div class="flex items-center" style="justify-content:space-between;margin-bottom:6px">
-      <div class="vessel-name">🚢 ${v.name}</div>
+      <div class="vessel-name">ðŸš¢ ${v.name}</div>
       <span class="badge badge-${v.status==='DELAYED'?'critical':v.status==='LOADING'?'info':v.status==='BALLAST'?'neutral':'success'}">${v.status}</span>
     </div>
     <div class="vessel-route">${v.route}</div>
@@ -1834,7 +1833,7 @@ function renderCargoPipeline(vessels) {
     <td class="right mono">${v.volume}</td>
     <td class="mono ${v.delayed||v.status==='DELAYED'?'negative':''}">${v.eta}</td>
     <td><span class="badge badge-${v.status==='DELAYED'?'critical':v.status==='LOADING'?'info':v.status==='BALLAST'?'neutral':'success'}">${v.status}</span></td>
-    <td>${v.delayed||v.status==='DELAYED'?'<span class="badge badge-critical">⚠ DELAY</span>':'<span class="badge badge-success">OK</span>'}</td>
+    <td>${v.delayed||v.status==='DELAYED'?'<span class="badge badge-critical">âš  DELAY</span>':'<span class="badge badge-success">OK</span>'}</td>
   </tr>`).join('');
 }
 
@@ -1859,11 +1858,11 @@ function renderWorldMap() {
     <text x="620" y="230" fill="#4A5A70" font-size="10" text-anchor="middle">INDIAN OCEAN</text>
     <text x="790" y="200" fill="#4A5A70" font-size="10" text-anchor="middle">PACIFIC</text>
     <!-- Vessel positions with animated pulse -->
-    <!-- JS Ineos Innovation (Marcus Hook → Rafnes, mid-Atlantic) -->
+    <!-- JS Ineos Innovation (Marcus Hook â†’ Rafnes, mid-Atlantic) -->
     <circle cx="280" cy="130" r="8" fill="rgba(255,68,68,0.3)" stroke="#FF4444" stroke-width="1.5"/>
     <circle cx="280" cy="130" r="4" fill="#FF4444"/>
-    <text x="280" y="120" fill="#FF4444" font-size="8" text-anchor="middle">Innovation ⚠</text>
-    <!-- JS Ineos Endeavour (Rafnes → Stenungsund, North Sea) -->
+    <text x="280" y="120" fill="#FF4444" font-size="8" text-anchor="middle">Innovation âš </text>
+    <!-- JS Ineos Endeavour (Rafnes â†’ Stenungsund, North Sea) -->
     <circle cx="455" cy="72" r="7" fill="rgba(0,212,255,0.3)" stroke="#00D4FF" stroke-width="1.5"/>
     <circle cx="455" cy="72" r="3" fill="#00D4FF"/>
     <text x="455" y="63" fill="#00D4FF" font-size="8" text-anchor="middle">Endeavour</text>
@@ -1871,11 +1870,11 @@ function renderWorldMap() {
     <circle cx="210" cy="140" r="7" fill="rgba(255,179,71,0.3)" stroke="#FFB347" stroke-width="1.5"/>
     <circle cx="210" cy="140" r="3" fill="#FFB347"/>
     <text x="210" y="152" fill="#FFB347" font-size="8" text-anchor="middle">Intrepid</text>
-    <!-- JS Ineos Igloo (Freeport → Brunsbüttel) -->
+    <!-- JS Ineos Igloo (Freeport â†’ BrunsbÃ¼ttel) -->
     <circle cx="320" cy="100" r="7" fill="rgba(0,255,136,0.3)" stroke="#00FF88" stroke-width="1.5"/>
     <circle cx="320" cy="100" r="3" fill="#00FF88"/>
     <text x="320" y="92" fill="#00FF88" font-size="8" text-anchor="middle">Igloo</text>
-    <!-- JS Ineos Inspiration (Arzew → Rafnes) -->
+    <!-- JS Ineos Inspiration (Arzew â†’ Rafnes) -->
     <circle cx="400" cy="150" r="7" fill="rgba(0,212,255,0.3)" stroke="#00D4FF" stroke-width="1.5"/>
     <circle cx="400" cy="150" r="3" fill="#00D4FF"/>
     <text x="400" y="142" fill="#00D4FF" font-size="8" text-anchor="middle">Inspiration</text>
@@ -1899,7 +1898,7 @@ window.calcVoyageEconomics = async function() {
   if (results) results.style.display = 'block';
 };
 
-/* ── SCREEN 9: COMMUNICATIONS HUB ── */
+/* â”€â”€ SCREEN 9: COMMUNICATIONS HUB â”€â”€ */
 let commsEmailsState = [];
 let commsFilterState = 'all';
 let commsSelectedId = null;
@@ -1910,12 +1909,12 @@ SCREENS['comms'] = async function(main) {
   main.innerHTML = `<div class="screen comms-screen">
     <div class="screen-header">
       <div>
-        <div class="screen-title">📧 Communications Hub</div>
-        <div class="screen-subtitle">AI-prioritised inbox · Smart drafts · Outstanding actions</div>
+        <div class="screen-title">ðŸ“§ Communications Hub</div>
+        <div class="screen-subtitle">AI-prioritised inbox Â· Smart drafts Â· Outstanding actions</div>
       </div>
       <div class="screen-actions">
         <span class="comms-live-pill"><span></span> Mail feed live</span>
-        <button class="btn btn-secondary btn-sm" onclick="loadComms()">⟳ Refresh</button>
+        <button class="btn btn-secondary btn-sm" onclick="loadComms()">âŸ³ Refresh</button>
         <button class="btn btn-primary btn-sm" onclick="sendCopilotMessage('Summarise communications requiring action today')">Ask AI</button>
       </div>
     </div>
@@ -1943,7 +1942,7 @@ SCREENS['comms'] = async function(main) {
 
       <section class="comms-detail-panel" id="email-detail">
         <div class="comms-empty-state">
-          <div class="comms-empty-icon">📧</div>
+          <div class="comms-empty-icon">ðŸ“§</div>
           <div class="comms-empty-title">Select a message</div>
           <div class="comms-empty-text">AI analysis, linked trade context, and a drafted response will appear here.</div>
         </div>
@@ -1972,17 +1971,17 @@ SCREENS['comms'] = async function(main) {
 
 function getDemoEmails() {
   return [
-    {id:1, priority:'critical', from:'Vitol Trading — Operations', subject:'URGENT: RMVT-0234 Trade Confirmation Required', summary:'Counterparty requesting written confirmation within 2h or trade will be cancelled.', time:'08:45', unread:true,
+    {id:1, priority:'critical', from:'Vitol Trading â€” Operations', subject:'URGENT: RMVT-0234 Trade Confirmation Required', summary:'Counterparty requesting written confirmation within 2h or trade will be cancelled.', time:'08:45', unread:true,
       body:'Dear Alex,\n\nWe are following up on verbal agreement from 28 May for the supply of 100,000MT Naphtha CIF NWE.\n\nTrade reference: RMVT-0234\nVolume: 100,000MT\nPrice: $612/MT\nDelivery: 15-20 June 2026\nPort: Flushing, Netherlands\n\nPlease provide written confirmation by 15:00 today to avoid cancellation of the trade.\n\nBest regards,\nMike Johnson\nVitol Trading Operations',
       ai:{summary:'Trade confirmation deadline 15:00 today. $61.2M at risk if not confirmed. Draft reply ready.',priority:'CRITICAL',action:'Send confirmation',deadline:'2h 15m',trade:'RMVT-0234'}},
-    {id:2, priority:'high', from:'Rafnes Terminal — Logistics', subject:'JS Ineos Innovation — Berth Delay Update', summary:'Innovation delayed 14 hours. Terminal requires decision on cargo handling by 11:00.', time:'07:55', unread:true,
-      body:'Dear INEOS Shipping Team,\n\nThis is to advise that JS Ineos Innovation will arrive at Rafnes Terminal approximately 14 hours behind schedule due to weather delays in the North Atlantic.\n\nExpected arrival: 02 June 2026, 08:00 (was 18:00 01 June)\n\nThe terminal has three berths available. Due to scheduling conflicts, we require your handling preference by 11:00 today.\n\nOptions:\n1. Priority berth — additional cost $45,000\n2. Standard queue — no additional cost, further 6h delay\n3. Reroute to Stenungsund\n\nKind regards,\nRafnes Terminal Operations',
+    {id:2, priority:'high', from:'Rafnes Terminal â€” Logistics', subject:'JS Ineos Innovation â€” Berth Delay Update', summary:'Innovation delayed 14 hours. Terminal requires decision on cargo handling by 11:00.', time:'07:55', unread:true,
+      body:'Dear INEOS Shipping Team,\n\nThis is to advise that JS Ineos Innovation will arrive at Rafnes Terminal approximately 14 hours behind schedule due to weather delays in the North Atlantic.\n\nExpected arrival: 02 June 2026, 08:00 (was 18:00 01 June)\n\nThe terminal has three berths available. Due to scheduling conflicts, we require your handling preference by 11:00 today.\n\nOptions:\n1. Priority berth â€” additional cost $45,000\n2. Standard queue â€” no additional cost, further 6h delay\n3. Reroute to Stenungsund\n\nKind regards,\nRafnes Terminal Operations',
       ai:{summary:'14h vessel delay. Three options available. Decision required by 11:00. Costs calculated.',priority:'HIGH',action:'Choose berth option',deadline:'2h 05m',trade:'Vessel delay'}},
-    {id:3, priority:'medium', from:'Alex.Morgan@shell.com', subject:'Brent M+2 swap — indication request', summary:'Shell requesting indicative price for 500kbbl Brent M+2 swap. No urgency.', time:'07:30', unread:false,
-      body:'Hi Alex,\n\nCould you give me an indication for a 500kbbl Brent M+2 swap? Looking to hedge some refinery exposure.\n\nNo immediate urgency — happy to discuss later today or tomorrow morning.\n\nThanks,\nAlex Morgan\nShell Trading',
+    {id:3, priority:'medium', from:'Alex.Morgan@shell.com', subject:'Brent M+2 swap â€” indication request', summary:'Shell requesting indicative price for 500kbbl Brent M+2 swap. No urgency.', time:'07:30', unread:false,
+      body:'Hi Alex,\n\nCould you give me an indication for a 500kbbl Brent M+2 swap? Looking to hedge some refinery exposure.\n\nNo immediate urgency â€” happy to discuss later today or tomorrow morning.\n\nThanks,\nAlex Morgan\nShell Trading',
       ai:{summary:'Standard indication request from Shell. No deadline. Auto-draft reply ready.',priority:'MEDIUM',action:'Send indication',deadline:'No deadline',trade:'Potential new trade'}},
-    {id:4, priority:'low', from:'Risk Management', subject:'Daily VaR Report — 30 May 2026', summary:'VaR at 62% utilisation. All limits within bounds. No escalation required.', time:'07:00', unread:false,
-      body:'Daily VaR Report — 30 May 2026\n\nKey metrics:\n1-Day VaR: $2.1M (62% utilisation)\n10-Day VaR: $6.3M\nBoard Limit: $8.0M\n\nAll positions within approved limits.\nNo escalation required.\n\nRisk Management Team',
+    {id:4, priority:'low', from:'Risk Management', subject:'Daily VaR Report â€” 30 May 2026', summary:'VaR at 62% utilisation. All limits within bounds. No escalation required.', time:'07:00', unread:false,
+      body:'Daily VaR Report â€” 30 May 2026\n\nKey metrics:\n1-Day VaR: $2.1M (62% utilisation)\n10-Day VaR: $6.3M\nBoard Limit: $8.0M\n\nAll positions within approved limits.\nNo escalation required.\n\nRisk Management Team',
       ai:{summary:'Routine daily risk report. No action required. All within limits.',priority:'FYI',action:'Acknowledge',deadline:'No deadline',trade:null}}
   ];
 }
@@ -2018,9 +2017,9 @@ function getPriorityMeta(priority) {
 }
 
 function formatCommsTime(value) {
-  if (!value) return '—';
+  if (!value) return 'â€”';
   const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return String(value).slice(11, 16) || '—';
+  if (Number.isNaN(d.getTime())) return String(value).slice(11, 16) || 'â€”';
   return d.toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'});
 }
 
@@ -2116,7 +2115,7 @@ window.openEmail = function(id) {
   document.querySelectorAll('.email-row').forEach(r=>r.classList.remove('active'));
   document.getElementById(`email-row-${id}`)?.classList.add('active');
   const meta = getPriorityMeta(e.priority);
-  const draftReply = `Dear ${e.from.split(' —')[0].split('@')[0]},\n\nThank you for your message.\n\n${e.id===1?'Please find attached our confirmation for trade RMVT-0234. We confirm the following terms:\n- Volume: 100,000MT Naphtha CIF NWE\n- Price: $612/MT\n- Delivery: 15-20 June 2026\n- Port: Flushing, Netherlands\n\nPlease confirm receipt.':'Noted. We are reviewing the item and will revert with confirmation shortly.'}\n\nBest regards,\nAlex Chen\nINEOS Trading & Shipping`;
+  const draftReply = `Dear ${e.from.split(' â€”')[0].split('@')[0]},\n\nThank you for your message.\n\n${e.id===1?'Please find attached our confirmation for trade RMVT-0234. We confirm the following terms:\n- Volume: 100,000MT Naphtha CIF NWE\n- Price: $612/MT\n- Delivery: 15-20 June 2026\n- Port: Flushing, Netherlands\n\nPlease confirm receipt.':'Noted. We are reviewing the item and will revert with confirmation shortly.'}\n\nBest regards,\nAlex Chen\nINEOS Trading & Shipping`;
   document.getElementById('email-detail').innerHTML = `
     <div class="email-detail-header">
       <div>
@@ -2131,7 +2130,7 @@ window.openEmail = function(id) {
     </div>
     <div class="email-body-card">${e.body}</div>
     <div class="ai-analysis-box">
-      <div class="ai-analysis-title"><span>🤖 AI Analysis</span><button class="btn btn-secondary btn-sm" onclick="sendCopilotMessage('Summarise this communication: ${e.subject.replace(/'/g,"\\'")}')">Ask Radiant AI</button></div>
+      <div class="ai-analysis-title"><span>ðŸ¤– AI Analysis</span><button class="btn btn-secondary btn-sm" onclick="sendCopilotMessage('Summarise this communication: ${e.subject.replace(/'/g,"\\'")}')">Ask Radiant AI</button></div>
       <div class="ai-summary-callout">${e.ai.summary}</div>
       <div class="ai-analysis-grid">
         <div><span>Priority</span><strong><span class="badge ${meta.badge}">${e.ai.priority}</span></strong></div>
@@ -2144,9 +2143,9 @@ window.openEmail = function(id) {
       <div class="draft-head"><span>AI Draft Reply</span><span>Editable before send</span></div>
       <textarea id="reply-draft">${draftReply}</textarea>
       <div class="draft-actions">
-        <button class="btn btn-primary" onclick="sendEmailReply(${id})">📤 Send Reply</button>
-        <button class="btn btn-secondary btn-sm" onclick="markEmailActioned(${id})">✓ Mark Actioned</button>
-        <button class="btn btn-secondary btn-sm">↩ Forward</button>
+        <button class="btn btn-primary" onclick="sendEmailReply(${id})">ðŸ“¤ Send Reply</button>
+        <button class="btn btn-secondary btn-sm" onclick="markEmailActioned(${id})">âœ“ Mark Actioned</button>
+        <button class="btn btn-secondary btn-sm">â†© Forward</button>
         <button class="btn btn-secondary btn-sm">Dismiss</button>
       </div>
     </div>`;
@@ -2178,34 +2177,33 @@ window.markEmailActioned = async function(id) {
   showToast('Action Logged', 'Communication marked actioned.', 'success');
 };
 
-/* ── SCREEN 10: COMPLIANCE & AUDIT ── */
+/* â”€â”€ SCREEN 10: COMPLIANCE & AUDIT â”€â”€ */
 SCREENS['compliance'] = async function(main) {
-  const isRiskApp = SCREEN_APP_ID === 'risk';
   main.innerHTML = `<div class="screen">
     <div class="screen-header">
-      <div><div class="screen-title">⚖️ Compliance & Audit</div><div class="screen-subtitle">${isRiskApp ? 'Control status · Filing oversight · Immutable audit trail' : 'Regulatory status · Immutable audit trail · AI action log'}</div></div>
+      <div><div class="screen-title">âš–ï¸ Compliance & Audit</div><div class="screen-subtitle">Regulatory status Â· Immutable audit trail Â· AI action log</div></div>
       <div class="screen-actions">
-        <button class="btn btn-secondary btn-sm" onclick="loadCompliance()">⟳ Refresh</button>
-        <button class="btn btn-primary btn-sm">${isRiskApp ? 'Review Exception' : '+ New Filing'}</button>
+        <button class="btn btn-secondary btn-sm" onclick="loadCompliance()">âŸ³ Refresh</button>
+        <button class="btn btn-primary btn-sm">+ New Filing</button>
       </div>
     </div>
     <div class="grid-3 mb-12">
       ${[
-        {icon:'🏛',name:'EMIR',    status:'Compliant', deadline:'2 Jun 2026',  last:'28 May 2026', ok:true},
-        {icon:'📋',name:'REMIT',   status:'Compliant', deadline:'5 Jun 2026',  last:'27 May 2026', ok:true},
-        {icon:'📊',name:'MiFID II',status:'Review',    deadline:'1 Jun 2026',  last:'24 May 2026', ok:false}
+        {icon:'ðŸ›',name:'EMIR',    status:'Compliant', deadline:'2 Jun 2026',  last:'28 May 2026', ok:true},
+        {icon:'ðŸ“‹',name:'REMIT',   status:'Compliant', deadline:'5 Jun 2026',  last:'27 May 2026', ok:true},
+        {icon:'ðŸ“Š',name:'MiFID II',status:'Review',    deadline:'1 Jun 2026',  last:'24 May 2026', ok:false}
       ].map(r=>`<div class="reg-card">
         <span class="reg-icon">${r.icon}</span>
         <div style="flex:1">
           <div class="reg-name">${r.name}</div>
           <div class="reg-deadline">Next deadline: ${r.deadline} &nbsp;|&nbsp; Last filed: ${r.last}</div>
         </div>
-        <span class="badge badge-${r.ok?'success':'warning'}">${r.ok?'✓ Compliant':'⚠ Review'}</span>
+        <span class="badge badge-${r.ok?'success':'warning'}">${r.ok?'âœ“ Compliant':'âš  Review'}</span>
       </div>`).join('')}
     </div>
     <div class="grid-2">
       <div>
-        <div class="card-title mb-8">📋 Immutable Audit Trail</div>
+        <div class="card-title mb-8">ðŸ“‹ Immutable Audit Trail</div>
         <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
           <input type="date" id="audit-date-from" placeholder="From date" style="background:#1e293b;border:1px solid #334155;color:#f1f5f9;border-radius:6px;padding:6px 10px;font-size:12px" onchange="filterAuditLog()">
           <input type="date" id="audit-date-to" placeholder="To date" style="background:#1e293b;border:1px solid #334155;color:#f1f5f9;border-radius:6px;padding:6px 10px;font-size:12px" onchange="filterAuditLog()">
@@ -2226,14 +2224,14 @@ SCREENS['compliance'] = async function(main) {
             <th>Timestamp</th><th>User</th><th>Action</th><th>Entity</th><th>AI</th><th>Details</th>
           </tr></thead><tbody>
             ${[
-              {ts:'08:47:23',user:'alex.chen',action:'Trade Confirmed',entity:'RMVT-0232',ai:'✓',detail:'Brent swap, 200kbbl'},
-              {ts:'08:31:15',user:'system',   action:'AI Alert Generated',entity:'ALERT-089',ai:'🤖',detail:'Stale price: Urals M+1'},
-              {ts:'08:15:02',user:'alex.chen',action:'Position Updated',entity:'Urals Book',ai:'✓',detail:'Net long 200kbbl'},
-              {ts:'07:55:44',user:'system',   action:'Market Data Received',entity:'Brent M0',ai:'—',detail:'$82.40/bbl'},
-              {ts:'07:34:01',user:'alex.chen',action:'Login',entity:'Session',ai:'—',detail:'IP: 10.0.1.42'},
-              {ts:'07:30:00',user:'system',   action:'EOD Report Generated',entity:'29-May-26',ai:'🤖',detail:'Approved by risk'},
-              {ts:'Yesterday',user:'alex.chen',action:'Trade Executed',entity:'RMVT-0229',ai:'✓',detail:'Naphtha long 20kt'},
-              {ts:'Yesterday',user:'risk.mgmt',action:'VaR Limit Reviewed',entity:'Board Limit',ai:'—',detail:'$8M unchanged'}
+              {ts:'08:47:23',user:'alex.chen',action:'Trade Confirmed',entity:'RMVT-0232',ai:'âœ“',detail:'Brent swap, 200kbbl'},
+              {ts:'08:31:15',user:'system',   action:'AI Alert Generated',entity:'ALERT-089',ai:'ðŸ¤–',detail:'Stale price: Urals M+1'},
+              {ts:'08:15:02',user:'alex.chen',action:'Position Updated',entity:'Urals Book',ai:'âœ“',detail:'Net long 200kbbl'},
+              {ts:'07:55:44',user:'system',   action:'Market Data Received',entity:'Brent M0',ai:'â€”',detail:'$82.40/bbl'},
+              {ts:'07:34:01',user:'alex.chen',action:'Login',entity:'Session',ai:'â€”',detail:'IP: 10.0.1.42'},
+              {ts:'07:30:00',user:'system',   action:'EOD Report Generated',entity:'29-May-26',ai:'ðŸ¤–',detail:'Approved by risk'},
+              {ts:'Yesterday',user:'alex.chen',action:'Trade Executed',entity:'RMVT-0229',ai:'âœ“',detail:'Naphtha long 20kt'},
+              {ts:'Yesterday',user:'risk.mgmt',action:'VaR Limit Reviewed',entity:'Board Limit',ai:'â€”',detail:'$8M unchanged'}
             ].map(r=>`<tr>
               <td class="mono xsmall muted">${r.ts}</td>
               <td class="xsmall">${r.user}</td>
@@ -2246,14 +2244,14 @@ SCREENS['compliance'] = async function(main) {
         </div>
       </div>
       <div>
-        <div class="card-title mb-8">🤖 AI Action Log — All Recommendations</div>
+        <div class="card-title mb-8">ðŸ¤– AI Action Log â€” All Recommendations</div>
         <div class="table-container" style="max-height:400px;overflow-y:auto">
           <table class="trading-table"><thead><tr>
             <th>Time</th><th>Recommendation</th><th>User Action</th><th>Outcome</th>
           </tr></thead><tbody>
             ${[
-              {time:'08:31',rec:'Alert: Stale price Urals',    action:'Accepted',  outcome:'Repriced — saved $24K'},
-              {time:'08:15',rec:'Hedge: Increase Urals coverage to 75%', action:'Pending', outcome:'—'},
+              {time:'08:31',rec:'Alert: Stale price Urals',    action:'Accepted',  outcome:'Repriced â€” saved $24K'},
+              {time:'08:15',rec:'Hedge: Increase Urals coverage to 75%', action:'Pending', outcome:'â€”'},
               {time:'Yesterday',rec:'Trade idea: Brent/Urals arb', action:'Accepted',  outcome:'+$180K P&L'},
               {time:'Yesterday',rec:'Alert: Counterparty limit 88%',action:'Rejected',  outcome:'No breach yet'},
               {time:'26-May', rec:'Pre-mortem: Carbon long',    action:'Accepted',  outcome:'+$85K P&L'},
@@ -2297,7 +2295,7 @@ window.loadCompliance = async function() {
         const card = document.querySelector(`[data-reg="${reg.regulation}"]`);
         if (card) {
           const statusEl = card.querySelector('.reg-status');
-          if (statusEl) statusEl.textContent = reg.status === 'Current' ? '✓ Compliant' : '⚠ ' + reg.status;
+          if (statusEl) statusEl.textContent = reg.status === 'Current' ? 'âœ“ Compliant' : 'âš  ' + reg.status;
         }
       });
     }
@@ -2306,17 +2304,17 @@ window.loadCompliance = async function() {
   }
 };
 
-/* ── SCREEN 11: BOARDROOM (Executive) ── */
+/* â”€â”€ SCREEN 11: BOARDROOM (Executive) â”€â”€ */
 SCREENS['boardroom'] = async function(main) {
   if (!['executive','admin'].includes(window.currentRole())) {
-    main.innerHTML = `<div class="screen flex-center" style="height:60vh"><div class="text-center"><div style="font-size:48px">🔒</div><div class="mt-8 secondary">This screen requires Executive access.</div></div></div>`;
+    main.innerHTML = `<div class="screen flex-center" style="height:60vh"><div class="text-center"><div style="font-size:48px">ðŸ”’</div><div class="mt-8 secondary">This screen requires Executive access.</div></div></div>`;
     return;
   }
   main.innerHTML = `<div class="screen">
     <div class="screen-header">
-      <div><div class="screen-title">👔 Boardroom View</div><div class="screen-subtitle">Executive performance summary · Capital efficiency · Strategic insights</div></div>
+      <div><div class="screen-title">ðŸ‘” Boardroom View</div><div class="screen-subtitle">Executive performance summary Â· Capital efficiency Â· Strategic insights</div></div>
       <div class="screen-actions">
-        <button class="btn btn-primary btn-sm" onclick="window.print()">🖨 Export for Board</button>
+        <button class="btn btn-primary btn-sm" onclick="window.print()">ðŸ–¨ Export for Board</button>
       </div>
     </div>
     <div class="grid-4 mb-12">
@@ -2338,8 +2336,8 @@ SCREENS['boardroom'] = async function(main) {
     <div class="quartile-box">
       <div class="quartile-headline">If every trader performed at top-quartile levels:</div>
       <div class="quartile-number">$38,400,000</div>
-      <div class="quartile-sub">Additional annual desk P&L — achievable with Radiant-MVT decision support</div>
-      <button class="btn btn-primary btn-lg mt-12" onclick="exploreTopQuartile()">How we get there →</button>
+      <div class="quartile-sub">Additional annual desk P&L â€” achievable with Radiant-MVT decision support</div>
+      <button class="btn btn-primary btn-lg mt-12" onclick="exploreTopQuartile()">How we get there â†’</button>
       <div class="streaming-box mt-12" id="quartile-narrative" style="display:none;text-align:left"></div>
     </div>
   </div>`;
@@ -2384,26 +2382,26 @@ window.exploreTopQuartile = async function() {
   await streamToElement(el, '/chat/message', {message:'Explain how the desk can reach top-quartile performance and unlock the additional $38.4M P&L potential', screen_context:'boardroom', provider: 'claude'});
 };
 
-/* ── SCREEN 12: ADMIN / DEMO CONTROL ── */
+/* â”€â”€ SCREEN 12: ADMIN / DEMO CONTROL â”€â”€ */
 SCREENS['admin'] = async function(main) {
   if (!['admin'].includes(window.currentRole())) {
-    main.innerHTML = `<div class="screen flex-center" style="height:60vh"><div class="text-center"><div style="font-size:48px">🔒</div><div class="mt-8 secondary">Admin access required.</div></div></div>`;
+    main.innerHTML = `<div class="screen flex-center" style="height:60vh"><div class="text-center"><div style="font-size:48px">ðŸ”’</div><div class="mt-8 secondary">Admin access required.</div></div></div>`;
     return;
   }
   main.innerHTML = `<div class="screen">
     <div class="screen-header">
-      <div><div class="screen-title">⚙️ Admin / Demo Control</div><div class="screen-subtitle">Scenario triggers · AI configuration · System status</div></div>
+      <div><div class="screen-title">âš™ï¸ Admin / Demo Control</div><div class="screen-subtitle">Scenario triggers Â· AI configuration Â· System status</div></div>
     </div>
     <div class="card mb-12">
-      <div class="card-title mb-12">🎭 Demo Scenarios</div>
+      <div class="card-title mb-12">ðŸŽ­ Demo Scenarios</div>
       <div class="scenario-grid">
         ${[
-          {key:'fat_finger',   emoji:'🔴', name:'Fat Finger',        desc:'Simulate a 10x position entry error', sev:'critical'},
-          {key:'urals_arb',    emoji:'🟠', name:'Urals Arb',          desc:'Brent/Urals spread opportunity opens', sev:'high'},
-          {key:'dragon_delay', emoji:'🟡', name:'Dragon Fleet Delay', desc:'Innovation delayed 14h at Rafnes', sev:'medium'},
-          {key:'stale_price',  emoji:'🔴', name:'Stale Price',        desc:'Thomson Reuters feed goes stale', sev:'critical'},
-          {key:'margin_breach',emoji:'🔴', name:'Margin Breach',      desc:'ICE margin call exceeds threshold', sev:'critical'},
-          {key:'eod_briefing', emoji:'🟢', name:'EOD Briefing',       desc:'End of day AI narrative generation', sev:'low'}
+          {key:'fat_finger',   emoji:'ðŸ”´', name:'Fat Finger',        desc:'Simulate a 10x position entry error', sev:'critical'},
+          {key:'urals_arb',    emoji:'ðŸŸ ', name:'Urals Arb',          desc:'Brent/Urals spread opportunity opens', sev:'high'},
+          {key:'dragon_delay', emoji:'ðŸŸ¡', name:'Dragon Fleet Delay', desc:'Innovation delayed 14h at Rafnes', sev:'medium'},
+          {key:'stale_price',  emoji:'ðŸ”´', name:'Stale Price',        desc:'Thomson Reuters feed goes stale', sev:'critical'},
+          {key:'margin_breach',emoji:'ðŸ”´', name:'Margin Breach',      desc:'ICE margin call exceeds threshold', sev:'critical'},
+          {key:'eod_briefing', emoji:'ðŸŸ¢', name:'EOD Briefing',       desc:'End of day AI narrative generation', sev:'low'}
         ].map(s=>`<div class="scenario-btn ${s.sev}" onclick="triggerScenario('${s.key}','${s.name}')">
           <div class="scenario-emoji">${s.emoji}</div>
           <div class="scenario-name">${s.name}</div>
@@ -2413,23 +2411,23 @@ SCREENS['admin'] = async function(main) {
     </div>
     <div class="grid-2 mb-12">
       <div class="card">
-        <div class="card-title mb-8">🤖 AI Configuration</div>
+        <div class="card-title mb-8">ðŸ¤– AI Configuration</div>
         <div class="var-row"><span class="var-row-label">Current Provider</span>
           <div class="flex gap-6">
-            <button class="btn btn-sm ${'claude'==='claude'?'btn-primary':'btn-secondary'}" onclick="setProvider('claude')">☁ Claude API</button>
-            <button class="btn btn-sm ${'claude'==='local'?'btn-primary':'btn-secondary'}"  onclick="setProvider('local')">🔒 Local LLM</button>
+            <button class="btn btn-sm ${'claude'==='claude'?'btn-primary':'btn-secondary'}" onclick="setProvider('claude')">â˜ Claude API</button>
+            <button class="btn btn-sm ${'claude'==='local'?'btn-primary':'btn-secondary'}"  onclick="setProvider('local')">ðŸ”’ Local LLM</button>
           </div>
         </div>
         <div class="var-row mt-8"><span class="var-row-label">Claude Status</span><span class="var-row-value positive"><span class="status-dot green"></span>Connected</span></div>
         <div class="var-row"><span class="var-row-label">Local LLM Status</span><span class="var-row-value muted"><span class="status-dot amber"></span>Not configured</span></div>
-        <div class="var-row"><span class="var-row-label">Data Egress</span><span class="var-row-value warning-text">${'claude'==='claude'?'☁ Cloud API':'🔒 On-premise'}</span></div>
+        <div class="var-row"><span class="var-row-label">Data Egress</span><span class="var-row-value warning-text">${'claude'==='claude'?'â˜ Cloud API':'ðŸ”’ On-premise'}</span></div>
         <div class="flex gap-8 mt-8">
           <button class="btn btn-secondary btn-sm" onclick="testAI('claude')">Test Claude</button>
           <button class="btn btn-secondary btn-sm" onclick="testAI('local')">Test Local</button>
         </div>
       </div>
       <div class="card">
-        <div class="card-title mb-8">📊 System Status</div>
+        <div class="card-title mb-8">ðŸ“Š System Status</div>
         <div id="system-status">
           ${[
             {table:'trades',     count:'2,847', updated:'08:47:23'},
@@ -2482,7 +2480,7 @@ window.loadSystemStatus = async function() {
 };
 
 
-/* ── VaR Calculation Modal ── */
+/* â”€â”€ VaR Calculation Modal â”€â”€ */
 window.showVaRModal = function() {
   let modal = document.getElementById('var-modal');
   if (!modal) {
@@ -2493,25 +2491,25 @@ window.showVaRModal = function() {
     <div style="background:white;border-radius:14px;padding:28px;width:640px;max-width:92vw;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.2)">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
         <div>
-          <div style="font-size:20px;font-weight:700;color:#111827">⚡ How VaR is Calculated</div>
-          <div style="font-size:13px;color:#6B7280;margin-top:3px">Parametric Value at Risk — 99% Confidence</div>
+          <div style="font-size:20px;font-weight:700;color:#111827">âš¡ How VaR is Calculated</div>
+          <div style="font-size:13px;color:#6B7280;margin-top:3px">Parametric Value at Risk â€” 99% Confidence</div>
         </div>
-        <button onclick="document.getElementById('var-modal').remove()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#6B7280">✕</button>
+        <button onclick="document.getElementById('var-modal').remove()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#6B7280">âœ•</button>
       </div>
 
       <!-- Formula -->
       <div style="background:#F0F7FF;border:1px solid #BFDBFE;border-radius:10px;padding:16px 18px;margin-bottom:18px">
         <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#2563EB;margin-bottom:10px">Core Formula</div>
         <div style="font-family:monospace;font-size:15px;font-weight:700;color:#1A2332;text-align:center;padding:8px 0">
-          VaR₁ = Exposure × σ × Z<sub>99%</sub>
+          VaRâ‚ = Exposure Ã— Ïƒ Ã— Z<sub>99%</sub>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:14px">
           <div style="background:white;border-radius:8px;padding:10px;text-align:center">
             <div style="font-size:11px;color:#6B7280;margin-bottom:3px">Exposure</div>
-            <div style="font-size:15px;font-weight:700;font-family:monospace">|Net position|<br>× Current price</div>
+            <div style="font-size:15px;font-weight:700;font-family:monospace">|Net position|<br>Ã— Current price</div>
           </div>
           <div style="background:white;border-radius:8px;padding:10px;text-align:center">
-            <div style="font-size:11px;color:#6B7280;margin-bottom:3px">Daily Volatility (σ)</div>
+            <div style="font-size:11px;color:#6B7280;margin-bottom:3px">Daily Volatility (Ïƒ)</div>
             <div style="font-size:15px;font-weight:700;font-family:monospace;color:#0066CC">1.5%</div>
             <div style="font-size:10px;color:#6B7280">90-day rolling window</div>
           </div>
@@ -2525,7 +2523,7 @@ window.showVaRModal = function() {
 
       <!-- Worked example -->
       <div style="margin-bottom:18px">
-        <div style="font-size:13px;font-weight:700;color:#111827;margin-bottom:10px">Worked Example — Brent Book</div>
+        <div style="font-size:13px;font-weight:700;color:#111827;margin-bottom:10px">Worked Example â€” Brent Book</div>
         <table style="width:100%;border-collapse:collapse;font-size:13px">
           <thead>
             <tr style="background:#F8FAFC">
@@ -2539,31 +2537,31 @@ window.showVaRModal = function() {
           <tbody>
             <tr><td style="padding:8px 12px;border-bottom:1px solid #F1F5F9">Brent (physical + paper)</td><td style="padding:8px 12px;text-align:right;font-family:monospace">+120,000 bbl</td><td style="padding:8px 12px;text-align:right;font-family:monospace">$82.40/bbl</td><td style="padding:8px 12px;text-align:right;font-family:monospace">$9.9M</td><td style="padding:8px 12px;text-align:right;font-family:monospace;font-weight:700;color:#0066CC">$345K</td></tr>
             <tr><td style="padding:8px 12px;border-bottom:1px solid #F1F5F9">Urals (physical long)</td><td style="padding:8px 12px;text-align:right;font-family:monospace">+80,000 bbl</td><td style="padding:8px 12px;text-align:right;font-family:monospace">$77.60/bbl</td><td style="padding:8px 12px;text-align:right;font-family:monospace">$6.2M</td><td style="padding:8px 12px;text-align:right;font-family:monospace;font-weight:700;color:#0066CC">$216K</td></tr>
-            <tr><td style="padding:8px 12px;border-bottom:1px solid #F1F5F9">WTI (paper short)</td><td style="padding:8px 12px;text-align:right;font-family:monospace">−150,000 bbl</td><td style="padding:8px 12px;text-align:right;font-family:monospace">$78.90/bbl</td><td style="padding:8px 12px;text-align:right;font-family:monospace">$11.8M</td><td style="padding:8px 12px;text-align:right;font-family:monospace;font-weight:700;color:#0066CC">$412K</td></tr>
+            <tr><td style="padding:8px 12px;border-bottom:1px solid #F1F5F9">WTI (paper short)</td><td style="padding:8px 12px;text-align:right;font-family:monospace">âˆ’150,000 bbl</td><td style="padding:8px 12px;text-align:right;font-family:monospace">$78.90/bbl</td><td style="padding:8px 12px;text-align:right;font-family:monospace">$11.8M</td><td style="padding:8px 12px;text-align:right;font-family:monospace;font-weight:700;color:#0066CC">$412K</td></tr>
             <tr><td style="padding:8px 12px;border-bottom:1px solid #F1F5F9">Ethane (Dragon cargo)</td><td style="padding:8px 12px;text-align:right;font-family:monospace">+85,000 MT</td><td style="padding:8px 12px;text-align:right;font-family:monospace">$315/MT</td><td style="padding:8px 12px;text-align:right;font-family:monospace">$26.8M</td><td style="padding:8px 12px;text-align:right;font-family:monospace;font-weight:700;color:#0066CC">$934K</td></tr>
-            <tr style="background:#F8FAFC;font-weight:700"><td style="padding:8px 12px;font-weight:700">Total Portfolio</td><td style="padding:8px 12px;text-align:right;font-family:monospace">—</td><td style="padding:8px 12px;text-align:right">—</td><td style="padding:8px 12px;text-align:right;font-family:monospace">$54.7M</td><td style="padding:8px 12px;text-align:right;font-family:monospace;font-weight:700;color:#0066CC">$2.1M</td></tr>
+            <tr style="background:#F8FAFC;font-weight:700"><td style="padding:8px 12px;font-weight:700">Total Portfolio</td><td style="padding:8px 12px;text-align:right;font-family:monospace">â€”</td><td style="padding:8px 12px;text-align:right">â€”</td><td style="padding:8px 12px;text-align:right;font-family:monospace">$54.7M</td><td style="padding:8px 12px;text-align:right;font-family:monospace;font-weight:700;color:#0066CC">$2.1M</td></tr>
           </tbody>
         </table>
-        <div style="font-size:11.5px;color:#6B7280;margin-top:8px">Note: VaR contributions add as sum (conservative — ignores diversification benefit). Net: 1.5% × 2.326 × $60.3M gross = $2.1M</div>
+        <div style="font-size:11.5px;color:#6B7280;margin-top:8px">Note: VaR contributions add as sum (conservative â€” ignores diversification benefit). Net: 1.5% Ã— 2.326 Ã— $60.3M gross = $2.1M</div>
       </div>
 
       <!-- Scaling to 10-day -->
       <div style="background:#F0FDF4;border:1px solid #86EFAC;border-radius:10px;padding:14px 16px;margin-bottom:18px">
         <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#15803D;margin-bottom:8px">10-Day VaR (Square-Root-of-Time Scaling)</div>
         <div style="font-family:monospace;font-size:14px;font-weight:700;color:#111827;text-align:center">
-          VaR₁₀ = VaR₁ × √10 = $2.1M × 3.162 = <span style="color:#15803D">$6.3M</span>
+          VaRâ‚â‚€ = VaRâ‚ Ã— âˆš10 = $2.1M Ã— 3.162 = <span style="color:#15803D">$6.3M</span>
         </div>
-        <div style="font-size:12px;color:#374151;margin-top:8px">This assumes price changes are i.i.d. (independent and identically distributed) — a standard regulatory assumption under Basel III.</div>
+        <div style="font-size:12px;color:#374151;margin-top:8px">This assumes price changes are i.i.d. (independent and identically distributed) â€” a standard regulatory assumption under Basel III.</div>
       </div>
 
       <!-- Stressed VaR -->
       <div style="background:#FEF3C7;border:1px solid #FCD34D;border-radius:10px;padding:14px 16px;margin-bottom:18px">
-        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#D97706;margin-bottom:8px">Stressed VaR — Historical Shock Scenarios</div>
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#D97706;margin-bottom:8px">Stressed VaR â€” Historical Shock Scenarios</div>
         <div style="font-size:13px;color:#374151;margin-bottom:8px">Uses actual 2008/2020/2022 oil price moves rather than 1.5% assumption:</div>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
-          <div style="background:white;border-radius:6px;padding:8px;text-align:center"><div style="font-size:10px;color:#6B7280">2008 crash</div><div style="font-weight:700;font-family:monospace">σ = 8.2%</div><div style="font-size:11px;color:#D97706">VaR = $11.5M</div></div>
-          <div style="background:white;border-radius:6px;padding:8px;text-align:center"><div style="font-size:10px;color:#6B7280">2020 COVID</div><div style="font-weight:700;font-family:monospace">σ = 6.1%</div><div style="font-size:11px;color:#D97706">VaR = $8.5M</div></div>
-          <div style="background:white;border-radius:6px;padding:8px;text-align:center"><div style="font-size:10px;color:#6B7280">2022 Ukraine</div><div style="font-weight:700;font-family:monospace">σ = 4.8%</div><div style="font-size:11px;color:#D97706">VaR = $6.7M</div></div>
+          <div style="background:white;border-radius:6px;padding:8px;text-align:center"><div style="font-size:10px;color:#6B7280">2008 crash</div><div style="font-weight:700;font-family:monospace">Ïƒ = 8.2%</div><div style="font-size:11px;color:#D97706">VaR = $11.5M</div></div>
+          <div style="background:white;border-radius:6px;padding:8px;text-align:center"><div style="font-size:10px;color:#6B7280">2020 COVID</div><div style="font-weight:700;font-family:monospace">Ïƒ = 6.1%</div><div style="font-size:11px;color:#D97706">VaR = $8.5M</div></div>
+          <div style="background:white;border-radius:6px;padding:8px;text-align:center"><div style="font-size:10px;color:#6B7280">2022 Ukraine</div><div style="font-weight:700;font-family:monospace">Ïƒ = 4.8%</div><div style="font-size:11px;color:#D97706">VaR = $6.7M</div></div>
         </div>
         <div style="font-size:12px;color:#374151;margin-top:8px;font-weight:600">Regulatory stressed VaR reported: $9.4M (worst-case 3-month stress window)</div>
       </div>
@@ -2573,9 +2571,9 @@ window.showVaRModal = function() {
         <div style="font-size:13px;font-weight:700;color:#111827;margin-bottom:8px">Board-Approved Limits</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px">
           <div><span style="color:#6B7280">1-Day VaR limit:</span> <strong>$8.0M</strong></div>
-          <div><span style="color:#6B7280">Current utilisation:</span> <strong style="color:#D97706">62% ⚠️</strong></div>
+          <div><span style="color:#6B7280">Current utilisation:</span> <strong style="color:#D97706">62% âš ï¸</strong></div>
           <div><span style="color:#6B7280">10-Day VaR limit:</span> <strong>$25.0M</strong></div>
-          <div><span style="color:#6B7280">Breach threshold:</span> <strong>80% — escalate to CRO</strong></div>
+          <div><span style="color:#6B7280">Breach threshold:</span> <strong>80% â€” escalate to CRO</strong></div>
         </div>
       </div>
 
@@ -2587,11 +2585,11 @@ window.showVaRModal = function() {
     modal.remove();
   }
 };
-/* ── SCREEN: POSITIONS & RISK ── */
+/* â”€â”€ SCREEN: POSITIONS & RISK â”€â”€ */
 SCREENS['positions'] = async function(main) {
   main.innerHTML = `<div class="screen">
     <div class="screen-header">
-      <div><div class="screen-title">📈 Positions & Risk</div><div class="screen-subtitle">Full position book with VaR analysis</div></div>
+      <div><div class="screen-title">ðŸ“ˆ Positions & Risk</div><div class="screen-subtitle">Full position book with VaR analysis</div></div>
       <div class="screen-actions">
         <div style="display:flex;gap:4px;background:#0f172a;border:1px solid #1e293b;border-radius:8px;padding:4px">
           <button class="pos-toggle active" onclick="filterPositions('all', this)" style="padding:6px 14px;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;background:#6366f1;color:white">All</button>
@@ -2601,7 +2599,7 @@ SCREENS['positions'] = async function(main) {
         <select id="pos-book" style="border:1px solid #E5E7EB;border-radius:7px;padding:7px 12px;font-size:13px">
           <option>All Books</option><option>Crude</option><option>Ethane</option><option>NGLs</option><option>Carbon</option>
         </select>
-        <button class="btn btn-primary btn-sm" onclick="loadPositions()">⟳ Refresh</button>
+        <button class="btn btn-primary btn-sm" onclick="loadPositions()">âŸ³ Refresh</button>
       </div>
     </div>
 
@@ -2628,7 +2626,7 @@ SCREENS['positions'] = async function(main) {
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-bottom:18px">
       <div style="background:white;border:1px solid #E5E7EB;border-radius:10px;padding:13px 15px;border-left:4px solid #0066CC">
         <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6B7280;margin-bottom:5px">Physical Cargo</div>
-        <div style="font-size:12.5px;color:#374151;line-height:1.5">Real barrels or tonnes we've <strong>bought or sold</strong> — actual cargo on ships or through pipelines.</div>
+        <div style="font-size:12.5px;color:#374151;line-height:1.5">Real barrels or tonnes we've <strong>bought or sold</strong> â€” actual cargo on ships or through pipelines.</div>
       </div>
       <div style="background:white;border:1px solid #E5E7EB;border-radius:10px;padding:13px 15px;border-left:4px solid #16A34A">
         <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6B7280;margin-bottom:5px">Paper Hedge</div>
@@ -2666,7 +2664,7 @@ SCREENS['positions'] = async function(main) {
           </table>
         </div>
         <div style="margin-top:14px;background:white;border:1px solid #E5E7EB;border-radius:10px;padding:14px">
-          <div style="font-size:13px;font-weight:700;color:#111827;margin-bottom:10px">&#128200; Delivery Profile — Exposure by Tenor</div>
+          <div style="font-size:13px;font-weight:700;color:#111827;margin-bottom:10px">&#128200; Delivery Profile â€” Exposure by Tenor</div>
           <div style="position:relative;height:170px"><canvas id="exposure-chart"></canvas></div>
         </div>
       </div>
@@ -2674,7 +2672,7 @@ SCREENS['positions'] = async function(main) {
         <div class="var-card">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid #F1F5F9">
             <div style="display:flex;align-items:center;gap:8px">
-              <div style="font-size:15px;font-weight:700;color:#111827">⚡ Value at Risk</div>
+              <div style="font-size:15px;font-weight:700;color:#111827">âš¡ Value at Risk</div>
               <button onclick="showVaRModal()" style="width:20px;height:20px;border-radius:50%;background:#0066CC;color:white;border:none;font-size:11px;font-weight:700;cursor:pointer">?</button>
             </div>
             <span style="font-size:10px;color:#6B7280;background:#F8FAFC;padding:2px 9px;border-radius:20px;border:1px solid #E5E7EB">Parametric 99%</span>
@@ -2688,7 +2686,7 @@ SCREENS['positions'] = async function(main) {
             <div style="background:#F0FDF4;border-radius:8px;padding:12px">
               <div style="font-size:10px;color:#16A34A;font-weight:700;text-transform:uppercase;margin-bottom:3px">10-Day VaR</div>
               <div style="font-size:22px;font-weight:800;font-family:monospace">$6.3M</div>
-              <div style="font-size:11px;color:#6B7280;margin-top:2px">1-day × √10 Basel III</div>
+              <div style="font-size:11px;color:#6B7280;margin-top:2px">1-day Ã— âˆš10 Basel III</div>
             </div>
           </div>
           <div style="margin-bottom:14px">
@@ -2701,20 +2699,20 @@ SCREENS['positions'] = async function(main) {
             </div>
           </div>
           <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#6B7280;margin-bottom:8px">VaR by Book</div>
-          ${[['🛢 Crude','$1.24M',59],['🧪 Ethane','$0.52M',25],['⚡ NGLs','$0.19M',9],['🌿 Carbon','$0.15M',7]].map(([b,v,p])=>`
+          ${[['ðŸ›¢ Crude','$1.24M',59],['ðŸ§ª Ethane','$0.52M',25],['âš¡ NGLs','$0.19M',9],['ðŸŒ¿ Carbon','$0.15M',7]].map(([b,v,p])=>`
             <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #F9FAFB">
               <span style="font-size:13px;font-weight:600;color:#111827;width:90px">${b}</span>
               <div style="flex:1;background:#F1F5F9;border-radius:3px;height:6px"><div style="background:#0066CC;height:100%;width:${p}%;border-radius:3px"></div></div>
               <span style="font-size:12px;font-weight:700;font-family:monospace;color:#0066CC;min-width:42px">${v}</span>
             </div>`).join('')}
           <div style="background:#FEF3C7;border:1px solid #FCD34D;border-radius:7px;padding:10px 12px;margin-top:12px">
-            <div style="font-size:11px;font-weight:700;color:#D97706;margin-bottom:3px">⚠ Stressed VaR</div>
+            <div style="font-size:11px;font-weight:700;color:#D97706;margin-bottom:3px">âš  Stressed VaR</div>
             <div style="font-size:20px;font-weight:800;font-family:monospace">$9.4M</div>
             <div style="font-size:11px;color:#6B7280">2008/2020/2022 shock scenarios</div>
           </div>
         </div>
         <div class="chart-card">
-          <div class="card-title mb-8">🏦 Counterparty Exposure (Top 5)</div>
+          <div class="card-title mb-8">ðŸ¦ Counterparty Exposure (Top 5)</div>
           <div id="cp-exposure"><div class="muted small">Loading...</div></div>
         </div>
       </div>
@@ -2745,7 +2743,7 @@ window.filterPositions = function(type, btn) {
   });
 };
 
-/* ── POSITIONS: loadPositions ── */
+/* â”€â”€ POSITIONS: loadPositions â”€â”€ */
 window.loadPositions = async function() {
   var tbody = document.getElementById('positions-tbody');
   if (!tbody) return;
@@ -2756,29 +2754,29 @@ window.loadPositions = async function() {
   // Per-commodity VaR lookup (parametric 99%, 1-day)
   var VAR_DATA = {
     Brent:  {var1d:1240000, vol:'1.82%', z:'1.65', notional:'$11.6M', stressed:'$3.72M',
-             formula:'Net 120kbbl × $96.97 price × 1.82% daily vol × 1.65 z-score',
+             formula:'Net 120kbbl Ã— $96.97 price Ã— 1.82% daily vol Ã— 1.65 z-score',
              drivers:['30-day realised vol: 1.82%/day','Net long after 71% paper hedge','Brent/WTI corr 0.94 gives portfolio netting benefit','UAE OPEC exit risk adds tail premium'],
-             scenarios:[['OPEC surprise cut −5%','+$580K'],['Demand shock −10%','−$1.16M'],['2020-style crash −20%','−$2.32M']]},
+             scenarios:[['OPEC surprise cut âˆ’5%','+$580K'],['Demand shock âˆ’10%','âˆ’$1.16M'],['2020-style crash âˆ’20%','âˆ’$2.32M']]},
     Urals:  {var1d:520000,  vol:'2.21%', z:'1.65', notional:'$6.1M',  stressed:'$1.56M',
-             formula:'Net 80kbbl × $76.65 price × 2.21% daily vol × 1.65 z-score',
-             drivers:['Urals vol 2.21%/day — higher than Brent due to sanctions premium','Zero paper hedge — fully unhedged physical long','Brent/Urals spread risk adds 0.4% incremental vol','Indian buyer concentration creates liquidity risk'],
-             scenarios:[['Spread blowout −$8/bbl','−$640K'],['Price −10%','−$613K'],['Sanctions tightening','−$900K']]},
+             formula:'Net 80kbbl Ã— $76.65 price Ã— 2.21% daily vol Ã— 1.65 z-score',
+             drivers:['Urals vol 2.21%/day â€” higher than Brent due to sanctions premium','Zero paper hedge â€” fully unhedged physical long','Brent/Urals spread risk adds 0.4% incremental vol','Indian buyer concentration creates liquidity risk'],
+             scenarios:[['Spread blowout âˆ’$8/bbl','âˆ’$640K'],['Price âˆ’10%','âˆ’$613K'],['Sanctions tightening','âˆ’$900K']]},
     WTI:    {var1d:190000,  vol:'1.74%', z:'1.65', notional:'$11.6M', stressed:'$570K',
-             formula:'Net −150kbbl SHORT × $77.52 × 1.74% × 1.65 — risk is price RISE',
-             drivers:['Short position — upside moves are losses','Fully hedged (100%) via paper short','Low residual vol after hedge: 1.74%/day','WTI/Brent spread compression is primary risk'],
-             scenarios:[['Price rise +5%','−$194K'],['+10% supply cut','−$387K'],['Short squeeze','−$580K']]},
+             formula:'Net âˆ’150kbbl SHORT Ã— $77.52 Ã— 1.74% Ã— 1.65 â€” risk is price RISE',
+             drivers:['Short position â€” upside moves are losses','Fully hedged (100%) via paper short','Low residual vol after hedge: 1.74%/day','WTI/Brent spread compression is primary risk'],
+             scenarios:[['Price rise +5%','âˆ’$194K'],['+10% supply cut','âˆ’$387K'],['Short squeeze','âˆ’$580K']]},
     Ethane: {var1d:520000,  vol:'1.98%', z:'1.65', notional:'$27.8M', stressed:'$1.56M',
-             formula:'Net 85,000 MT × $326.92/MT × 1.98% daily vol × 1.65 z-score',
-             drivers:['Unhedged — no paper cover on physical long','TTF gas correlation 0.71 adds European risk','Dragon fleet scheduling creates delivery concentration','Naphtha substitution economics affect demand curve'],
-             scenarios:[['−5% ethane price','−$139K'],['China cracker outage','−$830K'],['TTF gas collapse −20%','−$415K']]},
+             formula:'Net 85,000 MT Ã— $326.92/MT Ã— 1.98% daily vol Ã— 1.65 z-score',
+             drivers:['Unhedged â€” no paper cover on physical long','TTF gas correlation 0.71 adds European risk','Dragon fleet scheduling creates delivery concentration','Naphtha substitution economics affect demand curve'],
+             scenarios:[['âˆ’5% ethane price','âˆ’$139K'],['China cracker outage','âˆ’$830K'],['TTF gas collapse âˆ’20%','âˆ’$415K']]},
     NGLs:   {var1d:190000,  vol:'1.63%', z:'1.65', notional:'$176K',  stressed:'$570K',
-             formula:'Net 3,000 MT × $58.80/MT × 1.63% × 1.65 z-score',
-             drivers:['Small net position after 80% paper hedge','Correlated with ethane (0.82) — diversification limited','Propane/butane split adds basis risk vs index','Low standalone risk but adds to portfolio correlation'],
-             scenarios:[['−5%','−$8.8K'],['Ethane spread blow','−$52K'],['−10%','−$17.6K']]},
+             formula:'Net 3,000 MT Ã— $58.80/MT Ã— 1.63% Ã— 1.65 z-score',
+             drivers:['Small net position after 80% paper hedge','Correlated with ethane (0.82) â€” diversification limited','Propane/butane split adds basis risk vs index','Low standalone risk but adds to portfolio correlation'],
+             scenarios:[['âˆ’5%','âˆ’$8.8K'],['Ethane spread blow','âˆ’$52K'],['âˆ’10%','âˆ’$17.6K']]},
     EUA:    {var1d:150000,  vol:'2.44%', z:'1.65', notional:'$2.5M',  stressed:'$450K',
-             formula:'Net 40,000 t × $62.18/t × 2.44% daily vol × 1.65 z-score',
-             drivers:['Highest vol in book: 2.44%/day — policy-driven spikes','EU carbon policy risk — announcements cause step-changes','67% hedged via paper short','IMO 2027 levy announcement adds tail upside risk'],
-             scenarios:[['Policy reversal −15%','−$374K'],['Supply glut −20%','−$498K'],['Mandate tightening +15%','+$374K']]},
+             formula:'Net 40,000 t Ã— $62.18/t Ã— 2.44% daily vol Ã— 1.65 z-score',
+             drivers:['Highest vol in book: 2.44%/day â€” policy-driven spikes','EU carbon policy risk â€” announcements cause step-changes','67% hedged via paper short','IMO 2027 levy announcement adds tail upside risk'],
+             scenarios:[['Policy reversal âˆ’15%','âˆ’$374K'],['Supply glut âˆ’20%','âˆ’$498K'],['Mandate tightening +15%','+$374K']]},
   };
 
   // Fallback to static seed data if API returns empty
@@ -2806,7 +2804,7 @@ window.loadPositions = async function() {
     var hedgeColor = hedgePct >= 70 ? '#16A34A' : (hedgePct >= 40 ? '#D97706' : '#DC2626');
     var icon = icons[p.commodity] || '&#128202;';
     var vd = VAR_DATA[p.commodity];
-    var varStr = vd ? '$' + (vd.var1d/1000).toFixed(0) + 'K' : '—';
+    var varStr = vd ? '$' + (vd.var1d/1000).toFixed(0) + 'K' : 'â€”';
     var posType = (p.physical_volume && !p.paper_volume) ? 'physical' : (!p.physical_volume && p.paper_volume) ? 'financial' : 'physical';
     return '<tr data-pos-type="' + posType + '">'
       + '<td><span style="font-size:14px;margin-right:5px">' + icon + '</span><strong style="color:#111827">' + p.commodity + '</strong><div style="font-size:10px;color:#9CA3AF">' + (p.region||'') + '</div></td>'
@@ -2933,7 +2931,7 @@ window.switchCurve = function(commodity, btn) {
   renderCurveChart(commodity);
 };
 
-/* ── PER-COMMODITY VaR MODAL ── */
+/* â”€â”€ PER-COMMODITY VaR MODAL â”€â”€ */
 window.showCommodityVaR = function(commodity) {
   var vd = (window._VAR_DATA || {})[commodity];
   if (!vd) return;
@@ -2963,15 +2961,15 @@ window.showCommodityVaR = function(commodity) {
 
     /* Header */
     + '<div style="background:linear-gradient(135deg,#1e40af,#2563EB);padding:18px 22px;border-radius:14px 14px 0 0;display:flex;justify-content:space-between;align-items:flex-start">'
-    + '<div><div style="color:white;font-size:17px;font-weight:800">&#9889; VaR Breakdown — ' + commodity + '</div>'
-    + '<div style="color:rgba(255,255,255,.75);font-size:12px;margin-top:3px">Parametric method · 99% confidence · 1-day horizon</div></div>'
+    + '<div><div style="color:white;font-size:17px;font-weight:800">&#9889; VaR Breakdown â€” ' + commodity + '</div>'
+    + '<div style="color:rgba(255,255,255,.75);font-size:12px;margin-top:3px">Parametric method Â· 99% confidence Â· 1-day horizon</div></div>'
     + '<button onclick="document.getElementById(\'var-modal\').remove()" style="background:rgba(255,255,255,.15);border:none;color:white;font-size:18px;width:30px;height:30px;border-radius:50%;cursor:pointer;line-height:30px">&#10005;</button>'
     + '</div>'
 
     /* KPI row */
     + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:#E5E7EB">'
     + '<div style="background:#F0F7FF;padding:14px 16px;text-align:center"><div style="font-size:10px;font-weight:700;color:#2563EB;text-transform:uppercase;margin-bottom:4px">1-Day VaR</div><div style="font-size:24px;font-weight:800;font-family:monospace;color:#1e40af">$' + var1dM + 'M</div><div style="font-size:11px;color:#6B7280;margin-top:2px">99% confidence</div></div>'
-    + '<div style="background:#F0FDF4;padding:14px 16px;text-align:center"><div style="font-size:10px;font-weight:700;color:#16A34A;text-transform:uppercase;margin-bottom:4px">10-Day VaR</div><div style="font-size:24px;font-weight:800;font-family:monospace;color:#15803D">$' + var10d + 'M</div><div style="font-size:11px;color:#6B7280;margin-top:2px">× √10 Basel III</div></div>'
+    + '<div style="background:#F0FDF4;padding:14px 16px;text-align:center"><div style="font-size:10px;font-weight:700;color:#16A34A;text-transform:uppercase;margin-bottom:4px">10-Day VaR</div><div style="font-size:24px;font-weight:800;font-family:monospace;color:#15803D">$' + var10d + 'M</div><div style="font-size:11px;color:#6B7280;margin-top:2px">Ã— âˆš10 Basel III</div></div>'
     + '<div style="background:#FFF7ED;padding:14px 16px;text-align:center"><div style="font-size:10px;font-weight:700;color:#D97706;text-transform:uppercase;margin-bottom:4px">% of Book VaR</div><div style="font-size:24px;font-weight:800;font-family:monospace;color:#D97706">' + pctOfTotal + '%</div><div style="font-size:11px;color:#6B7280;margin-top:2px">of $2.1M total</div></div>'
     + '</div>'
 
@@ -3017,47 +3015,46 @@ window.showCommodityVaR = function(commodity) {
   document.body.appendChild(modal);
 };
 
-/* ── SCREEN: AI INTELLIGENCE ── */
+/* â”€â”€ SCREEN: AI INTELLIGENCE â”€â”€ */
 SCREENS['ai'] = async function(main) {
-  const isRiskApp = SCREEN_APP_ID === 'risk';
   main.innerHTML = `<div class="screen">
     <div class="screen-header">
-      <div><div class="screen-title">🤖 ${isRiskApp ? 'AI Risk Intelligence' : 'AI Intelligence Centre'}</div><div class="screen-subtitle">${isRiskApp ? 'Exposure diagnostics · concentration alerts · stress review · control insight' : 'Hedge advisor · Trade ideas · Anomaly detection · Pre-mortem analysis'}</div></div>
+      <div><div class="screen-title">ðŸ¤– AI Intelligence Centre</div><div class="screen-subtitle">Hedge advisor Â· Trade ideas Â· Anomaly detection Â· Pre-mortem analysis</div></div>
       <div class="screen-actions">
-        <span class="ai-provider-badge"><span class="dot"></span>${(window.aiProvider === 'claude' || window.aiProvider?.() === 'claude') ? '🤖 Radiant AI' : '🔒 Local AI'}</span>
+        <span class="ai-provider-badge"><span class="dot"></span>${(window.aiProvider === 'claude' || window.aiProvider?.() === 'claude') ? 'ðŸ¤– Radiant AI' : 'ðŸ”’ Local AI'}</span>
       </div>
     </div>
     <div class="ai-3col">
       <div class="ai-panel">
-        <div class="ai-panel-title">${isRiskApp ? '📉 Exposure Review' : '🛡 Hedge Advisor'} <button class="ai-panel-expand-btn" onclick="expandPanel(this)">⤢ Expand</button></div>
+        <div class="ai-panel-title">${isRiskApp ? 'ðŸ“‰ Exposure Review' : 'ðŸ›¡ Hedge Advisor'} <button class="ai-panel-expand-btn" onclick="expandPanel(this)">â¤¢ Expand</button></div>
         <div class="form-group">
           <label class="form-label">Select Position to Hedge</label>
           <select class="form-select" id="hedge-position">
             <option value="">Choose a position...</option>
-            <option value="urals">Urals — 200kbbl net long (MED)</option>
-            <option value="ethane">Ethane — 20kt net long (EU)</option>
-            <option value="brent">Brent — 120kbbl net long (NWE)</option>
-            <option value="naphtha">Naphtha — 20kt net long (NWE)</option>
+            <option value="urals">Urals â€” 200kbbl net long (MED)</option>
+            <option value="ethane">Ethane â€” 20kt net long (EU)</option>
+            <option value="brent">Brent â€” 120kbbl net long (NWE)</option>
+            <option value="naphtha">Naphtha â€” 20kt net long (NWE)</option>
           </select>
         </div>
-        <button class="btn btn-primary w-full" onclick="runHedgeAdvisor()">${isRiskApp ? '🤖 Review Risk Posture' : '🤖 Get AI Recommendation'}</button>
+        <button class="btn btn-primary w-full" onclick="runHedgeAdvisor()">ðŸ¤– Get AI Recommendation</button>
         <div id="hedge-factors" style="display:none;margin-top:12px">
           <div style="font-size:13px;font-weight:700;color:#111827;margin-bottom:8px">Factor Attribution</div>
           <div id="factor-bars"></div>
-          <div class="option-overlay-hint" style="margin-top:8px">💡 Option overlay will be shown in full recommendation</div>
+          <div class="option-overlay-hint" style="margin-top:8px">ðŸ’¡ Option overlay will be shown in full recommendation</div>
         </div>
         <div class="streaming-box" id="hedge-result" style="display:none;margin-top:10px;min-height:80px"></div>
       </div>
       <div class="ai-panel">
-        <div class="ai-panel-title">${isRiskApp ? '🧭 Control Insights' : '💡 Trade Ideas'} <button class="ai-panel-expand-btn" onclick="expandPanel(this)">⤢ Expand</button></div>
-        <button class="btn btn-secondary btn-sm w-full mb-8" onclick="scanTradeIdeas()">${isRiskApp ? '🔍 Scan for Risk Signals' : '🔍 Scan for Opportunities'}</button>
+        <div class="ai-panel-title">${isRiskApp ? 'ðŸ§­ Control Insights' : 'ðŸ’¡ Trade Ideas'} <button class="ai-panel-expand-btn" onclick="expandPanel(this)">â¤¢ Expand</button></div>
+        <button class="btn btn-secondary btn-sm w-full mb-8" onclick="scanTradeIdeas()">${isRiskApp ? 'ðŸ” Scan for Risk Signals' : 'ðŸ” Scan for Opportunities'}</button>
         <div id="trade-ideas-list">${renderTradeIdeaCards()}</div>
       </div>
       <div class="ai-panel">
-        <div class="ai-panel-title">${isRiskApp ? '⚠ Concentration Alerts' : '⚠ Anomaly Alerts'} <button class="ai-panel-expand-btn" onclick="expandPanel(this)">⤢ Expand</button></div>
+        <div class="ai-panel-title">${isRiskApp ? 'âš  Concentration Alerts' : 'âš  Anomaly Alerts'} <button class="ai-panel-expand-btn" onclick="expandPanel(this)">â¤¢ Expand</button></div>
         <div id="ai-alerts-container"><div class="muted small">Loading alerts...</div></div>
         <div class="di-section mt-8">
-          <div style="font-size:13px;font-weight:700;color:#111827;margin-bottom:8px">${isRiskApp ? '🔬 Stress Review' : '🔬 Pre-Mortem Analysis'}</div>
+          <div style="font-size:13px;font-weight:700;color:#111827;margin-bottom:8px">${isRiskApp ? 'ðŸ”¬ Stress Review' : 'ðŸ”¬ Pre-Mortem Analysis'}</div>
           <button class="btn btn-secondary w-full mb-8" onclick="runPreMortem()">${isRiskApp ? 'Run Desk Stress Review' : 'Run Pre-Mortem on Book'}</button>
           <div id="premortem-results"></div>
         </div>
@@ -3065,19 +3062,19 @@ SCREENS['ai'] = async function(main) {
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px">
       <div class="card">
-        <div class="card-title">📈 Price Forecasting — AI Forward Curve View</div>
+        <div class="card-title">ðŸ“ˆ Price Forecasting â€” AI Forward Curve View</div>
         <select id="forecast-commodity" onchange="renderForecastChart()" style="border:1px solid #E5E7EB;border-radius:7px;padding:7px 12px;font-size:13px;width:100%;margin-bottom:12px">
           <option value="Brent">Brent Crude</option><option value="WTI">WTI Crude</option>
           <option value="Urals">Urals Crude</option><option value="Ethane">Ethane</option><option value="HH">Henry Hub</option>
         </select>
         <div style="height:150px;position:relative"><canvas id="forecast-chart"></canvas></div>
         <div id="forecast-narrative" style="font-size:13px;color:#374151;line-height:1.6;margin-top:10px;padding-top:10px;border-top:1px solid #F1F5F9">Select commodity and click Generate to see AI forecast.</div>
-        <button class="btn btn-primary btn-sm" style="margin-top:10px" onclick="generateForecastNarrative()">🤖 Generate AI Forecast</button>
+        <button class="btn btn-primary btn-sm" style="margin-top:10px" onclick="generateForecastNarrative()">ðŸ¤– Generate AI Forecast</button>
       </div>
       <div class="card">
-        <div class="card-title">📰 Event & Sentiment Impact on Book</div>
+        <div class="card-title">ðŸ“° Event & Sentiment Impact on Book</div>
         <div id="sentiment-impact-list"><div class="muted small">Loading...</div></div>
-        <button class="btn btn-secondary btn-sm" style="margin-top:10px" onclick="loadSentimentImpact()">↻ Refresh</button>
+        <button class="btn btn-secondary btn-sm" style="margin-top:10px" onclick="loadSentimentImpact()">â†» Refresh</button>
       </div>
     </div>
   </div>`;
@@ -3086,7 +3083,7 @@ SCREENS['ai'] = async function(main) {
   loadSentimentImpact();
 };
 
-/* ── AI INTELLIGENCE: all functions ── */
+/* â”€â”€ AI INTELLIGENCE: all functions â”€â”€ */
 
 // Cache so re-entering the screen is instant
 var _aiCache = {};
@@ -3097,16 +3094,16 @@ window.loadAIAlerts = function() {
   if (_aiCache.alerts) { el.innerHTML = _aiCache.alerts; return; }
 
   var alerts = [
-    { sev:'critical', icon:'🔴', title:'Fat-finger detected — Ethane Americas book',
-      body:'RMVT-95378: BUY 5,002 MT Ethane @ $58.71 — volume 4× typical. Book P&L moved +$420K in 15 min window. Recommend confirmation call to Repsol before settlement.',
+    { sev:'critical', icon:'ðŸ”´', title:'Fat-finger detected â€” Ethane Americas book',
+      body:'RMVT-95378: BUY 5,002 MT Ethane @ $58.71 â€” volume 4Ã— typical. Book P&L moved +$420K in 15 min window. Recommend confirmation call to Repsol before settlement.',
       time:'02:41', action:'Review Trade' },
-    { sev:'high', icon:'🟠', title:'JS Ineos Insight — demurrage risk',
-      body:'14-hour North Sea delay pushes ETA past allowed laytime. Estimated demurrage: $26,250. Three options costed — recommend Option B (partial discharge at Teesside).',
+    { sev:'high', icon:'ðŸŸ ', title:'JS Ineos Insight â€” demurrage risk',
+      body:'14-hour North Sea delay pushes ETA past allowed laytime. Estimated demurrage: $26,250. Three options costed â€” recommend Option B (partial discharge at Teesside).',
       time:'Yesterday', action:'See Voyage Options' },
-    { sev:'high', icon:'🟠', title:'Vitol credit limit 88% utilised',
+    { sev:'high', icon:'ðŸŸ ', title:'Vitol credit limit 88% utilised',
       body:'Current exposure $142M vs $160M approved limit. Two open trades pending settlement would push to 97%. Recommend suspending new trades until Wed settlement clears.',
       time:'08:15', action:'View Exposure' },
-    { sev:'medium', icon:'🟡', title:'Stale price alert — Urals M+2',
+    { sev:'medium', icon:'ðŸŸ¡', title:'Stale price alert â€” Urals M+2',
       body:'Urals Aug-26 price unchanged for 52 minutes. Last update 08:03. Current book carries $890K mark-to-market overstatement vs Platts reference. Feed health check required.',
       time:'09:03', action:'Check Feed' },
   ];
@@ -3121,7 +3118,7 @@ window.loadAIAlerts = function() {
       + '</div>'
       + '<div style="font-size:12px;color:#374151;line-height:1.5;margin-bottom:8px">'+a.body+'</div>'
       + '<button onclick="window.sendCopilotMessage && window.sendCopilotMessage(\'Tell me more about: '+a.title+'\')" '
-      + 'style="font-size:11px;padding:3px 10px;border:1px solid '+bc+';background:white;color:'+bc+';border-radius:5px;cursor:pointer">'+a.action+' →</button>'
+      + 'style="font-size:11px;padding:3px 10px;border:1px solid '+bc+';background:white;color:'+bc+';border-radius:5px;cursor:pointer">'+a.action+' â†’</button>'
       + '</div>';
   }).join('');
   _aiCache.alerts = html;
@@ -3131,13 +3128,13 @@ window.loadAIAlerts = function() {
 window.renderTradeIdeaCards = function() {
   if (_aiCache.tradeIdeas) return _aiCache.tradeIdeas;
   var ideas = [
-    { tag:'ARB', tagColor:'#2563EB', title:'Brent/Urals Spread — Long Opportunity',
-      summary:'Urals discount to Brent at $20.32/bbl — 2.3σ above 90-day mean. Historical reversion within 8–12 days. 14 of 17 similar setups were profitable.',
+    { tag:'ARB', tagColor:'#2563EB', title:'Brent/Urals Spread â€” Long Opportunity',
+      summary:'Urals discount to Brent at $20.32/bbl â€” 2.3Ïƒ above 90-day mean. Historical reversion within 8â€“12 days. 14 of 17 similar setups were profitable.',
       pl:'+$1.4M est.', conf:'High', risk:'Med' },
-    { tag:'MOMENTUM', tagColor:'#7C3AED', title:'Ethane Long — Supply Tightness',
+    { tag:'MOMENTUM', tagColor:'#7C3AED', title:'Ethane Long â€” Supply Tightness',
       summary:'US ethane exports at record 368kbpd. Dragon fleet utilisation 94%. TTF gas surge improves naphtha substitution economics. Add to long.',
       pl:'+$840K est.', conf:'High', risk:'Low' },
-    { tag:'EVENT', tagColor:'#D97706', title:'OPEC+ Meeting Thursday — Vol Play',
+    { tag:'EVENT', tagColor:'#D97706', title:'OPEC+ Meeting Thursday â€” Vol Play',
       summary:'UAE exit talks create binary outcome. Options implied vol at 31%. Consider straddle on Brent before Thursday\'s emergency session.',
       pl:'+$620K est.', conf:'Med', risk:'Med' },
   ];
@@ -3153,7 +3150,7 @@ window.renderTradeIdeaCards = function() {
       + '<span style="font-size:11px;background:#DCFCE7;color:#16A34A;padding:2px 8px;border-radius:20px">Conf: '+idea.conf+'</span>'
       + '<span style="font-size:11px;background:#FEF3C7;color:#D97706;padding:2px 8px;border-radius:20px">Risk: '+idea.risk+'</span>'
       + '<button onclick="window.sendCopilotMessage && window.sendCopilotMessage(\'Analyse this trade idea: '+idea.title+'\')" '
-      + 'style="font-size:11px;padding:2px 10px;border:1px solid #0066CC;background:white;color:#0066CC;border-radius:5px;cursor:pointer;margin-left:auto">Ask AI →</button>'
+      + 'style="font-size:11px;padding:2px 10px;border:1px solid #0066CC;background:white;color:#0066CC;border-radius:5px;cursor:pointer;margin-left:auto">Ask AI â†’</button>'
       + '</div></div>';
   }).join('');
   _aiCache.tradeIdeas = html;
@@ -3175,13 +3172,13 @@ window.loadSentimentImpact = function() {
   if (_aiCache.sentiment) { el.innerHTML = _aiCache.sentiment; return; }
 
   var items = [
-    { event:'UAE OPEC exit talks',        impact:'+$284K', dir:'pos', note:'Long Brent 120kbbl — favourable' },
+    { event:'UAE OPEC exit talks',        impact:'+$284K', dir:'pos', note:'Long Brent 120kbbl â€” favourable' },
     { event:'EIA 7.97M bbl draw',         impact:'+$196K', dir:'pos', note:'WTI paper short partially offsets' },
     { event:'TTF gas spike +12%',         impact:'+$142K', dir:'pos', note:'Ethane/naphtha arb improves' },
     { event:'IMO carbon levy 2027',        impact:'-$38K',  dir:'neg', note:'Dragon fleet voyage cost headwind' },
     { event:'China cracker demand +18M',  impact:'+$88K',  dir:'pos', note:'Ethane long position supported' },
   ];
-  var html = '<div style="font-size:11px;color:#6B7280;margin-bottom:8px">Today\'s news events vs your open book — AI-calculated impact</div>'
+  var html = '<div style="font-size:11px;color:#6B7280;margin-bottom:8px">Today\'s news events vs your open book â€” AI-calculated impact</div>'
     + items.map(function(i) {
     var col = i.dir === 'pos' ? '#16A34A' : '#DC2626';
     return '<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #F9FAFB">'
@@ -3257,11 +3254,11 @@ window.generateForecastNarrative = async function() {
 
 function _forecastFallback(commodity) {
   var f = {
-    Brent:'Brent is likely to trade in the $92–100 range over the next 90 days. UAE exit risk adds a structural +$3–5 uncertainty premium. The EIA draw sequence is the strongest bullish signal in 6 months. Downside risk: Chinese demand slowdown or surprise OPEC production increase.',
-    Ethane:'Ethane prices are expected to remain elevated at $320–340/MT through Q3 2026, supported by record US exports and tight Dragon fleet availability. Key upside risk: further TTF gas rally increasing naphtha crack, widening the arb.',
-    WTI:'WTI fundamentals support a $75–82 range. Inventory at 6% below 5-year average is constructive but the WTI/Brent spread may narrow as US export pace moderates.',
-    Urals:'Urals likely to trade at $17–22 discount to Brent. Indian buyers remain active at these levels. Russian supply stability and sanctions enforcement are the primary variables.',
-    HH:'Henry Hub expected to move toward $3.00–3.30/MMBtu by August as summer cooling demand and LNG feedgas exports compete for supply. Storage deficit supports the bullish case.'
+    Brent:'Brent is likely to trade in the $92â€“100 range over the next 90 days. UAE exit risk adds a structural +$3â€“5 uncertainty premium. The EIA draw sequence is the strongest bullish signal in 6 months. Downside risk: Chinese demand slowdown or surprise OPEC production increase.',
+    Ethane:'Ethane prices are expected to remain elevated at $320â€“340/MT through Q3 2026, supported by record US exports and tight Dragon fleet availability. Key upside risk: further TTF gas rally increasing naphtha crack, widening the arb.',
+    WTI:'WTI fundamentals support a $75â€“82 range. Inventory at 6% below 5-year average is constructive but the WTI/Brent spread may narrow as US export pace moderates.',
+    Urals:'Urals likely to trade at $17â€“22 discount to Brent. Indian buyers remain active at these levels. Russian supply stability and sanctions enforcement are the primary variables.',
+    HH:'Henry Hub expected to move toward $3.00â€“3.30/MMBtu by August as summer cooling demand and LNG feedgas exports compete for supply. Storage deficit supports the bullish case.'
   };
   return f[commodity] || f.Brent;
 }
@@ -3308,10 +3305,10 @@ window.runHedgeAdvisor = async function() {
   // Stream recommendation
   await new Promise(function(r){ setTimeout(r, 400); });
   var recs = {
-    urals: '**Recommended Structure: Brent/Urals Spread Swap + Freight Option**\n\nSell 80,000 bbl Urals forward at current $20.32 discount to lock in current spread. Layer a $2/bbl out-of-the-money Brent cap to protect against further Brent rally pulling the spread wider.\n\n**Cost:** ~$0.18/bbl premium | **Coverage:** 85% of downside risk | **Break-even:** $18.40/bbl spread\n\n⚡ *AI Confidence: High — 14 of 17 similar structures were profitable over 30 days*',
-    ethane:'**Recommended Structure: Asian Collar — Long Call / Short Put on Ethane**\n\nBuy Dec-26 ethane call at $340/MT, sell put at $305/MT. Zero-cost collar protects existing long position while retaining $15/MT upside from continued Dragon fleet strength.\n\n**Cost:** Zero-cost collar | **Coverage:** Full downside below $305/MT | **Upside cap:** $340/MT\n\n⚡ *AI Confidence: High — ethane fundamentals strongly bullish, Dragon fleet at 94% utilisation*',
-    brent: '**Recommended Structure: Put Spread — Buy $95 Put / Sell $88 Put**\n\nProtects 120,000 bbl Brent long against a UAE OPEC-exit reversal. Net premium $0.92/bbl. Covers the move from current $96.97 down to $88 (the key technical support level).\n\n**Cost:** $0.92/bbl (~$110K total) | **Coverage:** Full protection $95→$88 | **Unhedged upside:** Unlimited above $95\n\n⚡ *AI Confidence: High — binary OPEC risk event Thursday warrants option protection*',
-    naphtha:'**Recommended Structure: Naphtha Crack Swap**\n\nSell 20,000 MT naphtha crack at current $142/MT vs feedstock. Lock in current margin before potential ethane substitution pressure reduces crack spreads in Q3.\n\n**Cost:** Zero-premium swap | **Coverage:** Full crack spread lock | **Risk:** Upside foregone if cracks widen further\n\n⚡ *AI Confidence: Medium — monitor ethane/naphtha arb closely; swap only 50% of position*',
+    urals: '**Recommended Structure: Brent/Urals Spread Swap + Freight Option**\n\nSell 80,000 bbl Urals forward at current $20.32 discount to lock in current spread. Layer a $2/bbl out-of-the-money Brent cap to protect against further Brent rally pulling the spread wider.\n\n**Cost:** ~$0.18/bbl premium | **Coverage:** 85% of downside risk | **Break-even:** $18.40/bbl spread\n\nâš¡ *AI Confidence: High â€” 14 of 17 similar structures were profitable over 30 days*',
+    ethane:'**Recommended Structure: Asian Collar â€” Long Call / Short Put on Ethane**\n\nBuy Dec-26 ethane call at $340/MT, sell put at $305/MT. Zero-cost collar protects existing long position while retaining $15/MT upside from continued Dragon fleet strength.\n\n**Cost:** Zero-cost collar | **Coverage:** Full downside below $305/MT | **Upside cap:** $340/MT\n\nâš¡ *AI Confidence: High â€” ethane fundamentals strongly bullish, Dragon fleet at 94% utilisation*',
+    brent: '**Recommended Structure: Put Spread â€” Buy $95 Put / Sell $88 Put**\n\nProtects 120,000 bbl Brent long against a UAE OPEC-exit reversal. Net premium $0.92/bbl. Covers the move from current $96.97 down to $88 (the key technical support level).\n\n**Cost:** $0.92/bbl (~$110K total) | **Coverage:** Full protection $95â†’$88 | **Unhedged upside:** Unlimited above $95\n\nâš¡ *AI Confidence: High â€” binary OPEC risk event Thursday warrants option protection*',
+    naphtha:'**Recommended Structure: Naphtha Crack Swap**\n\nSell 20,000 MT naphtha crack at current $142/MT vs feedstock. Lock in current margin before potential ethane substitution pressure reduces crack spreads in Q3.\n\n**Cost:** Zero-premium swap | **Coverage:** Full crack spread lock | **Risk:** Upside foregone if cracks widen further\n\nâš¡ *AI Confidence: Medium â€” monitor ethane/naphtha arb closely; swap only 50% of position*',
   };
   var recText = recs[pos] || recs.brent;
 
@@ -3320,7 +3317,7 @@ window.runHedgeAdvisor = async function() {
   // Flash banner
   var banner = document.createElement('div');
   banner.style.cssText = 'position:fixed;top:70px;left:50%;transform:translateX(-50%);background:#0066CC;color:white;padding:12px 28px;border-radius:10px;font-size:14px;font-weight:700;z-index:9999;animation:bannerIn .4s ease';
-  banner.textContent = '✓ AI Hedge Recommendation Ready';
+  banner.textContent = 'âœ“ AI Hedge Recommendation Ready';
   document.body.appendChild(banner);
   setTimeout(function(){ banner.style.animation='bannerOut .4s ease forwards'; setTimeout(function(){ banner.remove(); }, 400); }, 3000);
 };
@@ -3333,22 +3330,22 @@ window.runPreMortem = async function() {
   await new Promise(function(r){ setTimeout(r, 1200); });
   var html = '<div style="font-size:12px;color:#374151;margin-top:8px">'
     + '<div style="font-weight:700;color:#DC2626;margin-bottom:6px">&#9888; 3 scenarios where this book loses >$5M:</div>'
-    + '<div style="background:#FEF2F2;border-radius:7px;padding:9px 12px;margin-bottom:7px"><strong>1. UAE reversal + demand shock</strong> — If UAE confirms OPEC stay AND China demand misses by 300kbpd, Brent retraces to $88. Loss: <strong style="color:#DC2626">-$8.1M</strong></div>'
-    + '<div style="background:#FEF2F2;border-radius:7px;padding:9px 12px;margin-bottom:7px"><strong>2. Ethane demand collapse</strong> — European cracker outage >30 days drops ethane to $290/MT. Dragon fleet demurrage compounds. Loss: <strong style="color:#DC2626">-$6.4M</strong></div>'
-    + '<div style="background:#FEF2F2;border-radius:7px;padding:9px 12px"><strong>3. Urals spread compression</strong> — Sanctions relief allows Urals back to -$8/bbl. 80kbbl unhedged short at risk. Loss: <strong style="color:#DC2626">-$5.8M</strong></div>'
+    + '<div style="background:#FEF2F2;border-radius:7px;padding:9px 12px;margin-bottom:7px"><strong>1. UAE reversal + demand shock</strong> â€” If UAE confirms OPEC stay AND China demand misses by 300kbpd, Brent retraces to $88. Loss: <strong style="color:#DC2626">-$8.1M</strong></div>'
+    + '<div style="background:#FEF2F2;border-radius:7px;padding:9px 12px;margin-bottom:7px"><strong>2. Ethane demand collapse</strong> â€” European cracker outage >30 days drops ethane to $290/MT. Dragon fleet demurrage compounds. Loss: <strong style="color:#DC2626">-$6.4M</strong></div>'
+    + '<div style="background:#FEF2F2;border-radius:7px;padding:9px 12px"><strong>3. Urals spread compression</strong> â€” Sanctions relief allows Urals back to -$8/bbl. 80kbbl unhedged short at risk. Loss: <strong style="color:#DC2626">-$5.8M</strong></div>'
     + '</div>';
   _aiCache.premortem = html;
   el.innerHTML = html;
 };
 
-/* ── SCREEN: PERFORMANCE ── */
+/* â”€â”€ SCREEN: PERFORMANCE â”€â”€ */
 SCREENS['performance'] = async function(main) {
   main.innerHTML = `<div class="screen performance-screen">
     <div class="screen-header">
-      <div><div class="screen-title">🎯 Performance & Analytics</div><div class="screen-subtitle">YTD tracking · Budget comparison · Opportunity cost</div></div>
+      <div><div class="screen-title">ðŸŽ¯ Performance & Analytics</div><div class="screen-subtitle">YTD tracking Â· Budget comparison Â· Opportunity cost</div></div>
       <div class="screen-actions">
         <span class="performance-live-pill"><span></span> P&L book reconciled</span>
-        <button class="btn btn-secondary btn-sm" onclick="loadPerformance()">⟳ Refresh</button>
+        <button class="btn btn-secondary btn-sm" onclick="loadPerformance()">âŸ³ Refresh</button>
       </div>
     </div>
     <div class="performance-kpi-row">
@@ -3375,7 +3372,7 @@ SCREENS['performance'] = async function(main) {
     </div>
     <!-- Book Summary Widget -->
     <div class="chart-card" style="margin-bottom:16px">
-      <div class="chart-title">📚 Book Summary <span style="font-size:11px;font-weight:400;color:#9CA3AF">YTD performance by trading book</span></div>
+      <div class="chart-title">ðŸ“š Book Summary <span style="font-size:11px;font-weight:400;color:#9CA3AF">YTD performance by trading book</span></div>
       <div id="book-summary-table"></div>
     </div>
 
@@ -3393,16 +3390,16 @@ SCREENS['performance'] = async function(main) {
             </tbody>
           </table>
         </div>
-        <button class="btn btn-primary btn-sm" style="margin-top:12px;width:100%" onclick="navigateTo('decision-intelligence')">📊 View Full 90-Day Opportunity Audit →</button>
+        <button class="btn btn-primary btn-sm" style="margin-top:12px;width:100%" onclick="navigateTo('decision-intelligence')">ðŸ“Š View Full 90-Day Opportunity Audit â†’</button>
       </div>
       <div class="chart-card performance-shortfall-card">
-        <div class="chart-title">🔬 AI Shortfall Investigation</div>
+        <div class="chart-title">ðŸ”¬ AI Shortfall Investigation</div>
         <div class="shortfall-mini-grid">
           <div><span>Missed signals</span><strong>$1.07M</strong></div>
           <div><span>Execution lag</span><strong>$255K</strong></div>
           <div><span>Risk overrides</span><strong>$346K</strong></div>
         </div>
-        <button class="btn btn-primary w-full mb-8" onclick="investigateShortfall()">🔬 Investigate Target Shortfall</button>
+        <button class="btn btn-primary w-full mb-8" onclick="investigateShortfall()">ðŸ”¬ Investigate Target Shortfall</button>
         <div id="shortfall-result" style="min-height:120px;background:#F8FAFC;border:1px solid #E5E7EB;border-radius:8px;padding:14px;font-size:13px;color:#6B7280">
           Click above to run AI forensic analysis on the shortfall vs target...
         </div>
@@ -3728,15 +3725,15 @@ window.renderWaterfallChart = renderWaterfallChart;
 window.loadPerformance = loadPerformance;
 window.investigateShortfall = investigateShortfall;
 
-/* ── SCREEN: MARKET DATA ── */
+/* â”€â”€ SCREEN: MARKET DATA â”€â”€ */
 SCREENS['market'] = async function(main) {
   main.innerHTML = `<div class="screen">
     <div class="screen-header">
-      <div><div class="screen-title">📉 Market Data & Curves</div><div class="screen-subtitle">Cached snapshot first · live refresh in background · forward curves · spread analysis</div></div>
+      <div><div class="screen-title">ðŸ“‰ Market Data & Curves</div><div class="screen-subtitle">Cached snapshot first Â· live refresh in background Â· forward curves Â· spread analysis</div></div>
       <div class="screen-actions">
         <div style="text-align:right">
           <div id="market-refresh-status" class="muted small" style="margin-bottom:6px">Loading cached market snapshot...</div>
-          <button class="btn btn-secondary btn-sm" onclick="window.loadMarketData && window.loadMarketData({ forceRefresh: true })">⟳ Refresh Prices</button>
+          <button class="btn btn-secondary btn-sm" onclick="window.loadMarketData && window.loadMarketData({ forceRefresh: true })">âŸ³ Refresh Prices</button>
         </div>
       </div>
     </div>
@@ -3748,13 +3745,13 @@ SCREENS['market'] = async function(main) {
           <div id="live-prices-table"><div class="muted small">Loading...</div></div>
         </div>
         <div class="chart-card">
-          <div class="chart-title">📊 Key Spreads</div>
+          <div class="chart-title">ðŸ“Š Key Spreads</div>
           <div id="spread-table"><div class="muted small">Calculating...</div></div>
         </div>
         <div class="chart-card" style="margin-top:14px">
-          <div class="chart-title">🔧 Curve Shifter</div>
+          <div class="chart-title">ðŸ”§ Curve Shifter</div>
           <label class="form-label">Shift instruction</label>
-          <input type="text" id="curve-shift-input" placeholder="e.g. Shift Brent prompt up $3..." 
+          <input type="text" id="curve-shift-input" placeholder="e.g. Shift Brent prompt up $3..."
             style="border:1px solid #E5E7EB;border-radius:7px;padding:9px 12px;font-size:13px;width:100%;margin-bottom:8px"
             onkeydown="if(event.key==='Enter' && window.applyCurveShift){ window.applyCurveShift() }">
           <button class="btn btn-primary w-full" onclick="window.applyCurveShift && window.applyCurveShift()">Apply Shift & Recalculate</button>
@@ -3775,7 +3772,7 @@ SCREENS['market'] = async function(main) {
           <div style="height:220px"><canvas id="market-curve-chart"></canvas></div>
         </div>
         <div class="chart-card">
-          <div class="chart-title">📰 Market Headlines</div>
+          <div class="chart-title">ðŸ“° Market Headlines</div>
           <div id="market-news-list"><div class="muted small">Loading...</div></div>
         </div>
       </div>
@@ -3786,11 +3783,11 @@ SCREENS['market'] = async function(main) {
   loadMarketNews();
 };
 
-/* ── SCREEN: DECISION INTELLIGENCE ── */
+/* â”€â”€ SCREEN: DECISION INTELLIGENCE â”€â”€ */
 SCREENS['decision-intelligence'] = async function(main) {
   main.innerHTML = `<div class="screen">
     <div class="screen-header">
-      <div><div class="screen-title">🧠 Decision Intelligence</div><div class="screen-subtitle">The three moments that change how traders work</div></div>
+      <div><div class="screen-title">ðŸ§  Decision Intelligence</div><div class="screen-subtitle">The three moments that change how traders work</div></div>
     </div>
     <div class="di-section" style="background:white;border:1px solid #E5E7EB;border-radius:12px;padding:20px;margin-bottom:14px">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
@@ -3801,11 +3798,11 @@ SCREENS['decision-intelligence'] = async function(main) {
             <div style="font-size:13px;color:#6B7280">Why did we miss our target? AI forensics on the full quarter.</div>
           </div>
         </div>
-        <button class="btn btn-primary" onclick="runForensics()">🔬 Investigate Q1 Performance</button>
+        <button class="btn btn-primary" onclick="runForensics()">ðŸ”¬ Investigate Q1 Performance</button>
       </div>
       <div id="forensics-results" style="display:none">
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px">
-          <div class="kpi-card"><div class="kpi-label">Total Shortfall</div><div class="kpi-value negative">−$1.82M</div></div>
+          <div class="kpi-card"><div class="kpi-label">Total Shortfall</div><div class="kpi-value negative">âˆ’$1.82M</div></div>
           <div class="kpi-card"><div class="kpi-label">Missed Opps</div><div class="kpi-value negative">$1.07M</div></div>
           <div class="kpi-card"><div class="kpi-label">Delayed Exec</div><div class="kpi-value warning-text">$255K</div></div>
           <div class="kpi-card"><div class="kpi-label">Losing Trades</div><div class="kpi-value negative">$346K</div></div>
@@ -3817,16 +3814,16 @@ SCREENS['decision-intelligence'] = async function(main) {
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
         <span style="font-size:28px;font-weight:900;color:#E5E7EB">02</span>
         <div>
-          <div style="font-size:16px;font-weight:700;color:#111827">Desk Brain™ — Institutional Memory</div>
+          <div style="font-size:16px;font-weight:700;color:#111827">Desk Brainâ„¢ â€” Institutional Memory</div>
           <div style="font-size:13px;color:#6B7280">Every trade the desk has ever done. Every outcome. Every failure mode. Queryable in seconds.</div>
         </div>
-        <div style="margin-left:auto;background:#F0F7FF;border:1px solid #BFDBFE;border-radius:8px;padding:6px 14px;font-size:11px;color:#1e40af;font-weight:700">847 trades indexed · Jan 2022 – Jun 2026</div>
+        <div style="margin-left:auto;background:#F0F7FF;border:1px solid #BFDBFE;border-radius:8px;padding:6px 14px;font-size:11px;color:#1e40af;font-weight:700">847 trades indexed Â· Jan 2022 â€“ Jun 2026</div>
       </div>
 
       <!-- Query bar -->
       <div style="display:flex;gap:8px;margin-bottom:16px">
         <input type="text" id="desk-brain-query"
-          value="Brent/Urals spread arb — long Urals, short Brent, Med delivery"
+          value="Brent/Urals spread arb â€” long Urals, short Brent, Med delivery"
           style="flex:1;border:2px solid #BFDBFE;border-radius:8px;padding:10px 14px;font-size:13px;background:#F0F7FF;color:#1e40af;font-weight:600"
           onkeydown="if(event.key==='Enter') runDeskBrain()">
         <button class="btn btn-primary" onclick="runDeskBrain()" style="white-space:nowrap">&#129504; Search Memory</button>
@@ -3838,14 +3835,14 @@ SCREENS['decision-intelligence'] = async function(main) {
         <div style="background:linear-gradient(135deg,#1e40af,#2563EB);border-radius:10px;padding:14px 18px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center">
           <div style="color:white">
             <div style="font-size:18px;font-weight:800">17 similar structures found</div>
-            <div style="font-size:12px;opacity:.8;margin-top:2px">Brent/Urals spread trades · Jan 2022 – Jun 2026 · Med &amp; NWE delivery</div>
+            <div style="font-size:12px;opacity:.8;margin-top:2px">Brent/Urals spread trades Â· Jan 2022 â€“ Jun 2026 Â· Med &amp; NWE delivery</div>
           </div>
           <div style="display:flex;gap:20px">
             <div style="text-align:center;color:white"><div style="font-size:22px;font-weight:800">+$2.8M</div><div style="font-size:10px;opacity:.75">Avg P&amp;L</div></div>
             <div style="text-align:center;color:white"><div style="font-size:22px;font-weight:800">82%</div><div style="font-size:10px;opacity:.75">Win rate</div></div>
             <div style="text-align:center;color:white"><div style="font-size:22px;font-weight:800">8.4d</div><div style="font-size:10px;opacity:.75">Avg hold</div></div>
           </div>
-        <!-- P&L Distribution (truncated — full chart requires trade data API) -->
+        <!-- P&L Distribution (truncated â€” full chart requires trade data API) -->
         <div style="background:#F8FAFC;border:1px solid #E5E7EB;border-radius:10px;padding:14px">
           <div style="font-size:12px;font-weight:700;color:#374151;margin-bottom:10px">&#128202; P&amp;L Distribution</div>
           <div style="color:#6B7280;font-size:13px">Load trade history to view P&amp;L distribution chart.</div>
@@ -3938,7 +3935,7 @@ SCREENS['configuration'] = async function(main) {
     <div class="screen" style="padding:16px">
       <div class="screen-header" style="margin-bottom:16px">
         <div>
-          <div class="screen-title">⚙️ External Systems Configuration</div>
+          <div class="screen-title">âš™ï¸ External Systems Configuration</div>
           <div class="screen-subtitle">Configure news feeds, market data sources, AI models, and ETRM connections</div>
         </div>
       </div>
@@ -3949,7 +3946,7 @@ SCREENS['configuration'] = async function(main) {
           <button id="cfg-tab-${t}" onclick="switchCfgTab('${t}')"
             style="padding:8px 18px;border:none;border-bottom:2px solid ${i===0?'#6366f1':'transparent'};
             background:none;color:${i===0?'#6366f1':'#64748b'};font-size:13px;font-weight:600;cursor:pointer">
-            ${{news:'📰 News Feeds',market:'📊 Market Watch',ai:'🤖 AI Models',etrm:'🏭 ETRM'}[t]}
+            ${{news:'ðŸ“° News Feeds',market:'ðŸ“Š Market Watch',ai:'ðŸ¤– AI Models',etrm:'ðŸ­ ETRM'}[t]}
           </button>`).join('')}
       </div>
 
@@ -4072,15 +4069,15 @@ window.openAddFeedModal = function(type) {
     etrm: ['RightAngle','Endur/Allegro','SAP','Custom']
   };
   var hints = {
-    'NewsAPI': 'Free key at newsapi.org/register · 100 req/day free',
-    'AlphaVantage': 'Free key at alphavantage.co/support/#api-key · 500 req/day',
-    'Yahoo Finance (free)': 'No API key needed — works out of the box',
-    'RSS Feed': 'Paste any RSS/Atom feed URL — no key required',
+    'NewsAPI': 'Free key at newsapi.org/register Â· 100 req/day free',
+    'AlphaVantage': 'Free key at alphavantage.co/support/#api-key Â· 500 req/day',
+    'Yahoo Finance (free)': 'No API key needed â€” works out of the box',
+    'RSS Feed': 'Paste any RSS/Atom feed URL â€” no key required',
     'MarketWatch RSS': 'URL: https://feeds.marketwatch.com/marketwatch/topstories',
     'Reuters RSS': 'URL: https://www.reutersagency.com/feed/?best-topics=energy',
     'OilPrice RSS': 'URL: https://oilprice.com/rss/main',
     'Claude API (External)': 'Uses your saved connector key or ANTHROPIC_API_KEY from .env',
-    'LM Studio': 'URL: http://127.0.0.1:1234/v1 — no key needed',
+    'LM Studio': 'URL: http://127.0.0.1:1234/v1 â€” no key needed',
   };
   var titleMap = {news:'Add News Feed', market_data:'Add Market Data Source', ai_model:'Add AI Model', etrm:'Add ETRM Connection'};
   document.getElementById('add-feed-title').textContent = titleMap[type] || 'Add Feed';
@@ -4090,7 +4087,7 @@ window.openAddFeedModal = function(type) {
     var hint = hints[sel.value] || '';
     var hintEl = document.getElementById('af-hint');
     hintEl.style.display = hint ? 'block' : 'none';
-    hintEl.textContent = '💡 ' + hint;
+    hintEl.textContent = 'ðŸ’¡ ' + hint;
     // Auto-fill URL for well-known providers
     var autoUrls = {
       'MarketWatch RSS': 'https://feeds.marketwatch.com/marketwatch/topstories',
@@ -4149,10 +4146,10 @@ window.saveNewFeed = async function() {
 
 function _statusStyle(status) {
   const s = (status || '').toLowerCase();
-  if (s === 'ok' || s.startsWith('ok —')) return {dot:'#16a34a',text:'#16a34a',bg:'#16a34a18'};
+  if (s === 'ok' || s.startsWith('ok â€”')) return {dot:'#16a34a',text:'#16a34a',bg:'#16a34a18'};
   if (s.includes('api key') || s.includes('key required')) return {dot:'#f59e0b',text:'#f59e0b',bg:'#f59e0b18'};
   if (s.includes('enterprise') || s.includes('internal')) return {dot:'#6366f1',text:'#6366f1',bg:'#6366f118'};
-  if (s.includes('error') || s.includes('invalid') || s.includes('denied') || s.includes('✗')) return {dot:'#ef4444',text:'#ef4444',bg:'#ef444418'};
+  if (s.includes('error') || s.includes('invalid') || s.includes('denied') || s.includes('âœ—')) return {dot:'#ef4444',text:'#ef4444',bg:'#ef444418'};
   if (s.includes('timeout') || s.includes('unreachable')) return {dot:'#f97316',text:'#f97316',bg:'#f9731618'};
   if (s === 'not tested') return {dot:'#475569',text:'#64748b',bg:'#47556918'};
   return {dot:'#64748b',text:'#94a3b8',bg:'#64748b18'};
@@ -4164,20 +4161,20 @@ function _renderConnectorCard(c) {
   var bg = typeColors[c.connector_type] || '#6b7280';
   var initials = (c.provider||'??').substring(0,2).toUpperCase();
   var lastTested = c.last_connected_at
-    ? ' · tested ' + new Date(c.last_connected_at).toLocaleTimeString() : '';
+    ? ' Â· tested ' + new Date(c.last_connected_at).toLocaleTimeString() : '';
   // Article count hint for news
   var extraInfo = '';
   var statusLabel = c.last_status || 'Not Tested';
   if ((c.provider || '').toLowerCase() === 'anthropic') {
     extraInfo += '<div style="font-size:11px;color:#94a3b8;margin-top:4px">Uses saved connector key or falls back to ANTHROPIC_API_KEY from .env.</div>';
   }
-  if (statusLabel.startsWith('OK —')) { extraInfo = '<div style="font-size:11px;color:#16a34a;margin-top:4px">' + statusLabel.replace('OK — ','✓ ') + '</div>'; statusLabel = 'OK'; }
+  if (statusLabel.startsWith('OK â€”')) { extraInfo = '<div style="font-size:11px;color:#16a34a;margin-top:4px">' + statusLabel.replace('OK â€” ','âœ“ ') + '</div>'; statusLabel = 'OK'; }
 
   // Show API key input for providers that need it
   var keyRow = '';
   if (['newsapi','alphavantage','bloomberg','anthropic','claude','custom'].includes((c.provider||'').toLowerCase())) {
     keyRow = '<div style="display:flex;gap:6px;margin-top:8px">'
-      + '<input id="key-' + c.id + '" type="password" class="form-input" style="flex:1;font-size:12px;padding:4px 8px" placeholder="' + (c.api_key ? '•••••••• (saved)' : 'Enter API key') + '">'
+      + '<input id="key-' + c.id + '" type="password" class="form-input" style="flex:1;font-size:12px;padding:4px 8px" placeholder="' + (c.api_key ? 'â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢ (saved)' : 'Enter API key') + '">'
       + '<button class="btn btn-secondary btn-sm" style="font-size:11px" onclick="saveFeedKey(' + c.id + ')">Save Key</button>'
       + '</div>';
   }
@@ -4194,10 +4191,10 @@ function _renderConnectorCard(c) {
     + '<span style="font-size:10px;color:#475569">' + lastTested + '</span>'
     + '</div>'
     + extraInfo
-    + (c.last_error ? '<div style="font-size:11px;color:#ef4444;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + (c.last_error||'') + '">↳ ' + (c.last_error||'').substring(0,70) + '</div>' : '')
+    + (c.last_error ? '<div style="font-size:11px;color:#ef4444;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + (c.last_error||'') + '">â†³ ' + (c.last_error||'').substring(0,70) + '</div>' : '')
     + keyRow
     + '<div style="display:flex;gap:6px;margin-top:10px">'
-    + '<button class="btn btn-secondary btn-sm" id="test-' + c.id + '" style="font-size:12px" onclick="testFeed(' + c.id + ')">⚡ Test</button>'
+    + '<button class="btn btn-secondary btn-sm" id="test-' + c.id + '" style="font-size:12px" onclick="testFeed(' + c.id + ')">âš¡ Test</button>'
     + '<button class="btn btn-ghost btn-sm" style="font-size:12px;color:#ef4444;border-color:#ef444433" onclick="deleteFeed(' + c.id + ')">Remove</button>'
     + '</div></div>';
 }
@@ -4217,10 +4214,10 @@ window.loadAllConnectors = async function() {
       var connectors = byType[type] || [];
       if (!connectors.length) {
         var emptyMsg = {
-          news: '📰 No news feeds configured. Add Reuters, MarketWatch or any RSS URL.',
-          market_data: '📊 No market data sources. Yahoo Finance works free — no key needed.',
-          ai_model: '🤖 No AI models configured. Add LM Studio at http://127.0.0.1:1234/v1',
-          etrm: '🏭 No ETRM connected. Add RightAngle or any REST-capable ETRM.'
+          news: 'ðŸ“° No news feeds configured. Add Reuters, MarketWatch or any RSS URL.',
+          market_data: 'ðŸ“Š No market data sources. Yahoo Finance works free â€” no key needed.',
+          ai_model: 'ðŸ¤– No AI models configured. Add LM Studio at http://127.0.0.1:1234/v1',
+          etrm: 'ðŸ­ No ETRM connected. Add RightAngle or any REST-capable ETRM.'
         };
         grid.innerHTML = '<div style="color:#64748b;font-size:13px;padding:20px;border:1px dashed #2d3748;border-radius:8px;grid-column:1/-1">' + (emptyMsg[type]||'No connectors') + '</div>';
       } else {
@@ -4244,14 +4241,14 @@ window.saveFeedKey = async function(id) {
     headers: {'Content-Type':'application/json','Authorization':'Bearer '+token},
     body: JSON.stringify({api_key: keyEl.value})
   });
-  if (r.ok) { keyEl.value=''; keyEl.placeholder='•••••••• (saved)'; testFeed(id); }
+  if (r.ok) { keyEl.value=''; keyEl.placeholder='â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢ (saved)'; testFeed(id); }
   else alert('Save failed');
 };
 
 window.testFeed = async function(id) {
   var token = readAppToken();
   var btn = document.getElementById('test-' + id);
-  if (btn) { btn.textContent='⟳'; btn.disabled=true; }
+  if (btn) { btn.textContent='âŸ³'; btn.disabled=true; }
   try {
     var r = await fetch('/api/configuration/connectors/' + id + '/test', {
       method:'POST', headers:{'Authorization':'Bearer '+token}
@@ -4263,7 +4260,7 @@ window.testFeed = async function(id) {
       showToast('Connector Test', data?.message || data?.status || 'Test complete', (data?.status || '').toLowerCase() === 'ok' ? 'success' : 'info');
     }
   } catch(e) {
-    if (btn) { btn.textContent='⚡ Test'; btn.disabled=false; }
+    if (btn) { btn.textContent='âš¡ Test'; btn.disabled=false; }
     alert('Test failed: ' + e.message);
   }
 };
@@ -4780,1178 +4777,6 @@ window.saveAIStudioProfile = async function() {
   }
 };
 
-function riskModuleMoney(value) {
-  const amount = Number(value || 0);
-  const sign = amount < 0 ? '-' : '';
-  const abs = Math.abs(amount);
-  if (abs >= 1000000) return `${sign}$${(abs / 1000000).toFixed(2)}M`;
-  if (abs >= 1000) return `${sign}$${(abs / 1000).toFixed(1)}K`;
-  return `${sign}$${abs.toFixed(0)}`;
-}
-
-function riskModuleNumber(value) {
-  return Number(value || 0).toLocaleString(undefined, { maximumFractionDigits: 0 });
-}
-
-function riskModuleStatusClass(status) {
-  const clean = String(status || '').toLowerCase();
-  if (clean === 'breach') return 'critical';
-  if (clean === 'warning') return 'warning';
-  return 'success';
-}
-
-const RISK_WORKBENCH_DEMO_EXPOSURES = [
-  { id:'demo-brent-usgc', book_name:'Crude Alpha', commodity:'Brent', region:'US Gulf Coast', tenor:'Prompt', source_type:'Mixed', physical_volume:420000, financial_volume:-285000, net_volume:135000, delta_equivalent:135000, normalized_price:91.42, hedge_effectiveness:0.68, basis_bucket:'Brent prompt / USGC', price_index:'ICE Brent M1', counterparty:'Shell Trading', reporting_tag:'Weekly Board Pack', physical_type:'Storage + export cargo', location_basis:'USGC Houston', var_contribution:1850000, stress_loss:-6120000, status:'Warning' },
-  { id:'demo-urals-med', book_name:'Med Arb', commodity:'Urals', region:'Mediterranean', tenor:'M+1', source_type:'Physical', physical_volume:180000, financial_volume:0, net_volume:180000, delta_equivalent:180000, normalized_price:72.08, hedge_effectiveness:0.12, basis_bucket:'Urals-Brent / Med', price_index:'Urals CIF Med', counterparty:'Vitol', reporting_tag:'Monthly Risk Committee', physical_type:'Delivered cargo', location_basis:'CIF Augusta', var_contribution:2420000, stress_loss:-5840000, status:'Breach' },
-  { id:'demo-ethane-nwe', book_name:'NGL Logistics', commodity:'Ethane', region:'Northwest Europe', tenor:'Prompt', source_type:'Physical', physical_volume:31000, financial_volume:-19000, net_volume:12000, delta_equivalent:12000, normalized_price:326.5, hedge_effectiveness:0.61, basis_bucket:'NGL freight-adjusted / NWE', price_index:'Mont Belvieu ethane + freight', counterparty:'INEOS Olefins', reporting_tag:'Weekly Board Pack', physical_type:'Vessel in transit', location_basis:'Rafnes delivery', var_contribution:980000, stress_loss:-2210000, status:'Warning' },
-  { id:'demo-lpg-usgc-nwe', book_name:'NGL Spread', commodity:'LPG', region:'USGC to NWE', tenor:'Q3-26', source_type:'Mixed', physical_volume:64000, financial_volume:-51000, net_volume:13000, delta_equivalent:13000, normalized_price:612.2, hedge_effectiveness:0.8, basis_bucket:'NGL freight-adjusted / USGC-NWE', price_index:'Argus propane CIF ARA', counterparty:'TotalEnergies', reporting_tag:'Weekly Board Pack', physical_type:'Propane cargo + swap', location_basis:'ARA delivered', var_contribution:760000, stress_loss:-1420000, status:'OK' },
-  { id:'demo-naphtha-ara', book_name:'Products', commodity:'Naphtha', region:'ARA', tenor:'M+2', source_type:'Financial', physical_volume:0, financial_volume:-95000, net_volume:-95000, delta_equivalent:-95000, normalized_price:712.4, hedge_effectiveness:1, basis_bucket:'Naphtha crack / ARA', price_index:'Platts CIF NWE Naphtha', counterparty:'BP Oil Intl', reporting_tag:'Monthly Risk Committee', physical_type:'Paper crack hedge', location_basis:'ARA', var_contribution:1120000, stress_loss:1860000, status:'OK' },
-  { id:'demo-gas-hh-ttf', book_name:'Gas Basis', commodity:'Natural Gas', region:'USGC / TTF', tenor:'Q4-26', source_type:'Financial', physical_volume:0, financial_volume:440000, net_volume:440000, delta_equivalent:440000, normalized_price:3.88, hedge_effectiveness:1, basis_bucket:'HH-TTF basis / Atlantic', price_index:'Henry Hub vs TTF', counterparty:'Glencore Energy', reporting_tag:'Monthly Risk Committee', physical_type:'Basis swap', location_basis:'HH-TTF', var_contribution:1360000, stress_loss:-3180000, status:'Warning' },
-  { id:'demo-carbon-eua', book_name:'Carbon', commodity:'EUA Carbon', region:'EU ETS', tenor:'Cal-27', source_type:'Financial', physical_volume:0, financial_volume:125000, net_volume:125000, delta_equivalent:125000, normalized_price:83.6, hedge_effectiveness:0.67, basis_bucket:'EUA outright / EU ETS', price_index:'ICE EUA Dec-27', counterparty:'Exchange', reporting_tag:'Executive Summary', physical_type:'Compliance-linked hedge', location_basis:'EU ETS', var_contribution:920000, stress_loss:-2560000, status:'OK' },
-  { id:'demo-wti-cushing', book_name:'Crude Hedge', commodity:'WTI', region:'Cushing', tenor:'M+1', source_type:'Financial', physical_volume:0, financial_volume:-155000, net_volume:-155000, delta_equivalent:-155000, normalized_price:87.16, hedge_effectiveness:1, basis_bucket:'WTI outright / Cushing', price_index:'NYMEX WTI M1', counterparty:'Exchange', reporting_tag:'Weekly Board Pack', physical_type:'Futures hedge', location_basis:'Cushing', var_contribution:1040000, stress_loss:3920000, status:'OK' },
-  { id:'demo-freight-afra', book_name:'Freight', commodity:'Freight', region:'Atlantic Basin', tenor:'Prompt', source_type:'Physical', physical_volume:1, financial_volume:0, net_volume:1, delta_equivalent:1, normalized_price:1285000, hedge_effectiveness:0.35, basis_bucket:'Aframax freight / Atlantic', price_index:'Baltic dirty tanker route', counterparty:'Stena Bulk', reporting_tag:'Weekly Board Pack', physical_type:'Voyage obligation', location_basis:'USGC-NWE', var_contribution:440000, stress_loss:-980000, status:'Warning' },
-  { id:'demo-dubai-sing', book_name:'Asia Crude', commodity:'Dubai', region:'Singapore', tenor:'Q3-26', source_type:'Mixed', physical_volume:90000, financial_volume:-72000, net_volume:18000, delta_equivalent:18000, normalized_price:88.21, hedge_effectiveness:0.8, basis_bucket:'Dubai-Brent / Asia', price_index:'Platts Dubai', counterparty:'Trafigura', reporting_tag:'Executive Summary', physical_type:'Term supply + hedge', location_basis:'Singapore', var_contribution:630000, stress_loss:-1180000, status:'OK' }
-];
-
-var riskWorkbenchCharts = {};
-var riskWorkbenchFilters = { commodity:'all', book:'all', region:'all', tenor:'all', source:'all', report:'weekly' };
-
-function riskWorkbenchStatusFor(row) {
-  if (row.status) return row.status;
-  const hedge = Number(row.hedge_effectiveness || 0);
-  const notional = Math.abs(Number(row.notional_usd || 0));
-  if (hedge < 0.35 && notional > 5000000) return 'Breach';
-  if (hedge < 0.7 || notional > 12000000) return 'Warning';
-  return 'OK';
-}
-
-function riskWorkbenchEnrichRow(row, index) {
-  const notional = Number(row.notional_usd || (Number(row.delta_equivalent || 0) * Number(row.normalized_price || 0)));
-  const absNotional = Math.abs(notional);
-  const commodity = row.commodity || 'Unknown';
-  const volSeed = (commodity.length + index + 3) * 0.0075;
-  return {
-    ...row,
-    id: row.id || row.position_id || `api-exp-${index}`,
-    book_name: row.book_name || 'Unassigned',
-    region: row.region || row.location_basis || 'Global',
-    tenor: row.tenor || 'Prompt',
-    source_type: row.source_type || 'Mixed',
-    normalized_price: Number(row.normalized_price || 0),
-    hedge_effectiveness: Number(row.hedge_effectiveness || 0),
-    notional_usd: notional,
-    physical_volume: Number(row.physical_volume || 0),
-    financial_volume: Number(row.financial_volume || 0),
-    net_volume: Number(row.net_volume || row.delta_equivalent || 0),
-    delta_equivalent: Number(row.delta_equivalent || row.net_volume || 0),
-    basis_bucket: row.basis_bucket || `${commodity} outright / ${row.region || 'Global'}`,
-    price_index: row.price_index || `${commodity} index`,
-    counterparty: row.counterparty || 'ETRM feed',
-    reporting_tag: row.reporting_tag || (index % 2 ? 'Monthly Risk Committee' : 'Weekly Board Pack'),
-    physical_type: row.physical_type || (Number(row.physical_volume || 0) ? 'Physical obligation' : 'Paper hedge'),
-    var_contribution: Number(row.var_contribution || Math.max(85000, absNotional * volSeed)),
-    stress_loss: Number(row.stress_loss || (notional >= 0 ? -1 : 1) * Math.max(120000, absNotional * (0.035 + volSeed))),
-    status: riskWorkbenchStatusFor(row)
-  };
-}
-
-function riskWorkbenchBuildData(data) {
-  const apiRows = (data?.exposures || []).map(riskWorkbenchEnrichRow);
-  const seen = new Set(apiRows.map(row => `${row.commodity}|${row.book_name}|${row.region}|${row.tenor}`));
-  const demoRows = RISK_WORKBENCH_DEMO_EXPOSURES
-    .map(riskWorkbenchEnrichRow)
-    .filter(row => !seen.has(`${row.commodity}|${row.book_name}|${row.region}|${row.tenor}`));
-  return apiRows.concat(demoRows).slice(0, 18);
-}
-
-function riskWorkbenchFilteredRows() {
-  const data = window.RISK_MODULE_STATE || {};
-  const rows = data.enriched_exposures || [];
-  return rows.filter(row => {
-    if (riskWorkbenchFilters.commodity !== 'all' && row.commodity !== riskWorkbenchFilters.commodity) return false;
-    if (riskWorkbenchFilters.book !== 'all' && row.book_name !== riskWorkbenchFilters.book) return false;
-    if (riskWorkbenchFilters.region !== 'all' && row.region !== riskWorkbenchFilters.region) return false;
-    if (riskWorkbenchFilters.tenor !== 'all' && row.tenor !== riskWorkbenchFilters.tenor) return false;
-    if (riskWorkbenchFilters.source !== 'all' && row.source_type !== riskWorkbenchFilters.source) return false;
-    return true;
-  });
-}
-
-function riskWorkbenchGroup(rows, key, valueKey) {
-  return rows.reduce((acc, row) => {
-    const label = row[key] || 'Other';
-    acc[label] = (acc[label] || 0) + Number(row[valueKey] || 0);
-    return acc;
-  }, {});
-}
-
-function riskWorkbenchUnique(rows, key) {
-  return [...new Set(rows.map(row => row[key]).filter(Boolean))].sort();
-}
-
-function riskWorkbenchOptionHtml(values, active) {
-  return '<option value="all">All</option>' + values.map(value => `<option value="${escapeHtml(value)}" ${value === active ? 'selected' : ''}>${escapeHtml(value)}</option>`).join('');
-}
-
-function riskWorkbenchSummary(rows, limits, backtesting) {
-  const gross = rows.reduce((sum, row) => sum + Math.abs(Number(row.notional_usd || 0)), 0);
-  const net = rows.reduce((sum, row) => sum + Number(row.notional_usd || 0), 0);
-  const physical = rows.reduce((sum, row) => sum + Math.abs(Number(row.physical_volume || 0) * Number(row.normalized_price || 0)), 0);
-  const price = rows.reduce((sum, row) => sum + Math.abs(Number(row.delta_equivalent || 0) * Number(row.normalized_price || 0)), 0);
-  const varTotal = rows.reduce((sum, row) => sum + Math.abs(Number(row.var_contribution || 0)), 0);
-  const stressLoss = rows.reduce((sum, row) => sum + Math.min(Number(row.stress_loss || 0), 0), 0);
-  const avgHedge = rows.length ? rows.reduce((sum, row) => sum + Number(row.hedge_effectiveness || 0), 0) / rows.length : 0;
-  const breaches = rows.filter(row => riskWorkbenchStatusFor(row) === 'Breach').length + (limits || []).filter(row => row.status === 'Breach').length;
-  const warnings = rows.filter(row => riskWorkbenchStatusFor(row) === 'Warning').length + (limits || []).filter(row => row.status === 'Warning').length;
-  return { gross, net, physical, price, varTotal, stressLoss, avgHedge, breaches, warnings, exceptions: Number(backtesting?.exceptions || 0) };
-}
-
-function riskWorkbenchTone(status) {
-  const clean = String(status || '').toLowerCase();
-  if (clean === 'breach') return 'danger';
-  if (clean === 'warning') return 'watch';
-  return 'ok';
-}
-
-function riskWorkbenchRenderTreemap(rows) {
-  const host = document.getElementById('risk-treemap');
-  if (!host) return;
-  const grouped = Object.entries(riskWorkbenchGroup(rows, 'commodity', 'notional_usd'))
-    .map(([label, value]) => ({ label, value: Math.abs(value) }))
-    .sort((a, b) => b.value - a.value)
-    .slice(0, 8);
-  const total = grouped.reduce((sum, item) => sum + item.value, 0) || 1;
-  host.innerHTML = grouped.map((item, index) => {
-    const flex = Math.max(12, item.value / total * 100);
-    const tone = index < 2 ? 'danger' : index < 5 ? 'watch' : 'ok';
-    return `<button class="risk-tree-tile ${tone}" style="flex-basis:${flex}%" onclick="riskWorkbenchSetFilter('commodity','${escapeJsArg(item.label).slice(1, -1)}')">
-      <strong>${escapeHtml(item.label)}</strong><span>${riskModuleMoney(item.value)}</span>
-    </button>`;
-  }).join('');
-}
-
-function riskWorkbenchRenderHeatmap(rows) {
-  const host = document.getElementById('risk-heatmap');
-  if (!host) return;
-  const commodities = riskWorkbenchUnique(rows, 'commodity').slice(0, 7);
-  const tenors = riskWorkbenchUnique(rows, 'tenor').slice(0, 7);
-  const maxAbs = Math.max(1, ...rows.map(row => Math.abs(Number(row.notional_usd || 0))));
-  const body = commodities.map(commodity => {
-    const cells = tenors.map(tenor => {
-    const value = rows.filter(row => row.commodity === commodity && row.tenor === tenor).reduce((sum, row) => sum + Number(row.notional_usd || 0), 0);
-    const intensity = Math.min(1, Math.abs(value) / maxAbs);
-    const cls = value < 0 ? 'short' : value > 0 ? 'long' : 'flat';
-    return `<button class="risk-heat-cell ${cls}" style="--risk-alpha:${0.16 + intensity * 0.72}" title="${escapeHtml(commodity)} ${escapeHtml(tenor)} ${riskModuleMoney(value)}">
-      <span>${value ? riskModuleMoney(value) : '-'}</span>
-    </button>`;
-    }).join('');
-    return `<strong>${escapeHtml(commodity)}</strong>${cells}`;
-  }).join('');
-  host.innerHTML = `
-    <div class="risk-heat-grid" style="grid-template-columns:92px repeat(${Math.max(tenors.length, 1)}, minmax(70px,1fr))">
-      <div></div>${tenors.map(t => `<b>${escapeHtml(t)}</b>`).join('')}
-      ${body}
-    </div>`;
-}
-
-function riskWorkbenchRenderMap(rows) {
-  const host = document.getElementById('risk-region-map');
-  if (!host) return;
-  const coords = {
-    'US Gulf Coast':[20, 62], 'USGC to NWE':[42, 48], 'Mediterranean':[58, 57], 'Northwest Europe':[51, 35],
-    'ARA':[50, 38], 'USGC / TTF':[43, 45], 'EU ETS':[55, 35], 'Cushing':[24, 54], 'Atlantic Basin':[39, 50],
-    'Singapore':[78, 68], 'Global':[48, 52]
-  };
-  const grouped = Object.entries(riskWorkbenchGroup(rows, 'region', 'notional_usd')).map(([region, value]) => ({ region, value }));
-  const maxAbs = Math.max(1, ...grouped.map(item => Math.abs(item.value)));
-  host.innerHTML = grouped.map(item => {
-    const point = coords[item.region] || coords.Global;
-    const size = 24 + Math.abs(item.value) / maxAbs * 34;
-    const cls = item.value < 0 ? 'short' : 'long';
-    return `<button class="risk-map-bubble ${cls}" style="left:${point[0]}%;top:${point[1]}%;width:${size}px;height:${size}px" onclick="riskWorkbenchSetFilter('region','${escapeJsArg(item.region).slice(1, -1)}')" title="${escapeHtml(item.region)} ${riskModuleMoney(item.value)}">
-      <span>${escapeHtml(item.region.split(' ')[0])}</span>
-    </button>`;
-  }).join('') + '<div class="risk-map-label">Regional exposure bubbles</div>';
-}
-
-function riskWorkbenchDestroyCharts() {
-  Object.values(riskWorkbenchCharts).forEach(chart => {
-    if (chart && typeof chart.destroy === 'function') chart.destroy();
-  });
-  riskWorkbenchCharts = {};
-}
-
-function riskWorkbenchChart(id, config) {
-  const canvas = document.getElementById(id);
-  if (!canvas || typeof Chart === 'undefined') return;
-  riskWorkbenchCharts[id] = new Chart(canvas, config);
-}
-
-function riskWorkbenchRenderCharts(rows, stress) {
-  riskWorkbenchDestroyCharts();
-  const commodityGroups = riskWorkbenchGroup(rows, 'commodity', 'var_contribution');
-  const physicalByCommodity = {};
-  const financialByCommodity = {};
-  rows.forEach(row => {
-    const label = row.commodity || 'Other';
-    physicalByCommodity[label] = (physicalByCommodity[label] || 0) + Math.abs(Number(row.physical_volume || 0) * Number(row.normalized_price || 0));
-    financialByCommodity[label] = (financialByCommodity[label] || 0) + Math.abs(Number(row.financial_volume || 0) * Number(row.normalized_price || 0));
-  });
-  const commodities = Object.keys({ ...physicalByCommodity, ...financialByCommodity }).slice(0, 8);
-  riskWorkbenchChart('risk-physical-chart', {
-    type:'bar',
-    data:{ labels:commodities, datasets:[
-      { label:'Physical', data:commodities.map(c => physicalByCommodity[c] || 0), backgroundColor:'#0E7490' },
-      { label:'Paper hedge', data:commodities.map(c => financialByCommodity[c] || 0), backgroundColor:'#64748B' }
-    ]},
-    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom' }, tooltip:{ callbacks:{ label:ctx => `${ctx.dataset.label}: ${riskModuleMoney(ctx.parsed.y)}` }}}, scales:{ x:{ stacked:true, ticks:{ maxRotation:0 }}, y:{ stacked:true, ticks:{ callback:v => riskModuleMoney(v) }}}}
-  });
-  riskWorkbenchChart('risk-var-donut', {
-    type:'doughnut',
-    data:{ labels:Object.keys(commodityGroups), datasets:[{ data:Object.values(commodityGroups).map(Math.abs), backgroundColor:['#0E7490','#DC2626','#D97706','#2563EB','#16A34A','#7C3AED','#475569','#0891B2'] }] },
-    options:{ responsive:true, maintainAspectRatio:false, cutout:'64%', plugins:{ legend:{ position:'bottom' }, tooltip:{ callbacks:{ label:ctx => `${ctx.label}: ${riskModuleMoney(ctx.parsed)}` }}}}
-  });
-  const scenarioRows = stress && stress.length ? stress : [
-    { scenario_name:'Brent -5%', total_pnl_impact:rows.reduce((s, r) => s + Number(r.stress_loss || 0) * 0.42, 0) },
-    { scenario_name:'Basis blowout', total_pnl_impact:rows.reduce((s, r) => s + Number(r.stress_loss || 0) * 0.68, 0) },
-    { scenario_name:'Freight delay', total_pnl_impact:rows.reduce((s, r) => s + Number(r.stress_loss || 0) * 0.31, 0) },
-    { scenario_name:'Gas rally', total_pnl_impact:rows.reduce((s, r) => s + Number(r.stress_loss || 0) * 0.24, 0) }
-  ];
-  riskWorkbenchChart('risk-stress-chart', {
-    type:'bar',
-    data:{ labels:scenarioRows.map(s => s.scenario_name), datasets:[{ label:'P&L impact', data:scenarioRows.map(s => s.total_pnl_impact), backgroundColor:scenarioRows.map(s => Number(s.total_pnl_impact) < 0 ? '#DC2626' : '#16A34A') }] },
-    options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false }, tooltip:{ callbacks:{ label:ctx => riskModuleMoney(ctx.parsed.x) }}}, scales:{ x:{ ticks:{ callback:v => riskModuleMoney(v) }}}}
-  });
-  riskWorkbenchChart('risk-hedge-scatter', {
-    type:'scatter',
-    data:{ datasets:[{ label:'Exposure rows', data:rows.map(row => ({ x:Math.abs(Number(row.notional_usd || 0)), y:Number(row.hedge_effectiveness || 0) * 100, label:row.commodity })), backgroundColor:rows.map(row => riskWorkbenchTone(riskWorkbenchStatusFor(row)) === 'danger' ? '#DC2626' : riskWorkbenchTone(riskWorkbenchStatusFor(row)) === 'watch' ? '#D97706' : '#0E7490'), pointRadius:6 }] },
-    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false }, tooltip:{ callbacks:{ label:ctx => `${ctx.raw.label}: ${riskModuleMoney(ctx.raw.x)} / ${ctx.raw.y.toFixed(0)}% hedged` }}}, scales:{ x:{ title:{ display:true, text:'Gross notional' }, ticks:{ callback:v => riskModuleMoney(v) }}, y:{ min:0, max:105, title:{ display:true, text:'Hedge effectiveness' }, ticks:{ callback:v => `${v}%` }}}}
-  });
-}
-
-function riskWorkbenchRenderTables(rows, reports) {
-  const tbody = document.getElementById('risk-exposure-rows');
-  if (tbody) {
-    tbody.innerHTML = rows
-      .sort((a, b) => Math.abs(Number(b.var_contribution || 0)) - Math.abs(Number(a.var_contribution || 0)))
-      .map(row => `
-        <tr>
-          <td><strong>${escapeHtml(row.commodity)}</strong><span>${escapeHtml(row.price_index || '')}</span></td>
-          <td>${escapeHtml(row.book_name)}<span>${escapeHtml(row.region)} / ${escapeHtml(row.tenor)}</span></td>
-          <td>${escapeHtml(row.source_type)}<span>${escapeHtml(row.physical_type || '')}</span></td>
-          <td class="right">${riskModuleNumber(row.physical_volume)}</td>
-          <td class="right">${riskModuleNumber(row.financial_volume)}</td>
-          <td class="right">${riskModuleNumber(row.delta_equivalent)}</td>
-          <td class="right">${riskModuleMoney(row.notional_usd)}</td>
-          <td class="right">${Number(row.hedge_effectiveness || 0).toLocaleString(undefined, { style:'percent', maximumFractionDigits:0 })}</td>
-          <td class="right">${riskModuleMoney(row.var_contribution)}</td>
-          <td><span class="status-badge ${riskModuleStatusClass(row.status)}">${escapeHtml(row.status)}</span></td>
-        </tr>
-      `).join('');
-  }
-  const reportHost = document.getElementById('risk-report-pack');
-  if (reportHost) {
-    const packRows = [
-      { type:'Weekly', title:'Executive exposure movements', status:'Ready', focus:'Commodity, book, and region changes' },
-      { type:'Weekly', title:'Top five VaR and stress drivers', status:'Ready', focus:'Board-level risk narrative' },
-      { type:'Monthly', title:'Risk committee pack', status:'Draft', focus:'Limits, backtesting, methodology' },
-      { type:'Monthly', title:'Physical obligations appendix', status:'Ready', focus:'Cargo, storage, and delivery exposure' }
-    ].concat((reports || []).map(row => ({ type:row.report_type, title:row.title, status:row.status, focus:row.methodology }))).slice(0, 6);
-    reportHost.innerHTML = packRows.map(row => `
-      <button class="risk-report-row" onclick="riskWorkbenchDraftNarrative('${escapeJsArg(row.title).slice(1, -1)}')">
-        <span><b>${escapeHtml(row.type)}</b>${escapeHtml(row.title)}</span>
-        <em>${escapeHtml(row.focus || '')}</em>
-        <strong>${escapeHtml(row.status || 'Ready')}</strong>
-      </button>
-    `).join('');
-  }
-}
-
-function riskWorkbenchRenderNarrative(rows, summary) {
-  const host = document.getElementById('risk-management-note');
-  if (!host) return;
-  const topCommodity = Object.entries(riskWorkbenchGroup(rows, 'commodity', 'var_contribution')).sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]))[0];
-  const topRegion = Object.entries(riskWorkbenchGroup(rows, 'region', 'notional_usd')).sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]))[0];
-  host.innerHTML = `
-    <strong>Management readout</strong>
-    <p>Gross exposure is ${riskModuleMoney(summary.gross)} with net ${summary.net >= 0 ? 'long' : 'short'} exposure of ${riskModuleMoney(summary.net)}. ${escapeHtml(topCommodity?.[0] || 'Commodity')} is the largest VaR contributor and ${escapeHtml(topRegion?.[0] || 'regional')} exposure is the primary concentration.</p>
-    <p>${summary.breaches} breach items, ${summary.warnings} watch items, and ${summary.exceptions} backtesting exceptions should be referenced in the ${riskWorkbenchFilters.report === 'monthly' ? 'monthly risk committee' : 'weekly management'} pack.</p>
-  `;
-}
-
-function riskWorkbenchRenderFilteredView() {
-  const data = window.RISK_MODULE_STATE || {};
-  const rows = riskWorkbenchFilteredRows();
-  const summary = riskWorkbenchSummary(rows, data.limits || [], data.backtesting || {});
-  const setText = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
-  setText('risk-kpi-gross', riskModuleMoney(summary.gross));
-  setText('risk-kpi-net', riskModuleMoney(summary.net));
-  setText('risk-kpi-physical', riskModuleMoney(summary.physical));
-  setText('risk-kpi-price', riskModuleMoney(summary.price));
-  setText('risk-kpi-var', riskModuleMoney(summary.varTotal));
-  setText('risk-kpi-hedge', `${(summary.avgHedge * 100).toFixed(0)}%`);
-  setText('risk-kpi-breaches', String(summary.breaches));
-  setText('risk-filter-count', `${rows.length} exposure rows`);
-  riskWorkbenchRenderNarrative(rows, summary);
-  riskWorkbenchRenderTreemap(rows);
-  riskWorkbenchRenderHeatmap(rows);
-  riskWorkbenchRenderMap(rows);
-  riskWorkbenchRenderCharts(rows, data.stress || []);
-  riskWorkbenchRenderTables(rows, data.reports || []);
-}
-
-window.riskWorkbenchSetFilter = function(key, value) {
-  riskWorkbenchFilters[key] = value || 'all';
-  riskWorkbenchRenderFilteredView();
-  const select = document.querySelector(`[data-risk-filter="${key}"]`);
-  if (select) select.value = riskWorkbenchFilters[key];
-};
-
-window.riskWorkbenchResetFilters = function() {
-  riskWorkbenchFilters = { commodity:'all', book:'all', region:'all', tenor:'all', source:'all', report:riskWorkbenchFilters.report || 'weekly' };
-  document.querySelectorAll('[data-risk-filter]').forEach(select => { select.value = 'all'; });
-  riskWorkbenchRenderFilteredView();
-};
-
-window.riskWorkbenchSetReport = function(report) {
-  riskWorkbenchFilters.report = report || 'weekly';
-  document.querySelectorAll('.risk-period-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.report === riskWorkbenchFilters.report));
-  riskWorkbenchRenderFilteredView();
-};
-
-window.riskWorkbenchDraftNarrative = function(topic) {
-  const rows = riskWorkbenchFilteredRows();
-  const commodities = riskWorkbenchUnique(rows, 'commodity').slice(0, 5).join(', ');
-  openCopilot();
-  sendCopilotMessage(`Draft a ${riskWorkbenchFilters.report} senior management risk note for ${topic || 'the exposure workbench'}. Focus on exposure, physical obligations, price exposure, VaR drivers, limit issues, and recommended actions. Commodities in scope: ${commodities}.`);
-};
-
-function renderRiskModule(data) {
-  const root = document.getElementById('risk-module-root');
-  if (!root) return;
-  const sourceRows = riskWorkbenchBuildData(data);
-  data.enriched_exposures = sourceRows;
-  const rows = sourceRows;
-  const metrics = data?.metrics || [];
-  const limits = data?.limits || [];
-  const backtesting = data?.backtesting || { observations: [], exceptions: 0, exception_rate_pct: 0 };
-  const latest = data?.latest_var || metrics.find(item => item.confidence === 0.99 && item.horizon_days === 1) || {};
-  const summary = riskWorkbenchSummary(rows, limits, backtesting);
-  const filterRows = [
-    ['commodity', 'Commodity', riskWorkbenchUnique(rows, 'commodity')],
-    ['book', 'Book', riskWorkbenchUnique(rows, 'book_name')],
-    ['region', 'Region', riskWorkbenchUnique(rows, 'region')],
-    ['tenor', 'Tenor', riskWorkbenchUnique(rows, 'tenor')],
-    ['source', 'Exposure Type', riskWorkbenchUnique(rows, 'source_type')]
-  ];
-
-  root.innerHTML = `
-    <div class="screen risk-workbench">
-      <div class="screen-header">
-        <div>
-          <div class="screen-title">Exposure Workbench</div>
-          <div class="screen-subtitle">Exposure, physical obligations, price risk, stress, limits, and executive reporting in one risk cockpit.</div>
-        </div>
-        <div class="screen-actions">
-          <button class="btn btn-secondary btn-sm" onclick="riskWorkbenchSetReport('weekly')">Weekly Pack</button>
-          <button class="btn btn-secondary btn-sm" onclick="riskWorkbenchSetReport('monthly')">Monthly Pack</button>
-          <button class="btn btn-secondary btn-sm" onclick="riskWorkbenchDraftNarrative('Executive exposure summary')">AI Narrative</button>
-          <button class="btn btn-primary btn-sm" onclick="runRiskModule()">Run Risk</button>
-        </div>
-      </div>
-
-      <div class="risk-hero">
-        <div class="risk-hero-main">
-          <div class="risk-hero-eyebrow">Upper management exposure view</div>
-          <h2>Physical and price exposure across the energy portfolio</h2>
-          <div id="risk-management-note" class="risk-management-note"></div>
-        </div>
-        <div class="risk-hero-side">
-          <div><span>1D 99% VaR</span><strong>${riskModuleMoney(latest.var_amount)}</strong></div>
-          <div><span>Expected shortfall</span><strong>${riskModuleMoney(latest.expected_shortfall)}</strong></div>
-          <div><span>Model exceptions</span><strong>${backtesting.exceptions || 0}</strong></div>
-        </div>
-      </div>
-
-      <div class="risk-filter-bar">
-        ${filterRows.map(([key, label, values]) => `
-          <label>
-            <span>${label}</span>
-            <select data-risk-filter="${key}" onchange="riskWorkbenchSetFilter('${key}', this.value)">
-              ${riskWorkbenchOptionHtml(values, riskWorkbenchFilters[key])}
-            </select>
-          </label>
-        `).join('')}
-        <div class="risk-period-control">
-          <button class="risk-period-btn active" data-report="weekly" onclick="riskWorkbenchSetReport('weekly')">Weekly</button>
-          <button class="risk-period-btn" data-report="monthly" onclick="riskWorkbenchSetReport('monthly')">Monthly</button>
-        </div>
-        <button class="btn btn-secondary btn-sm" onclick="riskWorkbenchResetFilters()">Reset</button>
-        <span id="risk-filter-count" class="risk-filter-count">${rows.length} exposure rows</span>
-      </div>
-
-      <div class="risk-kpi-grid">
-        <div class="risk-kpi-card"><span>Gross Exposure</span><strong id="risk-kpi-gross">${riskModuleMoney(summary.gross)}</strong><em>Total absolute notional</em></div>
-        <div class="risk-kpi-card"><span>Net Exposure</span><strong id="risk-kpi-net">${riskModuleMoney(summary.net)}</strong><em>Long / short after hedge</em></div>
-        <div class="risk-kpi-card"><span>Physical Exposure</span><strong id="risk-kpi-physical">${riskModuleMoney(summary.physical)}</strong><em>Cargo, storage, logistics</em></div>
-        <div class="risk-kpi-card"><span>Price Exposure</span><strong id="risk-kpi-price">${riskModuleMoney(summary.price)}</strong><em>Delta-equivalent value</em></div>
-        <div class="risk-kpi-card"><span>VaR Contribution</span><strong id="risk-kpi-var">${riskModuleMoney(summary.varTotal)}</strong><em>Commodity-level risk</em></div>
-        <div class="risk-kpi-card"><span>Hedge Coverage</span><strong id="risk-kpi-hedge">${(summary.avgHedge * 100).toFixed(0)}%</strong><em>Average effectiveness</em></div>
-        <div class="risk-kpi-card danger"><span>Breaches</span><strong id="risk-kpi-breaches">${summary.breaches}</strong><em>${summary.warnings} watch items</em></div>
-      </div>
-
-      <div class="risk-viz-grid">
-        <section class="risk-panel risk-panel-wide">
-          <div class="risk-panel-head"><h3>Commodity Exposure Treemap</h3><span>Size by gross notional</span></div>
-          <div id="risk-treemap" class="risk-treemap"></div>
-        </section>
-        <section class="risk-panel">
-          <div class="risk-panel-head"><h3>Physical vs Paper</h3><span>Exposure stack</span></div>
-          <div class="risk-chart"><canvas id="risk-physical-chart"></canvas></div>
-        </section>
-        <section class="risk-panel risk-panel-wide">
-          <div class="risk-panel-head"><h3>Price Exposure Heatmap</h3><span>Commodity x tenor</span></div>
-          <div id="risk-heatmap" class="risk-heatmap"></div>
-        </section>
-        <section class="risk-panel">
-          <div class="risk-panel-head"><h3>Regional Concentration</h3><span>Physical and basis hubs</span></div>
-          <div id="risk-region-map" class="risk-region-map"></div>
-        </section>
-        <section class="risk-panel">
-          <div class="risk-panel-head"><h3>VaR Contribution</h3><span>Commodity drivers</span></div>
-          <div class="risk-chart"><canvas id="risk-var-donut"></canvas></div>
-        </section>
-        <section class="risk-panel">
-          <div class="risk-panel-head"><h3>Stress Impact</h3><span>Scenario P&L</span></div>
-          <div class="risk-chart"><canvas id="risk-stress-chart"></canvas></div>
-        </section>
-        <section class="risk-panel">
-          <div class="risk-panel-head"><h3>Hedge Effectiveness</h3><span>Exposure size vs coverage</span></div>
-          <div class="risk-chart"><canvas id="risk-hedge-scatter"></canvas></div>
-        </section>
-        <section class="risk-panel">
-          <div class="risk-panel-head"><h3>Report Pack Builder</h3><span>Weekly and monthly outputs</span></div>
-          <div id="risk-report-pack" class="risk-report-pack"></div>
-        </section>
-      </div>
-
-      <div class="risk-panel risk-table-panel">
-        <div class="risk-panel-head">
-          <h3>Exposure Drilldown</h3>
-          <span>Physical, financial, delta, price index, VaR, and control status</span>
-        </div>
-        <div class="risk-table-wrap">
-          <table class="data-table risk-exposure-table">
-            <thead>
-              <tr>
-                <th>Commodity</th><th>Book / Region</th><th>Exposure</th>
-                <th class="right">Physical</th><th class="right">Financial</th><th class="right">Delta Eq.</th>
-                <th class="right">Notional</th><th class="right">Hedge</th><th class="right">VaR</th><th>Status</th>
-              </tr>
-            </thead>
-            <tbody id="risk-exposure-rows"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  `;
-  riskWorkbenchSetReport(riskWorkbenchFilters.report || 'weekly');
-  riskWorkbenchRenderFilteredView();
-}
-
-const RISK_REPORTING_REPORTS = [
-  { id:'current-exposure', label:'Current Exposure', group:'Risk', description:'Position, source, curve, period, and counterparty rows' },
-  { id:'risk-exposure', label:'Risk Exposure', group:'Risk', description:'Risk ID, deal detail, VaR, stress, and control flags' },
-  { id:'credit-exposure', label:'Credit Exposure', group:'Credit', description:'Counterparty concentration and limit watch' },
-  { id:'deal-search', label:'Deal Search', group:'Commercial', description:'Find deals, details, curves, and linked rows' },
-  { id:'shipment-cost', label:'Shipment to Cost', group:'Logistics', description:'Movement, planned transfer, inventory, and cost checks' },
-  { id:'price-curves', label:'Price Curves', group:'Pricing', description:'Curve service, curve product, quote date, and pricing status' },
-  { id:'mark-to-market', label:'Mark to Market', group:'Finance', description:'Notional, VaR, stress, MTM, and explanation' }
-];
-
-const RISK_REPORTING_SAMPLE_ROWS = [
-  { risk_id:'2266598', deal:'PEMPC21LP0007', deal_detail_id:'63', our_company:'Pembina Midstream Limited Partnership', their_company:'Pembina Pipeline Corporation', risk_type:'Physical', product:'SYN', location:'Edmonton AB South Terminal', curve_service:'NYMEX', curve_product:'NYMEX WTI (CL)', curve_location:'n/a', period_start:'2026-08-01', period_end:'2026-08-31', strategy:'CRD-STREAM-Crude-PMLP', position_volume:-2142.86, priced_in_pct:1, portfolio_position_group:'AOSPL', child_product:'SYN', curve_child_product:'NYMEX WTI (CL)', period_group_start:'2026-08-01', period_group_end:'2026-08-31', end_of_day:'2026-06-23', exposure_quote_date:'', source:'Movement Transaction' },
-  { risk_id:'2266598', deal:'PEMPC21LP0007', deal_detail_id:'63', our_company:'Pembina Midstream Limited Partnership', their_company:'Pembina Pipeline Corporation', risk_type:'Physical', product:'SYN', location:'Edmonton AB South Terminal', curve_service:'Calrock Forward', curve_product:'SYN / EDM Diff', curve_location:'Edmonton AB', period_start:'2026-06-01', period_end:'2026-06-30', strategy:'CRD-STREAM-Crude-PMLP', position_volume:-9000, priced_in_pct:1, portfolio_position_group:'AOSPL', child_product:'SYN', curve_child_product:'SYN / EDM Diff', period_group_start:'2026-06-01', period_group_end:'2026-06-30', end_of_day:'2026-06-23', exposure_quote_date:'', source:'Movement Transaction' },
-  { risk_id:'2266607', deal:'ENBPL21LP0005', deal_detail_id:'9', our_company:'Pembina Midstream Limited Partnership', their_company:'Enbridge Pipelines Inc.', risk_type:'Physical', product:'SYN', location:'Edmonton AB South Terminal', curve_service:'Calrock Forward', curve_product:'SYN / EDM Diff', curve_location:'Edmonton AB', period_start:'2026-06-01', period_end:'2026-06-30', strategy:'SYN-STREAM-Crude-PMLP', position_volume:40000, priced_in_pct:1, portfolio_position_group:'AOSPL', child_product:'SYN', curve_child_product:'SYN / EDM Diff', period_group_start:'2026-06-01', period_group_end:'2026-06-30', end_of_day:'2026-06-23', exposure_quote_date:'', source:'Movement Transaction' },
-  { risk_id:'2214608', deal:'ENBPL21LP0005', deal_detail_id:'8', our_company:'Pembina Midstream Limited Partnership', their_company:'Enbridge Pipelines Inc.', risk_type:'Physical', product:'SYN', location:'North 40 AB Terminal', curve_service:'Calrock Forward', curve_product:'SYN / EDM Diff', curve_location:'Edmonton AB', period_start:'2026-07-01', period_end:'2026-07-31', strategy:'SYN-STREAM-Crude-PMLP', position_volume:-75000, priced_in_pct:1, portfolio_position_group:'AOSPL', child_product:'SYN', curve_child_product:'SYN / EDM Diff', period_group_start:'2026-07-01', period_group_end:'2026-07-31', end_of_day:'2026-06-23', exposure_quote_date:'', source:'Planned Transfer' },
-  { risk_id:'2108742', deal:'PEMPC21BD0011', deal_detail_id:'1', our_company:'Pembina Midstream Limited Partnership', their_company:'Pembina Pipeline Corporation', risk_type:'Inventory', product:'SYN', location:'North 40 AB Terminal', curve_service:'NYMEX', curve_product:'NYMEX WTI (CL)', curve_location:'n/a', period_start:'2026-08-01', period_end:'2026-08-31', strategy:'SYN-STREAM-Crude-PMLP', position_volume:16170.01, priced_in_pct:1, portfolio_position_group:'AOSPL', child_product:'SYN', curve_child_product:'NYMEX WTI (CL)', period_group_start:'2026-08-01', period_group_end:'2026-08-31', end_of_day:'2026-06-23', exposure_quote_date:'', source:'Actual Balance' },
-  { risk_id:'', deal:'CNVUS26TB0002', deal_detail_id:'2', our_company:'Pembina Midstream Limited Partnership', their_company:'Cenovus Energy Inc.', risk_type:'Physical', product:'SYN', location:'Edmonton AB South Terminal', curve_service:'Calrock Forward', curve_product:'SYN / EDM Diff', curve_location:'Edmonton AB', period_start:'2026-06-01', period_end:'2026-06-30', strategy:'SYN-STREAM-Crude-PMLP', position_volume:-48544.80, priced_in_pct:1, portfolio_position_group:'AOSPL', child_product:'SYN', curve_child_product:'SYN / EDM Diff', period_group_start:'2026-06-01', period_group_end:'2026-06-30', end_of_day:'2026-06-23', exposure_quote_date:'', source:'Movement Transaction' },
-  { risk_id:'', deal:'PEMPC25BD0004', deal_detail_id:'5', our_company:'Pembina Midstream Limited Partnership', their_company:'Pembina Pipeline Corporation', risk_type:'Inventory', product:'SYN', location:'Edmonton AB South Terminal', curve_service:'Calrock Forward', curve_product:'SYN / EDM Diff', curve_location:'Edmonton AB', period_start:'2026-06-01', period_end:'2026-06-30', strategy:'SYN-STREAM-Crude-PMLP', position_volume:-48544.80, priced_in_pct:1, portfolio_position_group:'AOSPL', child_product:'SYN', curve_child_product:'SYN / EDM Diff', period_group_start:'2026-06-01', period_group_end:'2026-06-30', end_of_day:'2026-06-23', exposure_quote_date:'', source:'Inventory Change' },
-  { risk_id:'', deal:'UNIPC26TP0006', deal_detail_id:'1', our_company:'Pembina Midstream Limited Partnership', their_company:'Unipec Canada Ltd.', risk_type:'Physical', product:'SYN', location:'Edmonton AB - AOSPL', curve_service:'NYMEX', curve_product:'NYMEX WTI (CL)', curve_location:'n/a', period_start:'2026-08-01', period_end:'2026-08-31', strategy:'SYN-STREAM-Crude-PMLP', position_volume:10000, priced_in_pct:1, portfolio_position_group:'AOSPL', child_product:'SYN', curve_child_product:'NYMEX WTI (CL)', period_group_start:'2026-08-01', period_group_end:'2026-08-31', end_of_day:'2026-06-23', exposure_quote_date:'', source:'Planned Transfer' }
-];
-
-var riskReportingState = {
-  report:'current-exposure',
-  filters:{ company:'all', counterparty:'all', risk_type:'all', product:'all', location:'all', curve:'all', source:'all', period:'all', date_from:'', date_to:'', search:'' },
-  groupBy:'their_company',
-  selectedIssue:null,
-  sortKey:'abs_position',
-  sortDir:'desc',
-  reportPanelOpen:true,
-  filtersOpen:false,
-  drillOpen:false,
-  aiPanelOpen:false,
-  columnsOpen:false,
-  hiddenColumns:['our_company', 'strategy', 'end_of_day']
-};
-
-function riskReportingDate(value) {
-  if (!value) return '';
-  const text = String(value);
-  return text.length >= 10 ? text.slice(0, 10) : text;
-}
-
-function riskReportingMonth(value) {
-  const text = riskReportingDate(value);
-  return text.length >= 7 ? text.slice(0, 7) : 'No Period';
-}
-
-function riskReportingToReportRow(row, index) {
-  const commodity = row.commodity || row.product || row.child_product || 'SYN';
-  const volume = Number(row.position_volume ?? row.delta_equivalent ?? row.net_volume ?? 0);
-  const price = Number(row.normalized_price || 82 + (index % 7) * 2.15);
-  const notional = Number(row.notional_usd || volume * price);
-  const absPosition = Math.abs(volume);
-  const dealSeed = String(row.deal || row.id || row.position_id || `RISK${index + 1}`).replace(/[^A-Za-z0-9]/g, '').slice(0, 10).toUpperCase();
-  const sourceType = row.source || row.source_type || (Number(row.physical_volume || 0) ? 'Movement Transaction' : 'Financial Deal');
-  const riskType = row.risk_type || (sourceType.indexOf('Inventory') >= 0 ? 'Inventory' : (row.source_type === 'Financial' ? 'Quotational' : 'Physical'));
-  const periodStart = riskReportingDate(row.period_group_start || row.period_start || row.as_of || '2026-08-01');
-  const periodEnd = riskReportingDate(row.period_group_end || row.period_end || '2026-08-31');
-  const curve = row.curve_child_product || row.curve_product || row.price_index || row.basis_bucket || `${commodity} Index`;
-  const status = riskWorkbenchStatusFor(row);
-  return {
-    row_id: row.row_id || `rr-${index}`,
-    risk_id: row.risk_id || (riskReportingState.report === 'risk-exposure' ? String(2200000 + index * 17) : ''),
-    deal: row.deal || `${commodity.slice(0, 3).toUpperCase()}${dealSeed}${String(index + 1).padStart(3, '0')}`,
-    deal_detail_id: String(row.deal_detail_id || row.position_id || (index % 8) + 1),
-    our_company: row.our_company || 'Pembina Midstream Limited Partnership',
-    their_company: row.their_company || row.counterparty || (index % 3 === 0 ? 'Pembina Pipeline Corporation' : row.book_name || 'Exchange'),
-    risk_type: riskType,
-    product: row.product || commodity,
-    location: row.location || row.location_basis || row.region || 'AOSPL',
-    curve_service: row.curve_service || (String(curve).indexOf('NYMEX') >= 0 ? 'NYMEX' : 'Calrock Forward'),
-    curve_product: row.curve_product || curve,
-    curve_location: row.curve_location || (String(curve).indexOf('NYMEX') >= 0 ? 'n/a' : row.region || 'Edmonton AB'),
-    period_start: periodStart,
-    period_end: periodEnd,
-    strategy: row.strategy || `${commodity.slice(0, 3).toUpperCase()}-STREAM-Crude-PMLP`,
-    position_volume: volume,
-    abs_position: absPosition,
-    priced_in_pct: Number(row.priced_in_pct ?? row.hedge_effectiveness ?? 1),
-    portfolio_position_group: row.portfolio_position_group || row.book_name || 'AOSPL',
-    child_product: row.child_product || commodity,
-    curve_child_product: curve,
-    period_group_start: periodStart,
-    period_group_end: periodEnd,
-    period_month: riskReportingMonth(periodStart),
-    end_of_day: riskReportingDate(row.end_of_day || row.as_of || '2026-06-23'),
-    exposure_quote_date: riskReportingDate(row.exposure_quote_date || ''),
-    source: sourceType,
-    notional_usd: notional,
-    var_contribution: Number(row.var_contribution || Math.abs(notional) * 0.075),
-    stress_loss: Number(row.stress_loss || -Math.abs(notional) * 0.16),
-    status,
-    ai_severity: status === 'Breach' ? 'High' : status === 'Warning' ? 'Medium' : 'Low'
-  };
-}
-
-function riskReportingExpandRows(rows) {
-  const counterparties = [
-    'Pembina Pipeline Corporation', 'Enbridge Pipelines Inc.', 'Pembina Oil Sands Pipeline L.P.',
-    'Suncor Energy Marketing Inc.', 'Cenovus Energy Inc.', 'Unipec Canada Ltd.',
-    'CNOOC Marketing Canada', 'Shell Trading Canada', 'Elbow River Marketing Ltd.'
-  ];
-  const locations = ['North 40 AB Terminal', 'Edmonton AB South Terminal', 'Edmonton AB - AOSPL', 'AOSPL'];
-  const curves = [
-    ['Calrock Forward', 'SYN / EDM Diff', 'Edmonton AB'],
-    ['Calrock Forward', 'SYN / SSP Diff', 'Edmonton AB'],
-    ['NYMEX', 'NYMEX WTI (CL)', 'n/a'],
-    ['WADF Enbridge PL', 'MSW Diff', 'Edmonton AB'],
-    ['RFCRD-XCOMMCRDINSYN', 'CRD', 'Edmonton AB']
-  ];
-  const sources = ['Movement Transaction', 'Inventory Change', 'Planned Transfer', 'Time Based Estimated Transaction', 'Actual Balance', 'Obligation'];
-  const riskTypes = ['Physical', 'Inventory', 'Quotational'];
-  const expanded = [];
-  rows.forEach((row, rowIndex) => {
-    expanded.push({ ...row, row_id: `${row.row_id}-base` });
-    for (let i = 1; i <= 8; i += 1) {
-      const month = 6 + ((rowIndex + i) % 5);
-      const curve = curves[(rowIndex + i) % curves.length];
-      const factor = (i % 2 ? -1 : 1) * (0.45 + (i * 0.13));
-      const volume = Math.round(Number(row.position_volume || 0) * factor * 100) / 100 || (i % 2 ? -10000 : 12500);
-      expanded.push({
-        ...row,
-        row_id: `${row.row_id}-${i}`,
-        risk_id: row.risk_id || String(2200000 + rowIndex * 97 + i),
-        deal: `${String(row.deal || 'DEAL').replace(/\d+$/, '')}${String(1000 + rowIndex * 11 + i).slice(-4)}`,
-        deal_detail_id: String((Number(row.deal_detail_id || 1) + i) % 78 || 1),
-        their_company: counterparties[(rowIndex + i) % counterparties.length],
-        risk_type: riskTypes[(rowIndex + i) % riskTypes.length],
-        location: locations[(rowIndex + i) % locations.length],
-        curve_service: curve[0],
-        curve_product: curve[1],
-        curve_child_product: curve[1],
-        curve_location: curve[2],
-        source: sources[(rowIndex + i) % sources.length],
-        position_volume: volume,
-        abs_position: Math.abs(volume),
-        period_start: `2026-${String(month).padStart(2, '0')}-01`,
-        period_end: `2026-${String(month).padStart(2, '0')}-${month === 9 ? '30' : '31'}`,
-        period_group_start: `2026-${String(month).padStart(2, '0')}-01`,
-        period_group_end: `2026-${String(month).padStart(2, '0')}-${month === 9 ? '30' : '31'}`,
-        period_month: `2026-${String(month).padStart(2, '0')}`,
-        exposure_quote_date: i % 4 === 0 ? '2026-06-23' : '',
-        priced_in_pct: i % 7 === 0 ? 0.72 : 1,
-        notional_usd: volume * (78 + ((rowIndex + i) % 9) * 1.85),
-        var_contribution: Math.abs(volume) * (5.8 + i),
-        stress_loss: -Math.abs(volume) * (12 + i)
-      });
-    }
-  });
-  return expanded.map((row, index) => {
-    const status = row.priced_in_pct < 0.95 && row.abs_position > 25000 ? 'Breach' : riskWorkbenchStatusFor(row);
-    return {
-      ...row,
-      status,
-      ai_severity: status === 'Breach' ? 'High' : status === 'Warning' ? 'Medium' : 'Low',
-      row_id: row.row_id || `expanded-${index}`
-    };
-  });
-}
-
-function riskReportingRows(data) {
-  const normalized = riskWorkbenchBuildData(data || {}).map(riskReportingToReportRow);
-  const sample = RISK_REPORTING_SAMPLE_ROWS.map(riskReportingToReportRow);
-  const keyed = new Map();
-  sample.concat(normalized).forEach(row => keyed.set(`${row.deal}|${row.deal_detail_id}|${row.curve_child_product}|${row.period_group_start}|${row.source}`, row));
-  return riskReportingExpandRows(Array.from(keyed.values()));
-}
-
-function riskReportingVisibleRows() {
-  const rows = (window.RISK_MODULE_STATE?.report_rows || []);
-  const f = riskReportingState.filters;
-  const search = String(f.search || '').toLowerCase().trim();
-  return rows.filter(row => {
-    if (f.company !== 'all' && row.our_company !== f.company) return false;
-    if (f.counterparty !== 'all' && row.their_company !== f.counterparty) return false;
-    if (f.risk_type !== 'all' && row.risk_type !== f.risk_type) return false;
-    if (f.product !== 'all' && row.product !== f.product) return false;
-    if (f.location !== 'all' && row.location !== f.location) return false;
-    if (f.curve !== 'all' && row.curve_child_product !== f.curve) return false;
-    if (f.source !== 'all' && row.source !== f.source) return false;
-    if (f.period !== 'all' && row.period_month !== f.period) return false;
-    if (f.date_from && riskReportingDate(row.period_group_start) < f.date_from) return false;
-    if (f.date_to && riskReportingDate(row.period_group_start) > f.date_to) return false;
-    if (riskReportingState.report === 'risk-exposure' && !row.risk_id) return false;
-    if (riskReportingState.report === 'credit-exposure' && row.their_company === 'Exchange') return false;
-    if (riskReportingState.report === 'shipment-cost' && !/Movement|Transfer|Inventory|Balance/i.test(row.source)) return false;
-    if (riskReportingState.report === 'price-curves' && !row.curve_child_product) return false;
-    if (search) {
-      const haystack = [row.deal, row.risk_id, row.deal_detail_id, row.their_company, row.location, row.curve_child_product, row.strategy, row.source].join(' ').toLowerCase();
-      if (!haystack.includes(search)) return false;
-    }
-    return true;
-  }).sort((a, b) => {
-    const key = riskReportingState.sortKey;
-    const av = a[key];
-    const bv = b[key];
-    const result = typeof av === 'number' || typeof bv === 'number' ? Number(av || 0) - Number(bv || 0) : String(av || '').localeCompare(String(bv || ''));
-    return riskReportingState.sortDir === 'asc' ? result : -result;
-  });
-}
-
-function riskReportingUnique(rows, key) {
-  return [...new Set(rows.map(row => row[key]).filter(Boolean))].sort();
-}
-
-function riskReportingFilterOptions(rows, key, active) {
-  return '<option value="all">All</option>' + riskReportingUnique(rows, key)
-    .map(value => `<option value="${escapeHtml(value)}" ${value === active ? 'selected' : ''}>${escapeHtml(value)}</option>`)
-    .join('');
-}
-
-function riskReportingSummary(rows) {
-  const gross = rows.reduce((sum, row) => sum + row.abs_position, 0);
-  const net = rows.reduce((sum, row) => sum + row.position_volume, 0);
-  const notional = rows.reduce((sum, row) => sum + Math.abs(row.notional_usd), 0);
-  const priced = rows.length ? rows.reduce((sum, row) => sum + Number(row.priced_in_pct || 0), 0) / rows.length : 0;
-  const counterparties = new Set(rows.map(row => row.their_company)).size;
-  const issues = riskReportingIssues(rows);
-  return { gross, net, notional, priced, counterparties, issues };
-}
-
-function riskReportingGroupRows(rows, key) {
-  return Object.entries(rows.reduce((acc, row) => {
-    const label = row[key] || 'Other';
-    if (!acc[label]) acc[label] = { label, rows:0, gross:0, net:0, notional:0 };
-    acc[label].rows += 1;
-    acc[label].gross += row.abs_position;
-    acc[label].net += row.position_volume;
-    acc[label].notional += Math.abs(row.notional_usd);
-    return acc;
-  }, {})).map(([, value]) => value).sort((a, b) => b.gross - a.gross);
-}
-
-function riskReportingIssues(rows) {
-  const issues = [];
-  const byCounterparty = riskReportingGroupRows(rows, 'their_company');
-  const byCurve = riskReportingGroupRows(rows, 'curve_child_product');
-  const bySource = riskReportingGroupRows(rows, 'source');
-  const totalGross = rows.reduce((sum, row) => sum + row.abs_position, 0) || 1;
-  byCounterparty.slice(0, 4).forEach(group => {
-    const pct = group.gross / totalGross;
-    if (pct >= 0.28) issues.push({
-      id:`counterparty-${group.label}`, severity:pct >= 0.45 ? 'High' : 'Medium',
-      title:'Counterparty concentration', scope:group.label,
-      body:`${group.label} represents ${(pct * 100).toFixed(0)}% of filtered gross exposure.`,
-      action:'Review credit limit, collateral, and open deal drivers.', filter:{ key:'counterparty', value:group.label }
-    });
-  });
-  byCurve.slice(0, 3).forEach(group => {
-    if (group.gross > 50000) issues.push({
-      id:`curve-${group.label}`, severity:'Medium', title:'Curve exposure driver', scope:group.label,
-      body:`${group.label} is one of the largest curve buckets in the current report.`,
-      action:'Drill to deal rows and confirm pricing curve mapping.', filter:{ key:'curve', value:group.label }
-    });
-  });
-  const missingQuote = rows.filter(row => !row.exposure_quote_date && /NYMEX|Diff|Curve|Forward/i.test(row.curve_child_product));
-  if (missingQuote.length) issues.push({
-    id:'missing-quote-date', severity:'Medium', title:'Missing exposure quote date', scope:`${missingQuote.length} rows`,
-    body:'Rows have priced exposure but no quote date populated.',
-    action:'Confirm quote-date feed and EOD pricing completeness.', filter:null
-  });
-  const largeUnpriced = rows.filter(row => Number(row.priced_in_pct || 0) < 0.95 && row.abs_position > 25000);
-  if (largeUnpriced.length) issues.push({
-    id:'unpriced-exposure', severity:'High', title:'Large partially priced exposure', scope:`${largeUnpriced.length} rows`,
-    body:'Material rows are below 95% priced-in.',
-    action:'Open pricing report and resolve missing fixed/floating components.', filter:null
-  });
-  const planned = bySource.find(group => group.label === 'Planned Transfer');
-  if (planned && planned.gross / totalGross > 0.22) issues.push({
-    id:'planned-transfer-mix', severity:'Low', title:'Planned transfer source mix', scope:'Planned Transfer',
-    body:`Planned transfers represent ${((planned.gross / totalGross) * 100).toFixed(0)}% of filtered gross exposure.`,
-    action:'Compare planned transfers against actual movements before close.', filter:{ key:'source', value:'Planned Transfer' }
-  });
-  return issues.slice(0, 8);
-}
-
-function riskReportingIssueClass(severity) {
-  const clean = String(severity || '').toLowerCase();
-  if (clean === 'high') return 'critical';
-  if (clean === 'medium') return 'warning';
-  return 'success';
-}
-
-function riskReportingColumnList() {
-  const base = [
-    ['actions', 'Actions'], ['deal', 'Deal'], ['deal_detail_id', 'Detail'], ['risk_id', 'Risk ID'],
-    ['our_company', 'Our Company'], ['their_company', 'Their Company'], ['risk_type', 'Risk Type'],
-    ['product', 'Product'], ['location', 'Location'], ['curve_service', 'Curve Service'],
-    ['curve_child_product', 'Curve Child Product'], ['period_group_start', 'Period Start'],
-    ['period_group_end', 'Period End'], ['strategy', 'Strategy'], ['position_volume', 'Position', 'right'],
-    ['priced_in_pct', 'Priced-in %', 'right'], ['portfolio_position_group', 'Position Group'],
-    ['end_of_day', 'End of Day'], ['source', 'Source'], ['notional_usd', 'Exposure Value', 'right'],
-    ['var_contribution', 'VaR', 'right'], ['stress_loss', 'Stress P&L', 'right'], ['status', 'Status']
-  ];
-  if (riskReportingState.report === 'current-exposure') return base.filter(([key]) => key !== 'risk_id' && key !== 'var_contribution' && key !== 'stress_loss');
-  if (riskReportingState.report === 'risk-exposure') return base.filter(([key]) => key !== 'notional_usd');
-  if (riskReportingState.report === 'credit-exposure') return [
-    ['actions', 'Actions'], ['their_company', 'Counterparty'], ['portfolio_position_group', 'Position Group'],
-    ['risk_type', 'Risk Type'], ['product', 'Product'], ['location', 'Location'], ['position_volume', 'Position', 'right'],
-    ['notional_usd', 'Exposure Value', 'right'], ['curve_child_product', 'Curve'], ['source', 'Source'], ['status', 'Status']
-  ];
-  if (riskReportingState.report === 'shipment-cost') return [
-    ['actions', 'Actions'], ['deal', 'Deal'], ['source', 'Shipment Source'], ['location', 'Location'], ['period_group_start', 'Period'],
-    ['product', 'Product'], ['position_volume', 'Volume', 'right'], ['their_company', 'Counterparty'],
-    ['curve_child_product', 'Price Curve'], ['status', 'Cost Check']
-  ];
-  if (riskReportingState.report === 'price-curves') return [
-    ['actions', 'Actions'], ['curve_service', 'Curve Service'], ['curve_child_product', 'Curve Product'], ['curve_location', 'Curve Location'],
-    ['product', 'Product'], ['period_group_start', 'Period Start'], ['exposure_quote_date', 'Quote Date'],
-    ['position_volume', 'Position', 'right'], ['priced_in_pct', 'Priced-in %', 'right'], ['deal', 'Deal'], ['status', 'Status']
-  ];
-  if (riskReportingState.report === 'mark-to-market') return [
-    ['actions', 'Actions'], ['deal', 'Deal'], ['their_company', 'Counterparty'], ['product', 'Product'], ['curve_child_product', 'Curve'],
-    ['position_volume', 'Position', 'right'], ['notional_usd', 'MTM Proxy', 'right'], ['var_contribution', 'VaR', 'right'],
-    ['stress_loss', 'Stress P&L', 'right'], ['status', 'Status']
-  ];
-  return base;
-}
-
-function riskReportingColumns() {
-  return riskReportingColumnList().filter(([key]) => key === 'actions' || !riskReportingState.hiddenColumns.includes(key));
-}
-
-function riskReportingFormatCell(row, key) {
-  if (key === 'actions') {
-    return `<div class="risk-row-actions">
-      <button onclick="event.stopPropagation(); riskReportingOpenRow('${row.row_id}')">Drill</button>
-    </div>`;
-  }
-  if (key === 'position_volume' || key === 'abs_position') return riskModuleNumber(row[key]);
-  if (key === 'notional_usd' || key === 'var_contribution' || key === 'stress_loss') return riskModuleMoney(row[key]);
-  if (key === 'priced_in_pct') return Number(row[key] || 0).toLocaleString(undefined, { style:'percent', maximumFractionDigits:0 });
-  if (key === 'status') return `<span class="status-badge ${riskModuleStatusClass(row.status)}">${escapeHtml(row.status)}</span>`;
-  return escapeHtml(row[key] || '');
-}
-
-function riskReportingRender() {
-  const copilotFab = document.getElementById('copilot-fab');
-  if (copilotFab) copilotFab.style.display = 'none';
-  const allRows = window.RISK_MODULE_STATE?.report_rows || [];
-  const rows = riskReportingVisibleRows();
-  const summary = riskReportingSummary(rows);
-  const activeReport = RISK_REPORTING_REPORTS.find(report => report.id === riskReportingState.report) || RISK_REPORTING_REPORTS[0];
-  const groupRows = riskReportingGroupRows(rows, riskReportingState.groupBy).slice(0, 12);
-  const issues = summary.issues;
-  const columns = riskReportingColumns();
-  const allColumns = riskReportingColumnList().filter(([key]) => key !== 'actions');
-  const root = document.getElementById('risk-module-root');
-  if (!root) return;
-
-  root.innerHTML = `
-    <div class="screen risk-reporting">
-      <div class="screen-header">
-        <div>
-          <div class="screen-title">Risk Reporting Center</div>
-          <div class="screen-subtitle">Export-style risk reports with filters, drill-down, review items, and deal-level detail.</div>
-        </div>
-        <div class="screen-actions">
-          <button class="btn btn-secondary btn-sm" onclick="riskReportingToggle('reportPanelOpen')">${riskReportingState.reportPanelOpen ? 'Hide Reports' : 'Show Reports'}</button>
-          <button class="btn btn-secondary btn-sm" onclick="riskReportingToggle('filtersOpen')">${riskReportingState.filtersOpen ? 'Hide Filters' : 'Show Filters'}</button>
-          <button class="btn btn-secondary btn-sm" onclick="riskReportingToggle('columnsOpen')">Columns</button>
-          <button class="btn btn-secondary btn-sm" onclick="riskReportingExportCsv()">Export CSV</button>
-          <button class="btn btn-primary btn-sm" onclick="runRiskModule()">Run Risk</button>
-        </div>
-      </div>
-
-      <div class="risk-report-shell ${riskReportingState.reportPanelOpen ? '' : 'reports-collapsed'}">
-        <aside class="risk-report-catalog ${riskReportingState.reportPanelOpen ? '' : 'is-collapsed'}">
-          <div class="risk-report-catalog-title">Reports</div>
-          ${RISK_REPORTING_REPORTS.map(report => `
-            <button class="risk-report-tab ${report.id === riskReportingState.report ? 'active' : ''}" onclick="riskReportingSetReport('${report.id}')">
-              <span>${escapeHtml(report.group)}</span>
-              <strong>${escapeHtml(report.label)}</strong>
-              <em>${escapeHtml(report.description)}</em>
-            </button>
-          `).join('')}
-        </aside>
-
-        <main class="risk-report-main">
-          <section class="risk-report-commandbar">
-            <div class="risk-report-titleblock">
-              <span>${escapeHtml(activeReport.group)} report</span>
-              <strong>${escapeHtml(activeReport.label)}</strong>
-            </div>
-            <div class="risk-command-summary">
-              <span>${rows.length} rows</span>
-              <span>Gross ${riskModuleNumber(summary.gross)}</span>
-              <span>Net ${riskModuleNumber(summary.net)}</span>
-              <span>${issues.length} review items</span>
-            </div>
-            <button class="btn btn-secondary btn-sm" onclick="riskReportingToggle('filtersOpen')">${riskReportingState.filtersOpen ? 'Collapse Filters' : 'Criteria'}</button>
-            <button class="btn btn-secondary btn-sm" onclick="riskReportingToggle('drillOpen')">${riskReportingState.drillOpen ? 'Hide Drilldown' : 'Show Drilldown'}</button>
-            <button class="btn btn-secondary btn-sm" onclick="riskReportingOpenIssues()">Review Items</button>
-          </section>
-
-          <section class="risk-report-criteria ${riskReportingState.filtersOpen ? '' : 'is-collapsed'}">
-            <label><span>Our Company</span><select data-risk-report-filter="company" onchange="riskReportingSetFilter('company', this.value)">${riskReportingFilterOptions(allRows, 'our_company', riskReportingState.filters.company)}</select></label>
-            <label><span>Counterparty</span><select data-risk-report-filter="counterparty" onchange="riskReportingSetFilter('counterparty', this.value)">${riskReportingFilterOptions(allRows, 'their_company', riskReportingState.filters.counterparty)}</select></label>
-            <label><span>Risk Type</span><select data-risk-report-filter="risk_type" onchange="riskReportingSetFilter('risk_type', this.value)">${riskReportingFilterOptions(allRows, 'risk_type', riskReportingState.filters.risk_type)}</select></label>
-            <label><span>Product</span><select data-risk-report-filter="product" onchange="riskReportingSetFilter('product', this.value)">${riskReportingFilterOptions(allRows, 'product', riskReportingState.filters.product)}</select></label>
-            <label><span>Location</span><select data-risk-report-filter="location" onchange="riskReportingSetFilter('location', this.value)">${riskReportingFilterOptions(allRows, 'location', riskReportingState.filters.location)}</select></label>
-            <label><span>Curve</span><select data-risk-report-filter="curve" onchange="riskReportingSetFilter('curve', this.value)">${riskReportingFilterOptions(allRows, 'curve_child_product', riskReportingState.filters.curve)}</select></label>
-            <label><span>Source</span><select data-risk-report-filter="source" onchange="riskReportingSetFilter('source', this.value)">${riskReportingFilterOptions(allRows, 'source', riskReportingState.filters.source)}</select></label>
-            <label><span>Period</span><select data-risk-report-filter="period" onchange="riskReportingSetFilter('period', this.value)">${riskReportingFilterOptions(allRows, 'period_month', riskReportingState.filters.period)}</select></label>
-            <label><span>From Date</span><input type="date" value="${escapeHtml(riskReportingState.filters.date_from)}" onchange="riskReportingSetFilter('date_from', this.value)"></label>
-            <label><span>To Date</span><input type="date" value="${escapeHtml(riskReportingState.filters.date_to)}" onchange="riskReportingSetFilter('date_to', this.value)"></label>
-            <label class="risk-report-search"><span>Search Deals</span><input value="${escapeHtml(riskReportingState.filters.search)}" oninput="riskReportingSetFilter('search', this.value)" placeholder="Deal, company, curve, source"></label>
-            <button class="btn btn-secondary btn-sm" onclick="riskReportingResetFilters()">Reset</button>
-          </section>
-
-          <section class="risk-column-config ${riskReportingState.columnsOpen ? '' : 'is-collapsed'}">
-            <div class="risk-report-panel-head"><strong>Column Setup</strong><span>Add or remove columns for this report view.</span></div>
-            <div class="risk-column-list">
-              ${allColumns.map(([key, label]) => `
-                <label>
-                  <input type="checkbox" ${riskReportingState.hiddenColumns.includes(key) ? '' : 'checked'} onchange="riskReportingToggleColumn('${key}', this.checked)">
-                  <span>${escapeHtml(label)}</span>
-                </label>
-              `).join('')}
-            </div>
-          </section>
-
-          <section class="risk-report-grid-panel">
-            <div class="risk-report-panel-head">
-              <strong>${escapeHtml(activeReport.label)} - ${rows.length} rows</strong>
-              <span>Use Drill in the Actions column. Click headers to sort.</span>
-            </div>
-            <div class="risk-report-grid-wrap">
-              <table class="risk-report-grid">
-                <thead><tr>${columns.map(([key, label, align]) => `<th class="${align || ''}" onclick="riskReportingSort('${key}')">${escapeHtml(label)}</th>`).join('')}</tr></thead>
-                <tbody>
-                  ${rows.map(row => `
-                    <tr onclick="riskReportingOpenRow('${row.row_id}')">
-                      ${columns.map(([key, , align]) => `<td class="${align || ''}">${riskReportingFormatCell(row, key)}</td>`).join('')}
-                    </tr>
-                  `).join('') || `<tr><td colspan="${columns.length}" class="risk-empty-cell">No rows match the current criteria.</td></tr>`}
-                </tbody>
-              </table>
-            </div>
-          </section>
-
-          <section class="risk-report-summary risk-summary-compact">
-            <button onclick="riskReportingSetGroup('their_company')"><span>Gross Position</span><strong>${riskModuleNumber(summary.gross)}</strong><em>${rows.length} rows</em></button>
-            <button onclick="riskReportingSetGroup('period_month')"><span>Net Position</span><strong>${riskModuleNumber(summary.net)}</strong><em>filtered exposure</em></button>
-            <button onclick="riskReportingSetGroup('curve_child_product')"><span>Exposure Value</span><strong>${riskModuleMoney(summary.notional)}</strong><em>MTM proxy</em></button>
-            <button onclick="riskReportingSetGroup('risk_type')"><span>Priced-In</span><strong>${(summary.priced * 100).toFixed(0)}%</strong><em>average pricing</em></button>
-            <button onclick="riskReportingSetGroup('their_company')"><span>Counterparties</span><strong>${summary.counterparties}</strong><em>credit lens</em></button>
-            <button class="danger" onclick="riskReportingOpenIssues()"><span>Review Items</span><strong>${issues.length}</strong><em>optional review</em></button>
-          </section>
-
-          <section class="risk-report-drill ${riskReportingState.drillOpen ? '' : 'is-collapsed'}">
-            <div class="risk-report-panel">
-              <div class="risk-report-panel-head">
-                <strong>Drilldown</strong>
-                <select onchange="riskReportingSetGroup(this.value)">
-                  ${[
-                    ['their_company','Counterparty'], ['risk_type','Risk Type'], ['source','Source'], ['location','Location'],
-                    ['curve_child_product','Curve'], ['period_month','Period'], ['strategy','Strategy']
-                  ].map(([key, label]) => `<option value="${key}" ${riskReportingState.groupBy === key ? 'selected' : ''}>${label}</option>`).join('')}
-                </select>
-              </div>
-              <div class="risk-drill-list">
-                ${groupRows.map(group => `
-                  <button onclick="riskReportingApplyGroupFilter('${riskReportingState.groupBy}', ${escapeJsArg(group.label)})">
-                    <span>${escapeHtml(group.label)}</span>
-                    <strong>${riskModuleNumber(group.gross)}</strong>
-                    <em>${group.rows} rows | ${riskModuleMoney(group.notional)}</em>
-                  </button>
-                `).join('') || '<div class="risk-empty-state">No grouped rows for the current filters.</div>'}
-              </div>
-            </div>
-          </section>
-        </main>
-      </div>
-
-      <aside id="risk-ai-issues" class="risk-ai-issue-drawer ${riskReportingState.aiPanelOpen ? 'open' : ''}">
-        <div class="risk-drawer-head">
-          <div><span>Optional Review</span><strong>Review Items</strong></div>
-          <button onclick="riskReportingCloseIssues()">Close</button>
-        </div>
-        <div class="risk-issue-list">
-          ${issues.map(issue => `
-            <button class="risk-issue-card ${riskReportingIssueClass(issue.severity)}" onclick="riskReportingOpenIssue('${issue.id}')">
-              <span>${escapeHtml(issue.severity)}</span>
-              <strong>${escapeHtml(issue.title)}</strong>
-              <em>${escapeHtml(issue.body)}</em>
-              <small>${escapeHtml(issue.action)}</small>
-            </button>
-          `).join('') || '<div class="risk-empty-state">No review items in the current view.</div>'}
-        </div>
-      </aside>
-      <div id="risk-report-detail-drawer" class="risk-report-detail-drawer"></div>
-    </div>
-  `;
-}
-
-window.riskReportingSetReport = function(report) {
-  riskReportingState.report = report || 'current-exposure';
-  riskReportingRender();
-};
-
-window.riskReportingSetFilter = function(key, value) {
-  riskReportingState.filters[key] = value || (['search', 'date_from', 'date_to'].includes(key) ? '' : 'all');
-  riskReportingRender();
-};
-
-function riskReportingDrillFilter(key, value, label) {
-  const normalized = value || 'all';
-  riskReportingState.filters[key] = normalized;
-  riskReportingState.filtersOpen = true;
-  riskReportingState.drillOpen = true;
-  riskReportingRender();
-  if (typeof showToast === 'function' && normalized !== 'all') {
-    showToast('Risk Drilldown', `${label || key}: ${normalized}`, 'success');
-  }
-}
-
-window.riskReportingDrillCounterparty = function(value) {
-  riskReportingDrillFilter('counterparty', value, 'Counterparty');
-};
-
-window.riskReportingDrillCurve = function(value) {
-  riskReportingDrillFilter('curve', value, 'Curve');
-};
-
-window.riskReportingResetFilters = function() {
-  riskReportingState.filters = { company:'all', counterparty:'all', risk_type:'all', product:'all', location:'all', curve:'all', source:'all', period:'all', date_from:'', date_to:'', search:'' };
-  riskReportingRender();
-};
-
-window.riskReportingToggle = function(key) {
-  riskReportingState[key] = !riskReportingState[key];
-  riskReportingRender();
-};
-
-window.riskReportingToggleColumn = function(key, checked) {
-  const hidden = new Set(riskReportingState.hiddenColumns);
-  if (checked) hidden.delete(key);
-  else hidden.add(key);
-  riskReportingState.hiddenColumns = Array.from(hidden);
-  riskReportingRender();
-};
-
-window.riskReportingSetGroup = function(key) {
-  riskReportingState.groupBy = key || 'their_company';
-  riskReportingRender();
-};
-
-window.riskReportingApplyGroupFilter = function(key, value) {
-  const mapping = { their_company:'counterparty', curve_child_product:'curve', period_month:'period' };
-  riskReportingState.filters[mapping[key] || key] = value;
-  riskReportingRender();
-};
-
-window.riskReportingSort = function(key) {
-  if (riskReportingState.sortKey === key) {
-    riskReportingState.sortDir = riskReportingState.sortDir === 'asc' ? 'desc' : 'asc';
-  } else {
-    riskReportingState.sortKey = key;
-    riskReportingState.sortDir = 'desc';
-  }
-  riskReportingRender();
-};
-
-window.riskReportingFocusIssues = function() {
-  riskReportingOpenIssues();
-};
-
-window.riskReportingOpenIssues = function() {
-  riskReportingState.aiPanelOpen = true;
-  riskReportingRender();
-};
-
-window.riskReportingCloseIssues = function() {
-  riskReportingState.aiPanelOpen = false;
-  riskReportingRender();
-};
-
-window.riskReportingOpenIssue = function(issueId) {
-  const rows = riskReportingVisibleRows();
-  const issue = riskReportingIssues(rows).find(item => item.id === issueId);
-  if (issue?.filter) {
-    riskReportingSetFilter(issue.filter.key, issue.filter.value);
-  } else {
-    riskReportingCloseIssues();
-  }
-};
-
-window.riskReportingOpenRow = function(rowId) {
-  const row = (window.RISK_MODULE_STATE?.report_rows || []).find(item => item.row_id === rowId);
-  const drawer = document.getElementById('risk-report-detail-drawer');
-  if (!row || !drawer) return;
-  drawer.innerHTML = `
-    <div class="risk-drawer-card">
-      <div class="risk-drawer-head">
-        <div><span>Deal Detail</span><strong>${escapeHtml(row.deal)}</strong></div>
-        <button onclick="riskReportingCloseDrawer()">Close</button>
-      </div>
-      <div class="risk-drawer-grid">
-        <div><span>Risk ID</span><strong>${escapeHtml(row.risk_id || 'n/a')}</strong></div>
-        <div><span>Detail ID</span><strong>${escapeHtml(row.deal_detail_id)}</strong></div>
-        <div><span>Counterparty</span><strong>${escapeHtml(row.their_company)}</strong></div>
-        <div><span>Position Group</span><strong>${escapeHtml(row.portfolio_position_group)}</strong></div>
-        <div><span>Risk Type</span><strong>${escapeHtml(row.risk_type)}</strong></div>
-        <div><span>Source</span><strong>${escapeHtml(row.source)}</strong></div>
-        <div><span>Location</span><strong>${escapeHtml(row.location)}</strong></div>
-        <div><span>Period</span><strong>${escapeHtml(row.period_group_start)} to ${escapeHtml(row.period_group_end)}</strong></div>
-        <div><span>Curve</span><strong>${escapeHtml(row.curve_child_product)}</strong></div>
-        <div><span>Volume</span><strong>${riskModuleNumber(row.position_volume)}</strong></div>
-        <div><span>MTM Proxy</span><strong>${riskModuleMoney(row.notional_usd)}</strong></div>
-        <div><span>Status</span><strong>${escapeHtml(row.status)}</strong></div>
-      </div>
-      <div class="risk-drawer-actions">
-        <button class="btn btn-secondary btn-sm" onclick="riskReportingDrillCounterparty(${escapeJsArg(row.their_company)})">Drill Counterparty</button>
-        <button class="btn btn-secondary btn-sm" onclick="riskReportingDrillCurve(${escapeJsArg(row.curve_child_product)})">Drill Curve</button>
-      </div>
-      <div class="risk-drawer-note"><strong>Review note</strong><p>${escapeHtml(riskReportingRowInsight(row))}</p></div>
-    </div>
-  `;
-  drawer.classList.add('open');
-};
-
-window.riskReportingCloseDrawer = function() {
-  const drawer = document.getElementById('risk-report-detail-drawer');
-  if (drawer) drawer.classList.remove('open');
-};
-
-function riskReportingRowInsight(row) {
-  if (!row.exposure_quote_date && /NYMEX|Diff|Forward/i.test(row.curve_child_product)) return 'Pricing is present but quote date is blank. Confirm the EOD quote feed before publishing the report.';
-  if (row.status === 'Breach') return 'This row is high priority because exposure size, hedge coverage, or stress contribution is outside the configured watch band.';
-  if (row.source === 'Planned Transfer') return 'Planned transfer exposure should be reconciled against actual movement and allocation before close.';
-  return 'No critical issue detected. Keep this row available for drill-down and export traceability.';
-}
-
-window.riskReportingAskAI = function(topic) {
-  const rows = riskReportingVisibleRows();
-  const summary = riskReportingSummary(rows);
-  const report = RISK_REPORTING_REPORTS.find(item => item.id === riskReportingState.report)?.label || 'Risk report';
-  openCopilot();
-  sendCopilotMessage(`Analyze the ${report}. Rows: ${rows.length}. Gross position: ${riskModuleNumber(summary.gross)}. Net position: ${riskModuleNumber(summary.net)}. Exposure value: ${riskModuleMoney(summary.notional)}. AI issues: ${summary.issues.map(issue => issue.title + ' - ' + issue.scope).join('; ') || 'none'}. Focus on exceptions, drill-down path, counterparty/credit risk, pricing issues, and recommended actions. ${topic || ''}`);
-};
-
-window.riskReportingExportCsv = function() {
-  const rows = riskReportingVisibleRows();
-  const columns = riskReportingColumns();
-  const csvRows = [columns.map(([, label]) => label).join(',')].concat(rows.map(row => columns.map(([key]) => {
-    const raw = key === 'priced_in_pct' ? Number(row[key] || 0) : (row[key] ?? '');
-    return `"${String(raw).replace(/"/g, '""')}"`;
-  }).join(',')));
-  const blob = new Blob([csvRows.join('\n')], { type:'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = `${riskReportingState.report}-${new Date().toISOString().slice(0, 10)}.csv`;
-  link.click();
-  URL.revokeObjectURL(url);
-};
-
-function renderRiskModule(data) {
-  const root = document.getElementById('risk-module-root');
-  if (!root) return;
-  data.report_rows = riskReportingRows(data);
-  window.RISK_MODULE_STATE = data;
-  riskReportingRender();
-}
-
-window.loadRiskModule = async function(forceRun = false) {
-  const root = document.getElementById('risk-module-root');
-  if (root) root.innerHTML = '<div class="flex-center" style="height:240px"><span class="loading-spinner"></span></div>';
-  if (forceRun) {
-    await apiCall('/risk/run', { method: 'POST' });
-  }
-  const data = await apiCall('/risk/overview');
-  if (!data) {
-    if (root) root.innerHTML = '<div class="screen"><div class="card">Risk Module data could not be loaded.</div></div>';
-    return;
-  }
-  window.RISK_MODULE_STATE = data;
-  renderRiskModule(data);
-};
-
-window.runRiskModule = async function() {
-  await window.loadRiskModule(true);
-  if (typeof showToast === 'function') {
-    showToast('Risk Module', 'Risk run completed.', 'success');
-  }
-};
-
-SCREENS['risk-module'] = async function(main) {
-  main.innerHTML = '<div id="risk-module-root" class="screen"><div class="flex-center" style="height:240px"><span class="loading-spinner"></span></div></div>';
-  await window.loadRiskModule(false);
-};
-
 SCREENS['ai-studio'] = async function(main) {
   main.innerHTML = '<div id="ai-studio-root" class="screen"><div class="flex-center" style="height:240px"><span class="loading-spinner"></span></div></div>';
   await loadAIStudioOverview();
@@ -6207,23 +5032,14 @@ function atlasFallbackObjects() {
   };
 }
 
-function atlasKpiStrip(summary, riskMode) {
-  const recon = summary.reconciliation || {};
-  const cards = riskMode
-    ? [
-        ['VaR watch', summary.risk_watch_count || 0, 'watch'],
-        ['Scenario breaks', atlasState.scenario?.summary?.breaches || 0, 'breach'],
-        ['Basis connectors', atlasState.routes.filter(r => r.layer_key === 'basis').length, 'ok'],
-        ['AI anomalies', summary.anomalies || 0, 'watch'],
-        ['Recon breaks', recon.break || 0, recon.break ? 'breach' : 'ok']
-      ]
-    : [
-        ['Active deals', summary.active_deals || 0, 'ok'],
-        ['Mapped routes', summary.mapped_routes || 0, 'ok'],
-        ['Net exposure', atlasNumber(summary.net_exposure || 0), Number(summary.net_exposure || 0) < 0 ? 'watch' : 'ok'],
-        ['Risk watches', summary.risk_watch_count || 0, 'watch'],
-        ['AI anomalies', summary.anomalies || 0, 'breach']
-      ];
+function atlasKpiStrip(summary) {
+  const cards = [
+    ['Active deals', summary.active_deals || 0, 'ok'],
+    ['Mapped routes', summary.mapped_routes || 0, 'ok'],
+    ['Net exposure', atlasNumber(summary.net_exposure || 0), Number(summary.net_exposure || 0) < 0 ? 'watch' : 'ok'],
+    ['Risk watches', summary.risk_watch_count || 0, 'watch'],
+    ['AI anomalies', summary.anomalies || 0, 'breach']
+  ];
   return '<div class="atlas-kpis">' + cards.map(card => `
     <button class="atlas-kpi ${card[2]}" onclick="sendCopilotMessage('Explain the ${atlasSafe(card[0])} Atlas KPI')">
       <span>${atlasSafe(card[0])}</span><strong>${atlasSafe(card[1])}</strong>
@@ -6231,16 +5047,12 @@ function atlasKpiStrip(summary, riskMode) {
   `).join('') + '</div>';
 }
 
-function atlasLayerControls(riskMode) {
+function atlasLayerControls() {
   const traderLayers = [
     ['deals', 'Deals'], ['logistics', 'Logistics'], ['vessels', 'Vessels'], ['positions', 'Positions'],
     ['risk', 'Risk'], ['pricing', 'Pricing'], ['basis', 'Basis'], ['trust', 'Trust'], ['ai-anomalies', 'AI Anomalies']
   ];
-  const riskLayers = [
-    ['risk', 'VaR Heat'], ['basis', 'Basis Vol'], ['positions', 'Exposure Hubs'], ['logistics', 'Obligations'],
-    ['pricing', 'Index Hubs'], ['trust', 'Trust'], ['ai-anomalies', 'AI Anomalies']
-  ];
-  return (riskMode ? riskLayers : traderLayers).map(([key, label]) => `
+  return traderLayers.map(([key, label]) => `
     <label class="atlas-layer-toggle">
       <input type="checkbox" data-atlas-layer="${key}" checked onchange="toggleAtlasLayer('${key}', this.checked)">
       <span>${atlasSafe(label)}</span>
@@ -6259,47 +5071,33 @@ function atlasLegend() {
   `;
 }
 
-function renderAtlasShell(main, riskMode) {
-  const title = riskMode ? 'Risk Atlas' : 'MVT Atlas';
-  const subtitle = riskMode
-    ? 'Spatial risk view for VaR heat, basis volatility, scenarios, and control drilldowns'
-    : 'Trader map for deals, physical routes, logistics dwell, hub exposure, pricing, trust, and AI anomalies';
-  main.innerHTML = `<div class="screen atlas-screen ${riskMode ? 'risk-atlas-screen' : ''}">
+function renderAtlasShell(main) {
+  const title = 'MVT Atlas';
+  const subtitle = 'Trader map for deals, physical routes, logistics dwell, hub exposure, pricing, trust, and AI anomalies';
+  main.innerHTML = `<div class="screen atlas-screen">
     <div class="screen-header">
       <div>
         <div class="screen-title">${title}</div>
         <div class="screen-subtitle">${subtitle}</div>
       </div>
       <div class="screen-actions">
-        <button class="btn btn-secondary btn-sm" onclick="reloadAtlasScreen(${riskMode})">Refresh</button>
-        <button class="btn btn-primary btn-sm" onclick="openCopilot(); sendCopilotMessage('${riskMode ? 'Run scenario summary for the Risk Atlas' : 'Summarize the MVT Atlas map for the morning meeting'}')">Ask AI</button>
+        <button class="btn btn-secondary btn-sm" onclick="reloadAtlasScreen()">Refresh</button>
+        <button class="btn btn-primary btn-sm" onclick="openCopilot(); sendCopilotMessage('Summarize the MVT Atlas map for the morning meeting')">Ask AI</button>
       </div>
     </div>
     <div id="atlas-kpi-host"></div>
     <div class="atlas-workbench">
       <aside class="atlas-controls">
         <div class="atlas-panel-title">Layers</div>
-        <div class="atlas-layer-list">${atlasLayerControls(riskMode)}</div>
-        ${riskMode ? `
-          <div class="atlas-panel-title mt-12">Scenario</div>
-          <select class="form-select" id="atlas-scenario-select">
-            <option value="brent_down_5">Brent down 5%</option>
-            <option value="basis_widen_15">Basis widens 15%</option>
-            <option value="freight_delay_24h">Freight delay 24h</option>
-            <option value="ngl_rally_7">NGL rally 7%</option>
-          </select>
-          <button class="btn btn-primary btn-sm w-full mt-8" onclick="runAtlasScenario()">Apply Overlay</button>
-          <div id="atlas-scenario-summary" class="atlas-scenario-summary">No scenario overlay applied.</div>
-        ` : `
-          <div class="atlas-panel-title mt-12">Transport Modes</div>
-          <div class="atlas-mode-list"><span>Marine</span><span>Pipeline</span><span>Rail</span><span>Truck</span></div>
-        `}
+        <div class="atlas-layer-list">${atlasLayerControls()}</div>
+        <div class="atlas-panel-title mt-12">Transport Modes</div>
+        <div class="atlas-mode-list"><span>Marine</span><span>Pipeline</span><span>Rail</span><span>Truck</span></div>
         <div class="atlas-panel-title mt-12">Legend</div>
         ${atlasLegend()}
         <div class="atlas-data-label">Data state: <strong id="atlas-data-state">mixed</strong></div>
       </aside>
       <section class="atlas-map-wrap">
-        <div id="${riskMode ? 'risk-atlas-map' : 'trader-atlas-map'}" class="atlas-map"></div>
+        <div id="trader-atlas-map" class="atlas-map"></div>
       </section>
       <aside class="atlas-drawer" id="atlas-detail-drawer">
         <div class="atlas-empty-detail">
@@ -6310,23 +5108,23 @@ function renderAtlasShell(main, riskMode) {
     </div>
     <div class="atlas-bottom-grid">
       <div class="card">
-        <div class="card-title mb-8">${riskMode ? 'Top Risk Hubs' : 'Open Delivery Obligations'}</div>
+        <div class="card-title mb-8">Open Delivery Obligations</div>
         <div id="atlas-hub-list" class="atlas-list"></div>
       </div>
       <div class="card">
-        <div class="card-title mb-8">${riskMode ? 'Basis Volatility Connectors' : 'Deal-to-Physical Threads'}</div>
+        <div class="card-title mb-8">Deal-to-Physical Threads</div>
         <div id="atlas-route-list" class="atlas-list"></div>
       </div>
     </div>
   </div>`;
 }
 
-function initAtlasMap(riskMode) {
-  const mapId = riskMode ? 'risk-atlas-map' : 'trader-atlas-map';
+function initAtlasMap() {
+  const mapId = 'trader-atlas-map';
   const mapEl = document.getElementById(mapId);
   if (!mapEl) return;
   if (typeof L === 'undefined') {
-    renderAtlasFallbackMap(mapEl, riskMode);
+    renderAtlasFallbackMap(mapEl);
     return;
   }
   if (atlasMapInstance) {
@@ -6342,7 +5140,7 @@ function initAtlasMap(riskMode) {
   ['deals','logistics','vessels','positions','risk','pricing','basis','trust','ai-anomalies'].forEach(key => {
     atlasLayerGroups[key] = L.layerGroup().addTo(atlasMapInstance);
   });
-  renderAtlasObjects(riskMode);
+  renderAtlasObjects();
   setTimeout(() => atlasMapInstance && atlasMapInstance.invalidateSize(), 80);
 }
 
@@ -6357,10 +5155,9 @@ function atlasProject(lat, lon) {
   };
 }
 
-function renderAtlasFallbackMap(mapEl, riskMode) {
-  const riskAllowed = riskMode ? new Set(['risk','basis','positions','logistics','pricing','trust','ai-anomalies']) : null;
-  const routes = atlasState.routes.filter(route => !riskAllowed || riskAllowed.has(route.layer_key));
-  const nodes = atlasState.nodes.filter(node => !riskAllowed || riskAllowed.has(node.layer_key));
+function renderAtlasFallbackMap(mapEl) {
+  const routes = atlasState.routes;
+  const nodes = atlasState.nodes;
   const routeLines = routes.map(route => {
     const coords = route.geometry?.coordinates || [];
     const points = coords.map(pair => {
@@ -6452,15 +5249,12 @@ function addAtlasRoute(item) {
   }
 }
 
-function renderAtlasObjects(riskMode) {
+function renderAtlasObjects() {
   Object.values(atlasLayerGroups).forEach(group => group.clearLayers());
-  const riskAllowed = riskMode ? new Set(['risk','basis','positions','logistics','pricing','trust','ai-anomalies']) : null;
   atlasState.routes.forEach(route => {
-    if (riskAllowed && !riskAllowed.has(route.layer_key)) return;
     addAtlasRoute(route);
   });
   atlasState.nodes.forEach(node => {
-    if (riskAllowed && !riskAllowed.has(node.layer_key)) return;
     addAtlasNode(node);
   });
   if (atlasState.scenario?.objects) {
@@ -6471,12 +5265,12 @@ function renderAtlasObjects(riskMode) {
   }
 }
 
-function renderAtlasLists(riskMode) {
+function renderAtlasLists() {
   const hubs = document.getElementById('atlas-hub-list');
   const routes = document.getElementById('atlas-route-list');
   if (hubs) {
     const list = atlasState.nodes
-      .filter(n => riskMode ? ['risk','positions'].includes(n.layer_key) : ['positions','logistics'].includes(n.layer_key))
+      .filter(n => ['positions','logistics'].includes(n.layer_key))
       .slice(0, 6);
     hubs.innerHTML = list.map(n => `
       <button class="atlas-list-row" onclick="selectAtlasObjectById('${n.id}')">
@@ -6486,7 +5280,7 @@ function renderAtlasLists(riskMode) {
     `).join('');
   }
   if (routes) {
-    const list = atlasState.routes.filter(r => riskMode ? r.layer_key === 'basis' : true).slice(0, 6);
+    const list = atlasState.routes.slice(0, 6);
     routes.innerHTML = list.map(r => `
       <button class="atlas-list-row" onclick="selectAtlasObjectById('${r.id}')">
         <span><b>${atlasSafe(r.name)}</b><small>${atlasSafe(r.detail?.transport_mode || r.layer_key)} - ${atlasSafe(r.feature_id)}</small></span>
@@ -6563,48 +5357,21 @@ function toggleAtlasLayer(key, enabled) {
   else atlasMapInstance.removeLayer(group);
 }
 
-async function runAtlasScenario() {
-  const select = document.getElementById('atlas-scenario-select');
-  const scenarioKey = select?.value || 'brent_down_5';
-  const result = await apiCall('/atlas/risk/scenario-overlay', {
-    method: 'POST',
-    body: JSON.stringify({ scenario_key: scenarioKey })
-  });
-  if (!result) {
-    showToast('Scenario', 'Scenario overlay could not be loaded.', 'warning');
-    return;
-  }
-  atlasState.scenario = result;
-  const summary = document.getElementById('atlas-scenario-summary');
-  if (summary) {
-    summary.innerHTML = `<strong>${atlasSafe(result.scenario_key)}</strong><br>${atlasSafe(result.summary.impacted_objects)} objects impacted - ${atlasMoney(result.summary.estimated_pnl_or_var_impact)} estimated impact`;
-  }
-  const host = document.getElementById('atlas-kpi-host');
-  if (host) host.innerHTML = atlasKpiStrip(atlasState.summary || {}, true);
-  renderAtlasObjects(true);
-  showToast('Scenario overlay', 'Map recolored for selected shock.', 'success');
+function reloadAtlasScreen() {
+  SCREENS['atlas'](document.getElementById('main'));
 }
 
-function reloadAtlasScreen(riskMode) {
-  if (riskMode) SCREENS['risk-atlas'](document.getElementById('main'));
-  else SCREENS['atlas'](document.getElementById('main'));
-}
-
-async function renderAtlasScreen(main, riskMode) {
-  renderAtlasShell(main, riskMode);
+async function renderAtlasScreen(main) {
+  renderAtlasShell(main);
   const state = await loadAtlasPayload();
   const dataState = document.getElementById('atlas-data-state');
   if (dataState) dataState.textContent = state.summary?.data_state || 'mixed';
   const host = document.getElementById('atlas-kpi-host');
-  if (host) host.innerHTML = atlasKpiStrip(state.summary || {}, riskMode);
-  initAtlasMap(riskMode);
-  renderAtlasLists(riskMode);
+  if (host) host.innerHTML = atlasKpiStrip(state.summary || {});
+  initAtlasMap();
+  renderAtlasLists();
 }
 
 SCREENS['atlas'] = async function(main) {
-  await renderAtlasScreen(main, false);
-};
-
-SCREENS['risk-atlas'] = async function(main) {
-  await renderAtlasScreen(main, true);
+  await renderAtlasScreen(main);
 };

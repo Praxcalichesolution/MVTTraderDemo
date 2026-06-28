@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS users (
     email TEXT UNIQUE NOT NULL,
     hashed_password TEXT NOT NULL,
     full_name TEXT NOT NULL,
-    role TEXT NOT NULL CHECK(role IN ('trader','risk','executive','admin')),
+    role TEXT NOT NULL CHECK(role IN ('trader','executive','admin')),
     desk TEXT DEFAULT 'INEOS Trading & Shipping',
     title TEXT,
     is_active INTEGER DEFAULT 1,

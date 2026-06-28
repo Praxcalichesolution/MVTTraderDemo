@@ -1,5 +1,5 @@
-/* ============================================================
-   Radiant-MVT™ — app.js  Main Application Controller
+﻿/* ============================================================
+   Radiant-MVTâ„¢ â€” app.js  Main Application Controller
    ============================================================ */
 
 const APP_CONFIG = window.__APP_MODE__ || {};
@@ -47,7 +47,6 @@ const SCREEN_DISPLAY_NAMES = {
   'decision-queue': 'Decision Queue',
   'dashboard': 'Dashboard',
   'atlas': 'MVT Atlas',
-  'risk-atlas': 'Risk Atlas',
   'positions': 'Positions & Risk',
   'ai': 'AI Intelligence',
   'performance': 'Performance & Analytics',
@@ -79,7 +78,6 @@ const PAGE_HELP_PROMPTS = {
   'decision-queue': 'Explain how to work through the Decision Queue and what to do first.',
   'dashboard': 'Explain what this dashboard is showing and what I should look at first.',
   'atlas': 'Explain the MVT Atlas map, the visible layers, and which trade or logistics object I should inspect first.',
-  'risk-atlas': 'Explain the Risk Atlas map, the scenario overlay, and which spatial risk hotspot needs attention first.',
   'positions': 'Explain how to use the Positions & Risk screen and where the biggest exposure is.',
   'ai': 'Explain the AI Intelligence screen and which tools I can run from here.',
   'performance': 'Explain the Performance & Analytics page and how to investigate shortfall.',
@@ -103,14 +101,14 @@ const TICKER_LABELS = {
 
 const CONCIERGE_CONTEXT = {
   'decision-queue':   { text: '<strong>3 decisions</strong> require your attention today. Highest priority: Urals hedge review before OPEC+ at 10:00.', actions: ['Generate Briefing','View All'] },
-  'dashboard':        { text: '<strong>Book P&L</strong> +$2.1M today. Ethane/Naphtha spread widening — <strong>potential opportunity flagged.</strong>', actions: ['Explain P&L','Top Risk'] },
-  'positions':        { text: 'Net Crude exposure <strong>$214M long</strong>. VaR utilisation at 62% — within limits.', actions: ['Hedge Analysis','Run Stress'] },
+  'dashboard':        { text: '<strong>Book P&L</strong> +$2.1M today. Ethane/Naphtha spread widening â€” <strong>potential opportunity flagged.</strong>', actions: ['Explain P&L','Top Risk'] },
+  'positions':        { text: 'Net Crude exposure <strong>$214M long</strong>. VaR utilisation at 62% â€” within limits.', actions: ['Hedge Analysis','Run Stress'] },
   'ai':               { text: 'AI scanner found <strong>2 new trade ideas</strong> and <strong>1 anomaly</strong> in your book since 06:00.', actions: ['View Ideas','Run Pre-Mortem'] },
   'performance':      { text: 'YTD performance at <strong>82% of target</strong>. Shortfall driven primarily by missed opportunities in Q1.', actions: ['Investigate','Forecast'] },
   'decision-intelligence': { text: '<strong>11 opportunities missed</strong> in 90 days. Estimated value: $8.7M. Ready to review?', actions: ['Run Audit','View History'] },
   'market':           { text: 'Brent prompt month <strong>up $1.20</strong> this session. EUA carbon prices testing 3-week highs.', actions: ['Curve Analysis','News Summary'] },
   'vessels':          { text: 'JS Ineos Innovation <strong>14h delayed</strong> at Rafnes. Cargo impact on hedge position flagged.', actions: ['View Impact','Options'] },
-  'comms':            { text: '<strong>8 emails</strong> need action. Vitol confirmation outstanding — draft reply ready to send.', actions: ['Priority Inbox','Send Drafts'] },
+  'comms':            { text: '<strong>8 emails</strong> need action. Vitol confirmation outstanding â€” draft reply ready to send.', actions: ['Priority Inbox','Send Drafts'] },
   'compliance':       { text: 'All regulatory filings <strong>up to date</strong>. Next EMIR deadline in 3 days.', actions: ['View Status','EMIR Filing'] },
   'documentation':    { text: 'Browse the Help Center, jump to any screen, and let Radiant AI perform supported tasks for you.', actions: ['Open Screen','Ask AI'] },
   'ai-studio':        { text: 'Control prompts, model settings, user context, and agent guardrails from one enterprise AI workspace.', actions: ['Test Chat Copilot','Review Profiles'] },
@@ -123,7 +121,6 @@ const COPILOT_SUGGESTIONS = {
   'decision-queue':   ["What's most urgent right now?","Summarise today's risk","Draft my morning note"],
   'dashboard':        ["What's driving today's P&L?","Show me my biggest risk right now","What should I act on?"],
   'atlas':            ["Explain the selected map object","Summarize Atlas for the morning meeting","What should I investigate first?"],
-  'risk-atlas':       ["Explain this risk hotspot","Run scenario summary","What should I hedge first?"],
   'positions':        ["What's my exposure if Brent drops $5?","Which position needs hedging most?","Show me my open risks"],
   'ai':               ["Explain the top trade idea","What anomalies did you find?","Run pre-mortem on my book"],
   'performance':      ["Why are we behind target?","What's our run-rate forecast?","Show opportunity cost"],
@@ -143,30 +140,6 @@ CONCIERGE_CONTEXT['atlas'] = {
   text: '<strong>MVT Atlas</strong> is showing deal pins, logistics routes, hub exposure, pricing, trust, and AI anomaly layers.',
   actions: ['Explain Atlas','Map Risks']
 };
-CONCIERGE_CONTEXT['risk-atlas'] = {
-  text: '<strong>Risk Atlas</strong> is ready for VaR heat, basis-vol connectors, and scenario recoloring.',
-  actions: ['Run Scenario','Explain Hotspot']
-};
-
-if (APP_ID === 'risk') {
-  PAGE_HELP_PROMPTS['dashboard'] = 'Explain the risk dashboard, the key limit signals, and where oversight attention is needed first.';
-  PAGE_HELP_PROMPTS['risk-atlas'] = 'Explain the Risk Atlas screen, the VaR heat layer, basis connectors, scenario overlay, and top control actions.';
-  PAGE_HELP_PROMPTS['ai'] = 'Explain the AI Intelligence screen from a risk oversight perspective.';
-  PAGE_HELP_PROMPTS['compliance'] = 'Explain the Compliance & Audit page and the highest-priority controls for the risk team.';
-  CONCIERGE_CONTEXT['risk-atlas'] = {
-    text: '<strong>Spatial risk</strong> highlights Gulf Coast VaR, NWE basis volatility, and delivery-obligation exposure.',
-    actions: ['Run Scenario','Draft Control Note']
-  };
-  CONCIERGE_CONTEXT['dashboard'] = { text: '<strong>Desk VaR</strong> is running at 62% of limit. Two exposure concentrations need review before the morning control call.', actions: ['Top Exposure','Open Controls'] };
-  CONCIERGE_CONTEXT['positions'] = { text: 'Largest concentration remains <strong>Crude long $214M</strong>. Hedge coverage and board-limit headroom are both within tolerance.', actions: ['Stress Desk','Hedge Review'] };
-  CONCIERGE_CONTEXT['market'] = { text: '<strong>Spread moves</strong> in Brent, Urals, and EUA are driving today\'s risk sensitivity changes.', actions: ['Curve Analysis','View Drivers'] };
-  CONCIERGE_CONTEXT['ai'] = { text: 'Radiant AI has surfaced <strong>two control insights</strong> and <strong>one concentration anomaly</strong> since 06:00.', actions: ['Review Alerts','Run Scenario'] };
-  CONCIERGE_CONTEXT['compliance'] = { text: 'All core filings are <strong>on track</strong>. One audit trail exception needs same-day review.', actions: ['View Status','Audit Trail'] };
-  COPILOT_SUGGESTIONS['dashboard'] = ['What is the biggest limit risk right now?','Summarize desk exposures','Which control should I review first?'];
-  COPILOT_SUGGESTIONS['risk-atlas'] = ['Explain this risk hotspot','What changed?','What should I hedge first?'];
-  COPILOT_SUGGESTIONS['ai'] = ['What concentration anomalies did you find?','Show me the top control insight','Run a stress review'];
-  COPILOT_SUGGESTIONS['compliance'] = ['Show today\'s exceptions','What filings are due next?','Open the audit trail'];
-}
 
 function getAllowedScreens() {
   return Array.isArray(APP_CONFIG.allowed_screens) ? APP_CONFIG.allowed_screens : [];
@@ -240,7 +213,7 @@ function renderNav() {
 }
 
 function applyAppBranding() {
-  const fallbackTitle = APP_ID === 'risk' ? 'Radiant - Risk' : 'Radiant - Trader';
+  const fallbackTitle = 'Radiant - Trader';
   document.title = APP_CONFIG.browser_title || APP_CONFIG.title || fallbackTitle;
   document.getElementById('login-brand').textContent = APP_CONFIG.title || fallbackTitle;
   document.getElementById('topbar-brand').textContent = APP_CONFIG.title || fallbackTitle;
@@ -259,7 +232,7 @@ function applyAppBranding() {
   });
 }
 
-/* ── API Helper ── */
+/* â”€â”€ API Helper â”€â”€ */
 async function apiCall(endpoint, options = {}) {
   try {
     const response = await fetch(`${API_BASE}${endpoint}`, {
@@ -282,7 +255,7 @@ async function apiCall(endpoint, options = {}) {
   }
 }
 
-/* ── Auth ── */
+/* â”€â”€ Auth â”€â”€ */
 async function login(email, password) {
   try {
     const response = await fetch(`${API_BASE}/auth/login`, {
@@ -327,7 +300,7 @@ function getCurrentUser() {
 function countdownStr(deadline) {
   const target = new Date(deadline);
   const diffMs = target.getTime() - Date.now();
-  if (Number.isNaN(target.getTime())) return '—';
+  if (Number.isNaN(target.getTime())) return 'â€”';
   if (diffMs <= 0) return 'due';
   const totalMinutes = Math.floor(diffMs / 60000);
   const hours = Math.floor(totalMinutes / 60);
@@ -472,7 +445,7 @@ async function openPageHelp(screenKey = currentScreen) {
           <div class="page-help-title">${escapeHtml(manual.title)}</div>
           <div class="page-help-summary">${escapeHtml(manual.summary || '')}</div>
         </div>
-        <button class="page-help-close" onclick="closePageHelp()">×</button>
+        <button class="page-help-close" onclick="closePageHelp()">Ã—</button>
       </div>
       <div class="page-help-body">
         <div class="page-help-section">
@@ -525,7 +498,7 @@ function decorateAssistableActions() {
     if (node.closest('#page-help-modal')) return;
     if (node.closest('.help-center-screen') && !node.closest('.docs-action-card')) return;
     const text = (node.textContent || '').trim().toLowerCase();
-    if (!text || text === '×' || text === 'x') return;
+    if (!text || text === 'Ã—' || text === 'x') return;
     node.dataset.agentDecorated = '1';
     node.classList.add('agent-assistable');
     if (!node.getAttribute('title')) {
@@ -544,19 +517,19 @@ function scheduleScreenEnhancements(screenKey) {
   });
 }
 
-/* ── Toast ── */
+/* â”€â”€ Toast â”€â”€ */
 function showToast(title, msg, type = 'info', duration = 4000) {
-  const icons = { success: '✓', error: '✕', warning: '⚠', info: 'ℹ' };
+  const icons = { success: 'âœ“', error: 'âœ•', warning: 'âš ', info: 'â„¹' };
   const container = document.getElementById('toast-container');
   if (!container) return;
   const toast = document.createElement('div');
   toast.className = `toast ${type}`;
-  toast.innerHTML = `<span class="toast-icon">${icons[type]||'ℹ'}</span><div class="toast-body"><div class="toast-title">${title}</div><div class="toast-msg">${msg}</div></div><button class="toast-close" onclick="this.closest('.toast').remove()">×</button>`;
+  toast.innerHTML = `<span class="toast-icon">${icons[type]||'â„¹'}</span><div class="toast-body"><div class="toast-title">${title}</div><div class="toast-msg">${msg}</div></div><button class="toast-close" onclick="this.closest('.toast').remove()">Ã—</button>`;
   container.appendChild(toast);
   setTimeout(() => toast.remove(), duration);
 }
 
-/* ── Routing ── */
+/* â”€â”€ Routing â”€â”€ */
 function navigateTo(screen) {
   screen = resolveScreen(screen);
   const previousScreen = currentScreen;
@@ -593,7 +566,7 @@ function loadScreen(screen) {
       .finally(() => scheduleScreenEnhancements(screen));
     return;
   }
-  else main.innerHTML = `<div class="screen"><div class="screen-header"><div class="screen-title">404 — Screen not found</div></div></div>`;
+  else main.innerHTML = `<div class="screen"><div class="screen-header"><div class="screen-title">404 â€” Screen not found</div></div></div>`;
 }
 
 function updateConciergeBar(screen) {
@@ -625,12 +598,12 @@ function updateCopilotContext(screen) {
   }
 }
 
-/* ── Market Ticker ── */
+/* â”€â”€ Market Ticker â”€â”€ */
 const MOCK_PRICES = {
   'Brent':   { price: 82.40, unit: '$/bbl' },
   'WTI':     { price: 78.90, unit: '$/bbl' },
   'HH':      { price: 2.84,  unit: '$/MMBtu' },
-  'EUA':     { price: 63.20, unit: '€/t' },
+  'EUA':     { price: 63.20, unit: 'â‚¬/t' },
   'EUR/USD': { price: 1.0840, unit: '' },
   'GBP/USD': { price: 1.2740, unit: '' },
   'Urals':   { price: 74.30, unit: '$/bbl' },
@@ -642,7 +615,7 @@ function buildTickerHTML(data) {
   const items = Object.entries(data).map(([name, d]) => {
     const chg = (Math.random() * 2 - 1).toFixed(2);
     const dir = chg >= 0 ? 'up' : 'down';
-    const arrow = dir === 'up' ? '▲' : '▼';
+    const arrow = dir === 'up' ? 'â–²' : 'â–¼';
     return `<div class="ticker-item"><span class="t-name">${name}</span><span class="t-price">${d.unit}${d.price.toFixed(2)}</span><span class="t-change ${dir}">${arrow} ${Math.abs(chg)}</span></div>`;
   }).join('');
   return items + items; // duplicate for seamless loop
@@ -661,7 +634,7 @@ function refreshTicker() {
   initTicker();
 }
 
-/* ── Copilot Panel ── */
+/* â”€â”€ Copilot Panel â”€â”€ */
 function openCopilot() {
   copilotOpen = true;
   document.getElementById('copilot-panel').classList.add('open');
@@ -759,7 +732,7 @@ async function sendCopilotMessage(text) {
   }
 }
 
-/* ── Streaming helper for screen-level AI boxes ── */
+/* â”€â”€ Streaming helper for screen-level AI boxes â”€â”€ */
 async function streamToElement(el, endpoint, body) {
   if (!el) return;
   el.classList.add('active');
@@ -801,14 +774,14 @@ async function streamToElement(el, endpoint, body) {
 
 function getDemoAIText(endpoint) {
   const demos = {
-    '/chat/message': `Morning briefing: Markets are opening with cautious optimism following yesterday's Fed commentary. Brent crude is up $1.20 to $82.40/bbl, driven by expectations of OPEC+ production discipline. Your key priority today is reviewing the Urals hedge before the 10:00 announcement. The JS Ineos Innovation delay creates secondary risk to your ethane delivery schedule — recommend reviewing voyage economics for alternatives. VaR utilisation at 62% is comfortable but watch the Ethane/Naphtha spread which is showing unusual behaviour (+2.1σ from 90-day mean).`,
-    '/performance/forensics': `Forensic Analysis — Q1 Performance Shortfall\n\nTotal shortfall vs target: $1.82M\n\nRoot cause breakdown:\n• Missed opportunities (59%, $1.07M): 7 high-confidence signals not acted on within the decision window. Average delay: 4.2 hours. Market had moved by the time action was taken.\n• Losing trades (19%, $346K): 3 trades moved against us — 2 were within normal variance, 1 (RMVT-0187, Naphtha long) was flagged by AI as high-risk but executed anyway.\n• Delayed execution (14%, $255K): Operational delays in 4 cases — 2 due to approval workflow, 2 due to counterparty negotiation.\n• Sizing decisions (8%, $146K): Positions sized conservatively on 6 winning trades. At optimal sizing, additional $146K would have been captured.`,
-    '/performance/opportunity-cost': `90-Day Opportunity Cost Audit — Complete\n\n17 opportunities were identified by the AI signal engine between 28 February and 30 May 2026.\n\n6 were captured (35% capture rate), generating $3.2M in P&L.\n11 were missed, representing an estimated $8.7M in foregone P&L.\n\nMissed opportunity breakdown:\n• 4 signals: Acted on too late (average 6.1 hours after signal)\n• 3 signals: Not reviewed (no decision made within window)\n• 2 signals: Reviewed but rejected (retrospectively, both would have been profitable)\n• 2 signals: In conflict with existing position, no resolution reached\n\nRadiant-MVT surfaces all signals within 12 minutes of identification with full context, recommended action, and deadline countdown.`
+    '/chat/message': `Morning briefing: Markets are opening with cautious optimism following yesterday's Fed commentary. Brent crude is up $1.20 to $82.40/bbl, driven by expectations of OPEC+ production discipline. Your key priority today is reviewing the Urals hedge before the 10:00 announcement. The JS Ineos Innovation delay creates secondary risk to your ethane delivery schedule â€” recommend reviewing voyage economics for alternatives. VaR utilisation at 62% is comfortable but watch the Ethane/Naphtha spread which is showing unusual behaviour (+2.1Ïƒ from 90-day mean).`,
+    '/performance/forensics': `Forensic Analysis â€” Q1 Performance Shortfall\n\nTotal shortfall vs target: $1.82M\n\nRoot cause breakdown:\nâ€¢ Missed opportunities (59%, $1.07M): 7 high-confidence signals not acted on within the decision window. Average delay: 4.2 hours. Market had moved by the time action was taken.\nâ€¢ Losing trades (19%, $346K): 3 trades moved against us â€” 2 were within normal variance, 1 (RMVT-0187, Naphtha long) was flagged by AI as high-risk but executed anyway.\nâ€¢ Delayed execution (14%, $255K): Operational delays in 4 cases â€” 2 due to approval workflow, 2 due to counterparty negotiation.\nâ€¢ Sizing decisions (8%, $146K): Positions sized conservatively on 6 winning trades. At optimal sizing, additional $146K would have been captured.`,
+    '/performance/opportunity-cost': `90-Day Opportunity Cost Audit â€” Complete\n\n17 opportunities were identified by the AI signal engine between 28 February and 30 May 2026.\n\n6 were captured (35% capture rate), generating $3.2M in P&L.\n11 were missed, representing an estimated $8.7M in foregone P&L.\n\nMissed opportunity breakdown:\nâ€¢ 4 signals: Acted on too late (average 6.1 hours after signal)\nâ€¢ 3 signals: Not reviewed (no decision made within window)\nâ€¢ 2 signals: Reviewed but rejected (retrospectively, both would have been profitable)\nâ€¢ 2 signals: In conflict with existing position, no resolution reached\n\nRadiant-MVT surfaces all signals within 12 minutes of identification with full context, recommended action, and deadline countdown.`
   };
   return demos[endpoint] || demos['/chat/message'];
 }
 
-/* ── Chart.js defaults ── */
+/* â”€â”€ Chart.js defaults â”€â”€ */
 function getThemeVar(name) {
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 }
@@ -894,7 +867,7 @@ function applyChartDefaults() {
   Chart.defaults.plugins.tooltip.bodyColor = getThemeVar('--chart-tooltip-body') || '#8A9BB5';
 }
 
-/* ── Number animation ── */
+/* â”€â”€ Number animation â”€â”€ */
 function animateNumber(el, from, to, duration = 1200, prefix = '', suffix = '') {
   if (!el) return;
   const startTime = performance.now();
@@ -909,7 +882,7 @@ function animateNumber(el, from, to, duration = 1200, prefix = '', suffix = '') 
   requestAnimationFrame(update);
 }
 
-/* ── Role-based nav visibility ── */
+/* â”€â”€ Role-based nav visibility â”€â”€ */
 function applyRoleVisibility() {
   const role = currentRole;
   document.querySelectorAll('[data-role]').forEach(el => {
@@ -918,7 +891,7 @@ function applyRoleVisibility() {
   });
 }
 
-/* ── Init ── */
+/* â”€â”€ Init â”€â”€ */
 function initApp() {
   if (!authToken) { showLoginScreen(); return; }
   document.getElementById('login-screen').style.display = 'none';
@@ -930,7 +903,7 @@ function initApp() {
   const nameEl = document.getElementById('user-name-display');
   const roleEl = document.getElementById('user-role-display');
   const avatarEl = document.getElementById('user-avatar');
-  if (nameEl) nameEl.textContent = user.full_name || user.username || (APP_ID === 'risk' ? 'Risk Analyst' : 'Trader');
+  if (nameEl) nameEl.textContent = user.full_name || user.username || 'Trader';
   if (roleEl) roleEl.textContent = user.role || currentRole;
   if (avatarEl) avatarEl.textContent = (user.full_name || 'T').charAt(0).toUpperCase();
   initTicker();
@@ -956,13 +929,13 @@ const DEMO_INTELLIGENCE = {
     outlook: "bearish",
     outlook_score: 32,
     key_drivers: [
-      "OPEC+ meeting uncertainty — consensus leaning toward extension but cracks emerging",
+      "OPEC+ meeting uncertainty â€” consensus leaning toward extension but cracks emerging",
       "Russian export flows returning via alternative routes, adding supply pressure",
       "USD strengthening limits commodity upside across energy complex"
     ],
     key_risks: [
       "Middle East escalation could spike prices $8-12/bbl rapidly",
-      "China demand recovery stronger than expected — upside risk to consensus"
+      "China demand recovery stronger than expected â€” upside risk to consensus"
     ],
     price_at_analysis: 82.40,
     change_24h: -0.85,
@@ -985,7 +958,7 @@ const DEMO_INTELLIGENCE = {
     key_drivers: [
       "Primorsk refinery restart reduces supply constraints that previously supported price",
       "Indian buyers negotiating lower offtake prices as alternatives increase",
-      "Brent/Urals spread at 2.3σ above 90-day mean — historically mean-reverts within 8-12 days"
+      "Brent/Urals spread at 2.3Ïƒ above 90-day mean â€” historically mean-reverts within 8-12 days"
     ],
     key_risks: [
       "Further Western sanctions tightening could disrupt export flows again",
@@ -997,7 +970,7 @@ const DEMO_INTELLIGENCE = {
     trend_30d: -4.2,
     news_count_analysed: 7,
     opportunity_flag: true,
-    opportunity_description: "Brent/Urals spread at $6.20 — 2.3σ above mean. Historical pattern: spread mean-reverts within 8-12 days. Estimated P&L on convergence trade: $420K.",
+    opportunity_description: "Brent/Urals spread at $6.20 â€” 2.3Ïƒ above mean. Historical pattern: spread mean-reverts within 8-12 days. Estimated P&L on convergence trade: $420K.",
     top_news: [
       {headline: "Russian Oil Exports via Baltic Ports Rise 12% Despite Sanctions Pressure", source: "Reuters", sentiment: "negative", time: "1h ago"},
       {headline: "Primorsk Refinery Restart Adds 180,000 bbl/day Supply", source: "Platts", sentiment: "negative", time: "3h ago"},
@@ -1013,7 +986,7 @@ const DEMO_INTELLIGENCE = {
     key_drivers: [
       "Cushing storage draw of 2.1M bbl supports near-term price",
       "US production holding near record 13.3M bbl/day limits upside",
-      "EIA report broadly in line with consensus — no major catalyst"
+      "EIA report broadly in line with consensus â€” no major catalyst"
     ],
     key_risks: [
       "Economic slowdown could dampen US domestic consumption",
@@ -1037,13 +1010,13 @@ const DEMO_INTELLIGENCE = {
     outlook: "neutral",
     outlook_score: 48,
     key_drivers: [
-      "Mont Belvieu prices stable — NGL complex well supplied",
+      "Mont Belvieu prices stable â€” NGL complex well supplied",
       "Dragon fleet ethane deliveries on schedule supporting NW Europe supply",
-      "INEOS Rafnes cracker running at 94% utilisation — healthy demand signal"
+      "INEOS Rafnes cracker running at 94% utilisation â€” healthy demand signal"
     ],
     key_risks: [
-      "Dragon vessel delay risk elevated — North Atlantic weather forecast poor for next 72h",
-      "Naphtha/ethane switching economics approaching threshold — could reduce ethane demand"
+      "Dragon vessel delay risk elevated â€” North Atlantic weather forecast poor for next 72h",
+      "Naphtha/ethane switching economics approaching threshold â€” could reduce ethane demand"
     ],
     price_at_analysis: 315.20,
     change_24h: -0.50,
@@ -1062,8 +1035,8 @@ const DEMO_INTELLIGENCE = {
     outlook: "bullish",
     outlook_score: 65,
     key_drivers: [
-      "Storage injections below 5-year average — supply tighter than seasonal norm",
-      "LNG export capacity running at record high — competing for supply",
+      "Storage injections below 5-year average â€” supply tighter than seasonal norm",
+      "LNG export capacity running at record high â€” competing for supply",
       "Power generation demand elevated due to early summer heat forecast"
     ],
     key_risks: [
@@ -1088,7 +1061,7 @@ const DEMO_INTELLIGENCE = {
     outlook_score: 52,
     key_drivers: [
       "EU ETS Phase 4 supply reduction timeline on track",
-      "Power sector demand for allowances stable — gas-to-coal switching limited",
+      "Power sector demand for allowances stable â€” gas-to-coal switching limited",
       "Auction results this week inline with secondary market pricing"
     ],
     key_risks: [
@@ -1102,7 +1075,7 @@ const DEMO_INTELLIGENCE = {
     news_count_analysed: 3,
     opportunity_flag: false,
     top_news: [
-      {headline: "EU Carbon Price Stabilises Near €63 as Auction Results Match Secondary Market", source: "Reuters", sentiment: "neutral", time: "5h ago"}
+      {headline: "EU Carbon Price Stabilises Near â‚¬63 as Auction Results Match Secondary Market", source: "Reuters", sentiment: "neutral", time: "5h ago"}
     ],
     analysis_datetime: new Date(Date.now() - 14*60000).toISOString(),
     agent_run_id: 47
@@ -1110,9 +1083,9 @@ const DEMO_INTELLIGENCE = {
 };
 
 const DEMO_AGENT_RUNS = [
-  { id: 47, run_datetime: new Date(Date.now() - 14*60000).toISOString(), status: "success", commodities_analysed: 6, duration_seconds: 18.4, news_items_read: 23, analyses_produced: 6, opportunities_found: 1, notes: "Opportunity flagged: Urals/Brent spread at 2.3σ above mean" },
+  { id: 47, run_datetime: new Date(Date.now() - 14*60000).toISOString(), status: "success", commodities_analysed: 6, duration_seconds: 18.4, news_items_read: 23, analyses_produced: 6, opportunities_found: 1, notes: "Opportunity flagged: Urals/Brent spread at 2.3Ïƒ above mean" },
   { id: 46, run_datetime: new Date(Date.now() - 44*60000).toISOString(), status: "success", commodities_analysed: 6, duration_seconds: 21.1, news_items_read: 18, analyses_produced: 6, opportunities_found: 0, notes: "All markets within normal parameters" },
-  { id: 45, run_datetime: new Date(Date.now() - 74*60000).toISOString(), status: "success", commodities_analysed: 6, duration_seconds: 15.8, news_items_read: 31, analyses_produced: 6, opportunities_found: 1, notes: "Opportunity flagged: HH gas — storage below 5yr average" },
+  { id: 45, run_datetime: new Date(Date.now() - 74*60000).toISOString(), status: "success", commodities_analysed: 6, duration_seconds: 15.8, news_items_read: 31, analyses_produced: 6, opportunities_found: 1, notes: "Opportunity flagged: HH gas â€” storage below 5yr average" },
   { id: 44, run_datetime: new Date(Date.now() - 104*60000).toISOString(), status: "success", commodities_analysed: 6, duration_seconds: 19.2, news_items_read: 14, analyses_produced: 6, opportunities_found: 0, notes: "" },
 ];
 
@@ -1162,11 +1135,11 @@ async function populateMarketPanel() {
     const outlook = intel_item?.outlook || 'neutral';
     const oppFlag = intel_item?.opportunity_flag;
     const newsCount = intel_item?.news_count_analysed || 0;
-    const updatedAt = intel_item?.analysis_datetime ? timeAgo(intel_item.analysis_datetime) : '—';
+    const updatedAt = intel_item?.analysis_datetime ? timeAgo(intel_item.analysis_datetime) : 'â€”';
     const chgClass = chg >= 0 ? 'up' : 'down';
-    const chgStr = (chg >= 0 ? '▲' : '▼') + ' ' + Math.abs(chg).toFixed(2) + '%';
-    const outlookLabels = {bullish: '↑ Bullish', bearish: '↓ Bearish', neutral: '→ Neutral'};
-    const outlookLabel = outlookLabels[outlook] || '→ Neutral';
+    const chgStr = (chg >= 0 ? 'â–²' : 'â–¼') + ' ' + Math.abs(chg).toFixed(2) + '%';
+    const outlookLabels = {bullish: 'â†‘ Bullish', bearish: 'â†“ Bearish', neutral: 'â†’ Neutral'};
+    const outlookLabel = outlookLabels[outlook] || 'â†’ Neutral';
 
     html += `<div class="mp-price-row" onclick="openIntelReport('${commodity}')">
       <div class="mp-price-top">
@@ -1176,8 +1149,8 @@ async function populateMarketPanel() {
       </div>
       <div class="mp-price-bottom">
         <span class="mp-outlook-badge ${outlook}">${outlookLabel}</span>
-        ${newsCount > 0 ? `<span class="mp-news-tag">📰 ${newsCount}</span>` : ''}
-        ${oppFlag ? `<span class="mp-opp-flag">⚡ Opportunity</span>` : ''}
+        ${newsCount > 0 ? `<span class="mp-news-tag">ðŸ“° ${newsCount}</span>` : ''}
+        ${oppFlag ? `<span class="mp-opp-flag">âš¡ Opportunity</span>` : ''}
         <span class="mp-updated">${updatedAt}</span>
       </div>
     </div>`;
@@ -1194,13 +1167,13 @@ async function populateMarketPanel() {
     if (d?.top_news) d.top_news.forEach(n => allNews.push({...n, commodity: c}));
   });
   allNews.sort((a,b) => a.time?.localeCompare(b.time||'') || 0);
-  // Always show news — from DEMO_INTELLIGENCE if no live news yet
+  // Always show news â€” from DEMO_INTELLIGENCE if no live news yet
   if (newsEl) {
-    const newsToShow = allNews.length > 0 ? allNews : 
-      Object.values(DEMO_INTELLIGENCE).flatMap(d => 
+    const newsToShow = allNews.length > 0 ? allNews :
+      Object.values(DEMO_INTELLIGENCE).flatMap(d =>
         (d.top_news||[]).map(n => ({...n, commodity: d.commodity}))
       ).slice(0,6);
-    
+
     if (newsToShow.length > 0) {
       const countEl = document.getElementById('mp-news-count');
       if (countEl) countEl.textContent = newsToShow.length;
@@ -1209,8 +1182,8 @@ async function populateMarketPanel() {
         <div class="mp-news-item" onclick="openNewsPanel(${n.id || demoIds[idx % demoIds.length]})" style="cursor:pointer">
           <div>${n.headline}</div>
           <span class="mp-news-time">
-            <span class="mp-news-source">${n.source||'Reuters'}</span> · 
-            ${n.time||n.published_at||'recently'} · 
+            <span class="mp-news-source">${n.source||'Reuters'}</span> Â·
+            ${n.time||n.published_at||'recently'} Â·
             <span style="color:var(--accent)">${n.commodity||''}</span>
           </span>
         </div>`).join('');
@@ -1232,7 +1205,7 @@ async function updateAgentStatus() {
 
   const latest = runs[0];
   if (latest && statusEl) {
-    statusEl.textContent = `Updated ${timeAgo(latest.run_datetime)} · Run #${latest.id}`;
+    statusEl.textContent = `Updated ${timeAgo(latest.run_datetime)} Â· Run #${latest.id}`;
     if (dotEl) { dotEl.className = 'mp-agent-dot done'; }
     if (countEl) countEl.textContent = latest.analyses_produced || 0;
     if (oppEl)   oppEl.textContent   = latest.opportunities_found || 0;
@@ -1240,7 +1213,7 @@ async function updateAgentStatus() {
 }
 
 function timeAgo(isoStr) {
-  if (!isoStr) return '—';
+  if (!isoStr) return 'â€”';
   const mins = Math.round((Date.now() - new Date(isoStr)) / 60000);
   if (mins < 1) return 'just now';
   if (mins < 60) return `${mins} min ago`;
@@ -1259,23 +1232,23 @@ function openIntelReport(commodity) {
   const d = marketIntelData[commodity] || DEMO_INTELLIGENCE[commodity];
   const names = {Brent:'Brent Crude',WTI:'WTI Crude',Urals:'Urals Crude',Ethane:'Ethane',HH:'Henry Hub Gas',EUA:'EU Carbon (EUA)',EURUSD:'EUR/USD',GBPUSD:'GBP/USD'};
 
-  title.textContent = (names[commodity] || commodity) + ' — Intelligence Report';
-  subtitle.textContent = d ? `AI Analysis · ${timeAgo(d.analysis_datetime)} · Run #${d.agent_run_id||'—'}` : 'Loading...';
+  title.textContent = (names[commodity] || commodity) + ' â€” Intelligence Report';
+  subtitle.textContent = d ? `AI Analysis Â· ${timeAgo(d.analysis_datetime)} Â· Run #${d.agent_run_id||'â€”'}` : 'Loading...';
 
   if (d) {
     const outlook = d.outlook || 'neutral';
     const score = d.outlook_score || 50;
-    const icons = {bullish:'📈',bearish:'📉',neutral:'📊'};
+    const icons = {bullish:'ðŸ“ˆ',bearish:'ðŸ“‰',neutral:'ðŸ“Š'};
     const oppHtml = d.opportunity_flag ? `
       <div class="intel-section">
-        <div class="intel-section-title">⚡ Opportunity Identified</div>
+        <div class="intel-section-title">âš¡ Opportunity Identified</div>
         <div style="background:#FEF3C7;border:1px solid #FCD34D;border-radius:8px;padding:12px 14px;font-size:13px;color:#92400E;line-height:1.55;">
           ${d.opportunity_description || ''}
         </div>
       </div>` : '';
 
     const agentSteps = [
-      `Fetched live price: ${d.price_at_analysis?.toFixed(2) || '—'}`,
+      `Fetched live price: ${d.price_at_analysis?.toFixed(2) || 'â€”'}`,
       `Read ${d.news_count_analysed || 0} news articles from Reuters, FT, Bloomberg`,
       `Calculated 24h, 5d, 30d price trends`,
       `Ran spread analysis vs peer commodities`,
@@ -1284,7 +1257,7 @@ function openIntelReport(commodity) {
 
     body.innerHTML = `
       <div class="intel-outlook-card ${outlook}">
-        <div class="intel-outlook-icon">${icons[outlook]||'📊'}</div>
+        <div class="intel-outlook-icon">${icons[outlook]||'ðŸ“Š'}</div>
         <div style="flex:1">
           <div class="intel-outlook-label ${outlook}">${outlook.toUpperCase()}</div>
           <div class="intel-outlook-score">Conviction score: ${score}/100</div>
@@ -1307,7 +1280,7 @@ function openIntelReport(commodity) {
       <div class="intel-section">
         <div class="intel-section-title" style="display:flex;align-items:center;justify-content:space-between">
           Price History (30 days)
-          <button class="btn btn-secondary btn-sm" style="font-size:11px;padding:3px 8px" onclick="openPriceHistoryModal('${commodity}')">⤢ Expand</button>
+          <button class="btn btn-secondary btn-sm" style="font-size:11px;padding:3px 8px" onclick="openPriceHistoryModal('${commodity}')">â¤¢ Expand</button>
         </div>
         <div style="position:relative;height:90px;width:100%">
           <canvas id="intel-spark-chart" style="position:absolute;inset:0;width:100%!important;height:100%!important"></canvas>
@@ -1323,7 +1296,7 @@ function openIntelReport(commodity) {
       </div>
 
       <div class="intel-agent-log">
-        <div class="intel-agent-log-title">🤖 Agent Work Log — what AI did</div>
+        <div class="intel-agent-log-title">ðŸ¤– Agent Work Log â€” what AI did</div>
         ${agentSteps.map((s,i)=>`<div class="intel-agent-step">${s}<span class="step-time">${(0.8+i*0.9).toFixed(1)}s</span></div>`).join('')}
       </div>
 
@@ -1341,9 +1314,9 @@ function openIntelReport(commodity) {
       </div>
 
       <div class="intel-refresh-row">
-        <button class="btn btn-secondary btn-sm" onclick="refreshCommodityIntel('${commodity}')">↻ Refresh analysis</button>
+        <button class="btn btn-secondary btn-sm" onclick="refreshCommodityIntel('${commodity}')">â†» Refresh analysis</button>
         <button class="btn btn-secondary btn-sm" onclick="openPriceHistoryModal(commodity)">View price history</button>
-        <button class="btn btn-primary btn-sm" onclick="closeIntelReport();openCopilot();sendCopilotMessage('Tell me more about the ${commodity} market situation and what action I should take')">Ask AI →</button>
+        <button class="btn btn-primary btn-sm" onclick="closeIntelReport();openCopilot();sendCopilotMessage('Tell me more about the ${commodity} market situation and what action I should take')">Ask AI â†’</button>
       </div>
     `;
   } else {
@@ -1352,7 +1325,7 @@ function openIntelReport(commodity) {
 
   panel.classList.add('open');
   if (backdrop) { backdrop.classList.add('show'); }
-  
+
   // Render sparkline chart after DOM update
   requestAnimationFrame(() => renderIntelSparkline(commodity, d));
 }
@@ -1390,8 +1363,8 @@ function openWatchlistConfig() {
   body.innerHTML = watchlistData.map(c => `
     <div class="wl-item">
       <span class="wl-item-name">${c}</span>
-      <span class="wl-item-threshold">Alert: ±2%</span>
-      <button class="wl-item-remove" onclick="removeFromWatchlist('${c}')">×</button>
+      <span class="wl-item-threshold">Alert: Â±2%</span>
+      <button class="wl-item-remove" onclick="removeFromWatchlist('${c}')">Ã—</button>
     </div>`).join('');
   modal.classList.add('show');
   backdrop.classList.add('show');
@@ -1425,8 +1398,8 @@ function openAgentLog() {
   body.innerHTML = runs.map(r => `
     <div class="agent-run-entry">
       <div class="agent-run-header">
-        <span class="agent-run-time">${new Date(r.run_datetime).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})} · Run #${r.id}</span>
-        <span class="agent-run-badge ${r.status}">${r.status === 'success' ? '✓ Complete' : '⟳ Running'}</span>
+        <span class="agent-run-time">${new Date(r.run_datetime).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})} Â· Run #${r.id}</span>
+        <span class="agent-run-badge ${r.status}">${r.status === 'success' ? 'âœ“ Complete' : 'âŸ³ Running'}</span>
         <span style="font-size:11px;color:var(--muted);margin-left:auto">${timeAgo(r.run_datetime)}</span>
       </div>
       <div class="agent-run-stats">
@@ -1434,7 +1407,7 @@ function openAgentLog() {
         <div class="agent-run-stat"><span class="agent-run-stat-label">News read</span><span class="agent-run-stat-val">${r.news_items_read}</span></div>
         <div class="agent-run-stat"><span class="agent-run-stat-label">Duration</span><span class="agent-run-stat-val">${r.duration_seconds?.toFixed(1)}s</span></div>
       </div>
-      ${r.opportunities_found > 0 ? `<div class="agent-run-opps">⚡ ${r.opportunities_found} opportunity found: ${r.notes}</div>` : ''}
+      ${r.opportunities_found > 0 ? `<div class="agent-run-opps">âš¡ ${r.opportunities_found} opportunity found: ${r.notes}</div>` : ''}
     </div>`).join('');
   modal.classList.add('show');
   backdrop.classList.add('show');
@@ -1458,7 +1431,7 @@ window.openAgentLog = openAgentLog;
 window.closeAgentLog = closeAgentLog;
 window.timeAgo = timeAgo;
 
-/* ── Screen registry ── */
+/* â”€â”€ Screen registry â”€â”€ */
 const SCREENS = {};
 
 window.addEventListener('hashchange', () => {
@@ -1480,7 +1453,7 @@ function toggleMarketPanel() {
   if (!shell) return;
   const collapsed = shell.classList.toggle('mp-collapsed');
   if (tab) tab.style.display = collapsed ? 'block' : 'none';
-  if (btn) btn.textContent = collapsed ? '◀' : '▶';
+  if (btn) btn.textContent = collapsed ? 'â—€' : 'â–¶';
   storageSet(STORAGE_KEYS.mpCollapsed, collapsed ? '1' : '0');
 }
 window.toggleMarketPanel = toggleMarketPanel;
@@ -1552,7 +1525,7 @@ window.aiProvider = () => aiProvider;
 window.toggleTheme = toggleTheme;
 window.currentTheme = () => currentTheme;
 
-/* ── AI Provider Toggle ─────────────────────────────────────────── */
+/* â”€â”€ AI Provider Toggle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 function applyProviderUI(provider) {
   const claudeBtn  = document.getElementById('toggle-claude');
   const localBtn   = document.getElementById('toggle-local');
@@ -1571,7 +1544,7 @@ function applyProviderUI(provider) {
 
 window.switchAIProvider = async function(provider) {
   const statusEl = document.getElementById('ai-conn-status');
-  if (statusEl) { statusEl.textContent = '⟳ Switching...'; statusEl.style.color = '#f59e0b'; statusEl.style.background = '#f59e0b22'; }
+  if (statusEl) { statusEl.textContent = 'âŸ³ Switching...'; statusEl.style.color = '#f59e0b'; statusEl.style.background = '#f59e0b22'; }
 
   try {
     await apiCall(`/ai/switch/${provider}`, { method: 'POST' });
@@ -1583,14 +1556,14 @@ window.switchAIProvider = async function(provider) {
     const status = await apiCall('/ai/status').catch(() => null);
     if (statusEl) {
       const online = status && status.status === 'online';
-      statusEl.textContent = online ? '● ONLINE' : '● CHECK CONFIG';
+      statusEl.textContent = online ? 'â— ONLINE' : 'â— CHECK CONFIG';
       statusEl.style.color = online ? '#4ade80' : '#f87171';
       statusEl.style.background = online ? '#16a34a22' : '#dc262622';
     }
-    showToast('AI Model', `Switched to ${provider === 'claude' ? 'Claude API ☁' : 'Local LLM 🖥'}`, 'success');
+    showToast('AI Model', `Switched to ${provider === 'claude' ? 'Claude API â˜' : 'Local LLM ðŸ–¥'}`, 'success');
   } catch(e) {
-    if (statusEl) { statusEl.textContent = '● ERROR'; statusEl.style.color = '#f87171'; statusEl.style.background = '#dc262622'; }
-    showToast('AI Model', 'Switch failed — check server', 'error');
+    if (statusEl) { statusEl.textContent = 'â— ERROR'; statusEl.style.color = '#f87171'; statusEl.style.background = '#dc262622'; }
+    showToast('AI Model', 'Switch failed â€” check server', 'error');
   }
 };
 
@@ -1613,10 +1586,10 @@ async function syncAIProviderFromBackend() {
 async function renderIntelSparkline(commodity, intelData) {
   const canvas = document.getElementById('intel-spark-chart');
   if (!canvas || typeof Chart === 'undefined') return;
-  
+
   // Destroy existing chart
   if (canvas._chartInstance) { canvas._chartInstance.destroy(); }
-  
+
   // Fetch price history
   let labels = [], prices = [];
   try {
@@ -1630,7 +1603,7 @@ async function renderIntelSparkline(commodity, intelData) {
       prices = sorted.map(h => parseFloat(h.price));
     }
   } catch(e) {}
-  
+
   // Use simulated if no real data
   if (prices.length === 0) {
     const base = intelData?.price_at_analysis || 80;
@@ -1646,11 +1619,11 @@ async function renderIntelSparkline(commodity, intelData) {
       return d.toLocaleDateString('en-GB', {day:'numeric',month:'short'});
     });
   }
-  
+
   const outlook = intelData?.outlook || 'neutral';
   const color = outlook === 'bullish' ? '#16A34A' : outlook === 'bearish' ? '#DC2626' : '#6B7280';
   const bgColor = outlook === 'bullish' ? 'rgba(22,163,74,0.08)' : outlook === 'bearish' ? 'rgba(220,38,38,0.08)' : 'rgba(107,114,128,0.05)';
-  
+
   canvas._chartInstance = new Chart(canvas, {
     type: 'line',
     data: {
@@ -1685,7 +1658,7 @@ window.renderIntelSparkline = renderIntelSparkline;
    Market Watch Configuration
    ============================================================ */
 
-// Full commodity catalog (matches Codex registry — works offline)
+// Full commodity catalog (matches Codex registry â€” works offline)
 const COMMODITY_CATALOG = {
   crude:   [{s:'Brent',n:'Brent Crude',u:'USD/bbl'},{s:'WTI',n:'WTI Crude',u:'USD/bbl'},{s:'Urals',n:'Urals Crude',u:'USD/bbl'},{s:'Dubai',n:'Dubai Crude',u:'USD/bbl'},{s:'Oman',n:'Oman Crude',u:'USD/bbl'}],
   ngl:     [{s:'Ethane',n:'Ethane CIF NWE',u:'USD/MT'},{s:'LPG',n:'LPG Butane',u:'USD/MT'},{s:'NGLs',n:'NGL Mix',u:'USD/MT'},{s:'Naphtha',n:'Naphtha CIF NWE',u:'USD/MT'},{s:'Gasoil',n:'Gasoil 0.1%',u:'USD/MT'},{s:'Fuel Oil',n:'Fuel Oil 380',u:'USD/MT'}],
@@ -1734,13 +1707,13 @@ function renderConfigWatchlist() {
       <span class="config-wl-drag">&#10783;</span>
       <div class="config-wl-info">
         <div class="config-wl-name">${meta?.n || s}</div>
-        <div class="config-wl-meta">${s} · ${meta?.u || 'price'}</div>
+        <div class="config-wl-meta">${s} Â· ${meta?.u || 'price'}</div>
       </div>
       <div class="config-wl-threshold">
         <input type="number" value="2.0" min="0.1" max="20" step="0.1" title="Alert threshold %">
         <span class="config-wl-threshold-label">% alert</span>
       </div>
-      <button class="config-wl-remove" onclick="removeFromWatchlist('${s}');renderConfigWatchlist();populateMarketPanel()">×</button>
+      <button class="config-wl-remove" onclick="removeFromWatchlist('${s}');renderConfigWatchlist();populateMarketPanel()">Ã—</button>
     </div>`;
   }).join('') || '<div class="config-loading">No instruments. Add some below.</div>';
   el.innerHTML = items;
@@ -1791,7 +1764,7 @@ async function validateCustomSymbol() {
 
   if (localMatch) {
     resultEl.className = 'config-validation-ok';
-    resultEl.innerHTML = `&#10003; <strong>${localMatch.s}</strong> — ${localMatch.n} (${localMatch.u})`;
+    resultEl.innerHTML = `&#10003; <strong>${localMatch.s}</strong> â€” ${localMatch.n} (${localMatch.u})`;
     configValidatedSymbol = localMatch.s;
     addBtn.disabled = false;
     return;
@@ -1802,7 +1775,7 @@ async function validateCustomSymbol() {
     const result = await apiCall(`/configuration/commodities/validate?symbol=${encodeURIComponent(symbol)}`);
     if (result?.valid) {
       resultEl.className = 'config-validation-ok';
-      resultEl.innerHTML = `&#10003; <strong>${result.symbol}</strong> — ${result.display_name || symbol} | Price: ${result.current_price || 'available'} | Source: ${result.source || 'registry'}`;
+      resultEl.innerHTML = `&#10003; <strong>${result.symbol}</strong> â€” ${result.display_name || symbol} | Price: ${result.current_price || 'available'} | Source: ${result.source || 'registry'}`;
       configValidatedSymbol = result.symbol;
       addBtn.disabled = false;
     } else {
@@ -1816,7 +1789,7 @@ async function validateCustomSymbol() {
     const isShortSymbol = symbol.length >= 2 && symbol.length <= 10;
     if (isFxPair || isShortSymbol) {
       resultEl.className = 'config-validation-ok';
-      resultEl.innerHTML = `&#10003; <strong>${symbol.toUpperCase()}</strong> — Custom instrument (AI agent will attempt to fetch data). You can add it.`;
+      resultEl.innerHTML = `&#10003; <strong>${symbol.toUpperCase()}</strong> â€” Custom instrument (AI agent will attempt to fetch data). You can add it.`;
       configValidatedSymbol = symbol.toUpperCase();
       addBtn.disabled = false;
     } else {
@@ -1911,7 +1884,7 @@ The IEA last week cut its 2026 demand growth forecast by 200,000 barrels per day
 
 For North Sea physical traders, the OPEC+ decision could narrow the Brent/Urals spread further if Russian export compliance improves alongside Saudi cuts. The Urals/Brent differential has already widened to -$6.20/bbl, the widest in six weeks.`,
     ai_summary: 'OPEC+ is signaling an extension of production cuts through Q3 2026 due to weakening demand outlook. Brent fell $1.20 on the news. For INEOS positions, this reinforces the bearish Brent outlook and may affect physical crude procurement costs.',
-    ai_key_points: ['Extension likely through Q3 2026 — consensus building among Saudi Arabia and Russia', 'IEA cut 2026 demand forecast by 200kbpd — fundamental weakness signal', 'Brent/Urals spread widening to -$6.20/bbl — physical implications for CIF NWE trades'],
+    ai_key_points: ['Extension likely through Q3 2026 â€” consensus building among Saudi Arabia and Russia', 'IEA cut 2026 demand forecast by 200kbpd â€” fundamental weakness signal', 'Brent/Urals spread widening to -$6.20/bbl â€” physical implications for CIF NWE trades'],
     ai_position_impact: 'Bearish for Brent long positions. If you hold Brent physical length CIF Rotterdam (e.g. RMVT-0234), consider reviewing hedge coverage. Urals spread widening creates potential arb opportunity.',
     recommended_action: 'Review Brent hedge ratio before 10:00 OPEC+ announcement. Consider adding paper short if cuts extended as expected.',
   },
@@ -1929,9 +1902,9 @@ The return of Primorsk supply comes as the Brent/Urals differential has already 
 
 Baltic Dirty Tanker Index rates fell 1.2% on Monday as the additional tonnage demand from Primorsk resumed.`,
     ai_summary: 'Primorsk terminal restart adds 180,000 bbl/day of Urals supply, widening the Brent/Urals spread further to -$6.20/bbl. Indian buyers remain active but Chinese demand is uncertain.',
-    ai_key_points: ['180,000 bbl/day Urals supply returning — bearish for Urals price', 'Brent/Urals spread at -$6.20, widest in 6 weeks — potential arb opportunity', 'BDTI fell 1.2% — freight cost slight relief for CIF trades'],
-    ai_position_impact: 'If you hold Urals physical long (80,000 bbl), mark-to-market will be affected by spread widening. However, the spread is now 2.3σ above mean — historical pattern shows reversion within 8-12 days.',
-    recommended_action: 'Hold Urals long — spread likely to compress once Primorsk supply is absorbed. Consider Brent/Urals spread trade as an opportunity.',
+    ai_key_points: ['180,000 bbl/day Urals supply returning â€” bearish for Urals price', 'Brent/Urals spread at -$6.20, widest in 6 weeks â€” potential arb opportunity', 'BDTI fell 1.2% â€” freight cost slight relief for CIF trades'],
+    ai_position_impact: 'If you hold Urals physical long (80,000 bbl), mark-to-market will be affected by spread widening. However, the spread is now 2.3Ïƒ above mean â€” historical pattern shows reversion within 8-12 days.',
+    recommended_action: 'Hold Urals long â€” spread likely to compress once Primorsk supply is absorbed. Consider Brent/Urals spread trade as an opportunity.',
   },
   3: {
     id: 3, headline: 'US Natural Gas Storage Injection Falls Below 5-Year Average for Third Week',
@@ -1941,13 +1914,13 @@ Baltic Dirty Tanker Index rates fell 1.2% on Monday as the additional tonnage de
 
 Storage inventories increased by 52 billion cubic feet (Bcf) for the week ending May 23, below analyst expectations of 61 Bcf and the five-year average of 89 Bcf for this time of year.
 
-Total working gas in storage stands at 2,254 Bcf, which is 8% below the five-year average — the widest seasonal deficit since November 2022.
+Total working gas in storage stands at 2,254 Bcf, which is 8% below the five-year average â€” the widest seasonal deficit since November 2022.
 
 LNG export capacity running at a record 14.2 Bcf/day is competing with storage injections for supply, analysts noted. The Sabine Pass expansion and Corpus Christi Train 3 have both ramped to full capacity in recent weeks.
 
 Henry Hub front-month futures rose 6 cents to $2.84/MMBtu following the data release. Analysts at Goldman Sachs raised their summer Henry Hub forecast to $3.20/MMBtu.`,
     ai_summary: 'US gas storage injections fell below 5-year average for third consecutive week, with inventories 8% below average. LNG exports at record levels competing for supply. Bullish signal for Henry Hub.',
-    ai_key_points: ['Storage 8% below 5-year average — tightest seasonal deficit since Nov 2022', 'LNG exports at record 14.2 Bcf/day structurally competing with storage', 'Goldman Sachs raised summer HH forecast to $3.20/MMBtu'],
+    ai_key_points: ['Storage 8% below 5-year average â€” tightest seasonal deficit since Nov 2022', 'LNG exports at record 14.2 Bcf/day structurally competing with storage', 'Goldman Sachs raised summer HH forecast to $3.20/MMBtu'],
     ai_position_impact: 'Bullish for HH positions. If you have gas-indexed contracts in your book, this supports higher settlement prices. Monitor TTF correlation for European implications.',
     recommended_action: 'Positive signal for HH long positions. Review any gas-indexed feedstock contracts that could benefit from higher HH prices.',
   }
@@ -1987,12 +1960,12 @@ async function openNewsPanel(newsIdOrData) {
   document.getElementById('np-source').textContent = news.source || 'News';
   document.getElementById('np-headline').textContent = news.headline || '';
   document.getElementById('np-time').textContent = news.published_at ? timeAgo(news.published_at) : '';
-  
+
   const impactColors = {Bullish:'badge-low', Bearish:'badge-critical', Neutral:'badge-neutral'};
-  document.getElementById('np-impact-badge').innerHTML = news.market_impact 
+  document.getElementById('np-impact-badge').innerHTML = news.market_impact
     ? `<span class="badge ${impactColors[news.market_impact]||'badge-neutral'}">${news.market_impact}</span>` : '';
   document.getElementById('np-commodity-tags').innerHTML = (news.commodities_tagged||'').split(',')
-    .filter(Boolean).map(c=>`<span style="color:var(--accent);font-weight:600">${c.trim()}</span>`).join(' · ');
+    .filter(Boolean).map(c=>`<span style="color:var(--accent);font-weight:600">${c.trim()}</span>`).join(' Â· ');
 
   renderNewsBody(news);
 }
@@ -2007,7 +1980,7 @@ function renderNewsBody(news) {
 	  if (news.ai_summary) {
 	    const points = parseNewsKeyPoints(news.ai_key_points);
     html += `<div class="news-ai-summary">
-      <div class="news-ai-summary-title">🤖 AI Summary</div>
+      <div class="news-ai-summary-title">ðŸ¤– AI Summary</div>
       <div class="news-ai-summary-text">${news.ai_summary}</div>
       ${points.length > 0 ? `<div class="news-key-points" style="margin-top:10px">
         ${points.map(p=>`<div class="news-key-point">${p}</div>`).join('')}
@@ -2016,7 +1989,7 @@ function renderNewsBody(news) {
 
     if (news.ai_position_impact) {
       html += `<div class="news-impact-card">
-        <div class="news-impact-icon">📊</div>
+        <div class="news-impact-icon">ðŸ“Š</div>
         <div>
           <div class="news-impact-label">Position Impact</div>
           <div class="news-impact-value">${news.ai_position_impact}</div>
@@ -2025,7 +1998,7 @@ function renderNewsBody(news) {
     }
     if (news.recommended_action) {
       html += `<div class="news-impact-card" style="background:var(--accent-lt);border-color:#BFDBFE">
-        <div class="news-impact-icon">⚡</div>
+        <div class="news-impact-icon">âš¡</div>
         <div>
           <div class="news-impact-label" style="color:var(--accent)">Recommended Action</div>
           <div class="news-impact-value">${news.recommended_action}</div>
@@ -2085,12 +2058,12 @@ function buildNewsFallbackSummary(news) {
     summarization_status: 'local_fallback'
   };
 }
-	
+
 	async function summarizeCurrentNews() {
 	  if (!currentNewsId) return;
 	  const body = document.getElementById('np-body');
 	  if (!body) return;
-	  
+
 	  // Show loading state
   const summaryEl = body.querySelector('.news-ai-summary') || body.querySelector('.news-loading-summary');
   if (summaryEl) {
@@ -2109,7 +2082,7 @@ function buildNewsFallbackSummary(news) {
 	      return;
 	    }
 	  } catch(e) {}
-	
+
 	  // Demo fallback - simulate AI summary generation
 	  await new Promise(r => setTimeout(r, 1500));
 	  const fallback = DEMO_NEWS[currentNewsId] || buildNewsFallbackSummary(currentNewsData);
@@ -2156,7 +2129,7 @@ async function openPriceHistoryModal(commodity) {
     modal.innerHTML = `<div style="background:white;border-radius:12px;padding:24px;width:720px;max-width:90vw;box-shadow:0 20px 60px rgba(0,0,0,0.2)">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
         <div id="phm-title" style="font-size:18px;font-weight:700;color:var(--text)">Price History</div>
-        <button onclick="document.getElementById('price-history-modal').remove()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--muted)">✕</button>
+        <button onclick="document.getElementById('price-history-modal').remove()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--muted)">âœ•</button>
       </div>
       <div style="display:flex;gap:8px;margin-bottom:14px" id="phm-period-btns">
         <button class="btn btn-primary btn-sm" onclick="loadPriceHistory('${commodity}', 7, this)">7 days</button>
@@ -2170,7 +2143,7 @@ async function openPriceHistoryModal(commodity) {
     modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
   }
 
-  document.getElementById('phm-title').textContent = (commodity || 'Commodity') + ' — Price History';
+  document.getElementById('phm-title').textContent = (commodity || 'Commodity') + ' â€” Price History';
   // Replace template literal commodity refs
   document.querySelectorAll('#phm-period-btns button').forEach((btn, i) => {
     const days = [7, 30, 90][i];
@@ -2257,7 +2230,7 @@ window.loadPriceHistory = loadPriceHistory;
    Copilot Markdown + Fullscreen
    ============================================================ */
 
-// Built-in markdown renderer — no CDN dependency
+// Built-in markdown renderer â€” no CDN dependency
 function renderMarkdown(text) {
   if (!text) return '';
   const lines = text.split('\n');
@@ -2540,14 +2513,14 @@ window.sendCopilotMessage = async function(text) {
   const input = document.getElementById('copilot-input');
   if (input) input.value = '';
   if (!copilotOpen) openCopilot();
-  
+
   appendCopilotMessage('user', text);
-  
+
   // Typing indicator
   const msgs = document.getElementById('copilot-messages');
   const typingDiv = document.createElement('div');
   typingDiv.className = 'cp-msg ai typing';
-  typingDiv.innerHTML = '<div class="cp-bubble"><span class="cp-dots"><span>●</span><span>●</span><span>●</span></span></div>';
+  typingDiv.innerHTML = '<div class="cp-bubble"><span class="cp-dots"><span>â—</span><span>â—</span><span>â—</span></span></div>';
   msgs?.appendChild(typingDiv);
   msgs && (msgs.scrollTop = msgs.scrollHeight);
 
@@ -2619,7 +2592,7 @@ window.sendCopilotMessage = async function(text) {
     msgs && (msgs.scrollTop = msgs.scrollHeight);
   } catch(e) {
     typingDiv.remove();
-    appendCopilotMessage('ai', `I'm having trouble connecting right now. The AI service may be initialising — please try again in a moment.`);
+    appendCopilotMessage('ai', `I'm having trouble connecting right now. The AI service may be initialising â€” please try again in a moment.`);
   }
 };
 
@@ -2632,7 +2605,7 @@ window.maximizeCopilot = function() {
   if (!panel) return;
   copilotMaximized = !copilotMaximized;
   panel.classList.toggle('maximized', copilotMaximized);
-  if (btn) btn.textContent = copilotMaximized ? '⤡' : '⤢';
+  if (btn) btn.textContent = copilotMaximized ? 'â¤¡' : 'â¤¢';
   if (btn) btn.title = copilotMaximized ? 'Restore' : 'Maximize';
   // In maximized mode, backdrop covers everything
   if (backdrop) backdrop.classList.toggle('show', copilotMaximized && copilotOpen);
@@ -2647,10 +2620,10 @@ window.closeCopilot = function() {
   document.getElementById('copilot-backdrop')?.classList.remove('show');
   copilotOpen = false;
   const btn = document.getElementById('cp-maximize-btn');
-  if (btn) { btn.textContent = '⤢'; btn.title = 'Maximize'; }
+  if (btn) { btn.textContent = 'â¤¢'; btn.title = 'Maximize'; }
 };
 
-/* ── Intel Panel Fullscreen ── */
+/* â”€â”€ Intel Panel Fullscreen â”€â”€ */
 let intelMaximized = false;
 
 window.maximizeIntelPanel = function() {
@@ -2662,7 +2635,7 @@ window.maximizeIntelPanel = function() {
   if (backdrop) backdrop.classList.toggle('show', intelMaximized);
   // Update button icon in header
   const btn = document.getElementById('intel-maximize-btn');
-  if (btn) btn.textContent = intelMaximized ? '⤡' : '⤢';
+  if (btn) btn.textContent = intelMaximized ? 'â¤¡' : 'â¤¢';
 };
 
 // Patch closeIntelReport to also restore maximized
@@ -2725,7 +2698,7 @@ window.renderIntelSparkline = async function(commodity, intelData) {
   });
 };
 
-/* ── AI Ready Banner ── */
+/* â”€â”€ AI Ready Banner â”€â”€ */
 window.showAIReadyBanner = function(title, message) {
   // Remove any existing banner
   document.getElementById('ai-ready-banner')?.remove();
@@ -2742,7 +2715,7 @@ window.showAIReadyBanner = function(title, message) {
     cursor:pointer;
   `;
   banner.innerHTML = `
-    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;opacity:.8;margin-bottom:4px">🤖 AI Analysis Complete</div>
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;opacity:.8;margin-bottom:4px">ðŸ¤– AI Analysis Complete</div>
     <div style="font-size:17px;font-weight:800;margin-bottom:4px">${title}</div>
     <div style="font-size:13px;opacity:.9">${message}</div>
     <div style="font-size:11px;opacity:.6;margin-top:6px">Click to dismiss</div>
@@ -2760,7 +2733,7 @@ window.showAIReadyBanner = function(title, message) {
 };
 window.showAIReadyBanner = window.showAIReadyBanner;
 
-/* ── Expandable AI Panels ── */
+/* â”€â”€ Expandable AI Panels â”€â”€ */
 window.expandPanel = function(btn) {
   const panel = btn.closest('.ai-panel');
   if (!panel) return;
@@ -2768,12 +2741,12 @@ window.expandPanel = function(btn) {
   if (panel.classList.contains('expanded')) {
     // Collapse
     panel.classList.remove('expanded');
-    btn.textContent = '⤢ Expand';
+    btn.textContent = 'â¤¢ Expand';
     document.getElementById('panel-backdrop')?.remove();
   } else {
     // Expand
     panel.classList.add('expanded');
-    btn.textContent = '⤡ Collapse';
+    btn.textContent = 'â¤¡ Collapse';
     const backdrop = document.createElement('div');
     backdrop.id = 'panel-backdrop';
     backdrop.className = 'ai-panel-backdrop';
@@ -2783,7 +2756,7 @@ window.expandPanel = function(btn) {
 };
 
 /* ============================================================
-   Vessel Map — Leaflet + OpenStreetMap + AIS Traffic Layer
+   Vessel Map â€” Leaflet + OpenStreetMap + AIS Traffic Layer
    ============================================================ */
 
 let _aisLayer = null;
@@ -2802,9 +2775,9 @@ window.initLeafletMap = function(vessels) {
     .setView([50, -30], 4);
   mapEl._leafletMap = _vesselMap;
 
-  // Base layer — OpenStreetMap
+  // Base layer â€” OpenStreetMap
   const baseLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© <a href="https://openstreetmap.org">OpenStreetMap</a>',
+    attribution: 'Â© <a href="https://openstreetmap.org">OpenStreetMap</a>',
     maxZoom: 12
   }).addTo(_vesselMap);
 
@@ -2838,11 +2811,11 @@ window.initLeafletMap = function(vessels) {
     if (originLL) L.polyline([originLL, [v.lat, v.lon]], { color, weight: 1.5, opacity: 0.4, dashArray: '6,5' }).addTo(_vesselMap);
     if (destLL)   L.polyline([[v.lat, v.lon], destLL],   { color, weight: 1.5, opacity: 0.25, dashArray: '3,8' }).addTo(_vesselMap);
 
-    // Ship marker — custom HTML div icon
+    // Ship marker â€” custom HTML div icon
     const pulse = isDelayed ? 'animation:delayPulse 1.5s infinite;' : '';
     const shipIcon = L.divIcon({
       className: '',
-      html: `<div style="font-size:${isDelayed?22:18}px;${pulse}filter:drop-shadow(0 2px 4px rgba(0,0,0,.4));cursor:pointer">🚢</div>`,
+      html: `<div style="font-size:${isDelayed?22:18}px;${pulse}filter:drop-shadow(0 2px 4px rgba(0,0,0,.4));cursor:pointer">ðŸš¢</div>`,
       iconSize: [24, 24],
       iconAnchor: [12, 12]
     });
@@ -2851,16 +2824,16 @@ window.initLeafletMap = function(vessels) {
     const tooltipHtml = `
       <div style="font-family:-apple-system,sans-serif;min-width:200px">
         <div style="font-weight:800;font-size:13.5px;margin-bottom:6px;border-bottom:1px solid #eee;padding-bottom:5px">
-          🚢 ${v.name}
+          ðŸš¢ ${v.name}
         </div>
         <table style="font-size:12px;width:100%;border-collapse:collapse">
-          <tr><td style="color:#6B7280;padding:2px 0">Status</td><td style="font-weight:700;color:${color};padding:2px 0 2px 8px">${v.status}${isDelayed ? ' ⚠' : ''}</td></tr>
-          <tr><td style="color:#6B7280;padding:2px 0">Route</td><td style="padding:2px 0 2px 8px">${v.route || '—'}</td></tr>
-          <tr><td style="color:#6B7280;padding:2px 0">Cargo</td><td style="font-weight:600;padding:2px 0 2px 8px">${v.cargo || 'Ethane'} · ${v.volume || '—'}</td></tr>
-          <tr><td style="color:#6B7280;padding:2px 0">ETA</td><td style="font-weight:600;color:${isDelayed?'#DC2626':'#374151'};padding:2px 0 2px 8px">${v.eta || '—'}</td></tr>
-          <tr><td style="color:#6B7280;padding:2px 0">Position</td><td style="font-family:monospace;font-size:11px;padding:2px 0 2px 8px">${v.lat?.toFixed(2)}°N, ${Math.abs(v.lon)?.toFixed(2)}°${v.lon < 0 ? 'W' : 'E'}</td></tr>
-          <tr><td style="color:#6B7280;padding:2px 0">Progress</td><td style="padding:2px 0 2px 8px">${v.pct || '—'}% complete</td></tr>
-          ${isDelayed ? '<tr><td colspan="2" style="color:#DC2626;font-weight:700;padding-top:5px">⚠ 14h delay — demurrage risk $26,250</td></tr>' : ''}
+          <tr><td style="color:#6B7280;padding:2px 0">Status</td><td style="font-weight:700;color:${color};padding:2px 0 2px 8px">${v.status}${isDelayed ? ' âš ' : ''}</td></tr>
+          <tr><td style="color:#6B7280;padding:2px 0">Route</td><td style="padding:2px 0 2px 8px">${v.route || 'â€”'}</td></tr>
+          <tr><td style="color:#6B7280;padding:2px 0">Cargo</td><td style="font-weight:600;padding:2px 0 2px 8px">${v.cargo || 'Ethane'} Â· ${v.volume || 'â€”'}</td></tr>
+          <tr><td style="color:#6B7280;padding:2px 0">ETA</td><td style="font-weight:600;color:${isDelayed?'#DC2626':'#374151'};padding:2px 0 2px 8px">${v.eta || 'â€”'}</td></tr>
+          <tr><td style="color:#6B7280;padding:2px 0">Position</td><td style="font-family:monospace;font-size:11px;padding:2px 0 2px 8px">${v.lat?.toFixed(2)}Â°N, ${Math.abs(v.lon)?.toFixed(2)}Â°${v.lon < 0 ? 'W' : 'E'}</td></tr>
+          <tr><td style="color:#6B7280;padding:2px 0">Progress</td><td style="padding:2px 0 2px 8px">${v.pct || 'â€”'}% complete</td></tr>
+          ${isDelayed ? '<tr><td colspan="2" style="color:#DC2626;font-weight:700;padding-top:5px">âš  14h delay â€” demurrage risk $26,250</td></tr>' : ''}
         </table>
         <div style="font-size:10px;color:#94A3B8;margin-top:5px">Click for voyage economics</div>
       </div>`;
@@ -2892,13 +2865,13 @@ window.toggleAISLayer = function(enabled) {
   if (!_vesselMap) return;
 
   if (enabled) {
-    // OpenSeaMap — shows real vessel traffic lanes (free, no key)
+    // OpenSeaMap â€” shows real vessel traffic lanes (free, no key)
     _aisLayer = L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {
-      attribution: '© <a href="http://www.openseamap.org">OpenSeaMap</a>',
+      attribution: 'Â© <a href="http://www.openseamap.org">OpenSeaMap</a>',
       opacity: 0.7,
       maxZoom: 12
     }).addTo(_vesselMap);
-    if (noteEl) noteEl.innerHTML = '<span style="color:#16A34A">✓ OpenSeaMap traffic overlay loaded</span>';
+    if (noteEl) noteEl.innerHTML = '<span style="color:#16A34A">âœ“ OpenSeaMap traffic overlay loaded</span>';
 
     // Show info about registering for live AIS
     setTimeout(() => showAIReadyBanner(

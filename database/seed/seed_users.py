@@ -30,14 +30,6 @@ def seed_users(db=None):
                 "desk": "INEOS Trading & Shipping",
             },
             {
-                "email": "sarah.mitchell@ineos-ts.com",
-                "password": "Risk2026!",
-                "full_name": "Sarah Mitchell",
-                "role": "risk",
-                "title": "Head of Market Risk",
-                "desk": "INEOS Trading & Shipping",
-            },
-            {
                 "email": "james.hartley@ineos-ts.com",
                 "password": "Exec2026!",
                 "full_name": "James Hartley",

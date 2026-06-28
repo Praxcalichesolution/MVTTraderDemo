@@ -27,7 +27,7 @@ class User(Base):
     created_at = Column(DateTime, server_default=func.now())
 
     __table_args__ = (
-        CheckConstraint("role IN ('trader','risk','executive','admin')", name="chk_user_role"),
+        CheckConstraint("role IN ('trader','executive','admin')", name="chk_user_role"),
     )
 
     trades = relationship("Trade", back_populates="trader", foreign_keys="Trade.trader_id")
@@ -222,121 +222,6 @@ class MarketData(Base):
 
     def __repr__(self):
         return f"<MarketData id={self.id} commodity={self.commodity} price={self.price}>"
-
-
-class RiskNormalizedExposure(Base):
-    __tablename__ = "risk_normalized_exposures"
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    book_id = Column(Integer, ForeignKey("books.id"))
-    position_id = Column(Integer, ForeignKey("positions.id"))
-    book_name = Column(Text)
-    commodity = Column(Text, nullable=False)
-    region = Column(Text)
-    tenor = Column(Text)
-    source_type = Column(Text, default="Mixed")
-    physical_volume = Column(Real, default=0)
-    financial_volume = Column(Real, default=0)
-    net_volume = Column(Real, default=0)
-    delta_equivalent = Column(Real, default=0)
-    basis_bucket = Column(Text)
-    location_basis = Column(Text)
-    hedge_effectiveness = Column(Real, default=0)
-    normalized_price = Column(Real, default=0)
-    notional_usd = Column(Real, default=0)
-    as_of = Column(DateTime, server_default=func.now())
-
-    def __repr__(self):
-        return f"<RiskNormalizedExposure id={self.id} commodity={self.commodity} delta={self.delta_equivalent}>"
-
-
-class RiskMetricRun(Base):
-    __tablename__ = "risk_metric_runs"
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    run_date = Column(DateTime, server_default=func.now())
-    confidence = Column(Real, nullable=False)
-    horizon_days = Column(Integer, nullable=False)
-    method = Column(Text, default="Historical Simulation")
-    var_amount = Column(Real, default=0)
-    expected_shortfall = Column(Real, default=0)
-    portfolio_value = Column(Real, default=0)
-    observations = Column(Integer, default=0)
-    exceptions_count = Column(Integer, default=0)
-    status = Column(Text, default="Complete")
-    generated_by = Column(Text)
-    payload_json = Column(Text)
-
-    def __repr__(self):
-        return f"<RiskMetricRun id={self.id} conf={self.confidence} horizon={self.horizon_days}>"
-
-
-class RiskStressRun(Base):
-    __tablename__ = "risk_stress_runs"
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    scenario_name = Column(Text, nullable=False)
-    scenario_type = Column(Text)
-    total_pnl_impact = Column(Real, default=0)
-    worst_book = Column(Text)
-    payload_json = Column(Text)
-    created_at = Column(DateTime, server_default=func.now())
-
-    def __repr__(self):
-        return f"<RiskStressRun id={self.id} scenario={self.scenario_name}>"
-
-
-class RiskBacktestObservation(Base):
-    __tablename__ = "risk_backtest_observations"
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    observation_date = Column(Date, nullable=False)
-    confidence = Column(Real, default=0.99)
-    horizon_days = Column(Integer, default=1)
-    predicted_var = Column(Real, default=0)
-    realized_pnl = Column(Real, default=0)
-    exception_flag = Column(Integer, default=0)
-    exception_amount = Column(Real, default=0)
-    notes = Column(Text)
-
-    def __repr__(self):
-        return f"<RiskBacktestObservation date={self.observation_date} exception={self.exception_flag}>"
-
-
-class RiskLimit(Base):
-    __tablename__ = "risk_limits"
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    scope_type = Column(Text, default="Portfolio")
-    scope_name = Column(Text, nullable=False)
-    metric = Column(Text, nullable=False)
-    limit_amount = Column(Real, nullable=False)
-    warning_pct = Column(Real, default=80)
-    breach_pct = Column(Real, default=100)
-    current_value = Column(Real, default=0)
-    utilization_pct = Column(Real, default=0)
-    status = Column(Text, default="OK")
-    escalation = Column(Text)
-    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
-
-    def __repr__(self):
-        return f"<RiskLimit scope={self.scope_name} metric={self.metric} status={self.status}>"
-
-
-class RiskReport(Base):
-    __tablename__ = "risk_reports"
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    report_date = Column(Date, nullable=False)
-    report_type = Column(Text, nullable=False)
-    title = Column(Text, nullable=False)
-    status = Column(Text, default="Ready")
-    methodology = Column(Text)
-    summary_json = Column(Text)
-    created_at = Column(DateTime, server_default=func.now())
-
-    def __repr__(self):
-        return f"<RiskReport id={self.id} type={self.report_type} date={self.report_date}>"
 
 
 class ForwardCurve(Base):

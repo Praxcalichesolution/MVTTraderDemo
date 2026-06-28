@@ -7,7 +7,6 @@ $PidDir = Join-Path $RepoRoot ".runtime"
 
 $ApiPort = 8005
 $TraderPort = 8006
-$RiskPort = 8007
 $ApiBase = "http://127.0.0.1:$ApiPort/api"
 
 New-Item -ItemType Directory -Force -Path $LogDir, $PidDir | Out-Null
@@ -55,10 +54,8 @@ function Start-RadiantService {
 Start-RadiantService -Name "radiant-api" -Module "main" -Port $ApiPort
 Start-Sleep -Seconds 6
 Start-RadiantService -Name "radiant-trader" -Module "trader_main" -Port $TraderPort
-Start-RadiantService -Name "radiant-risk" -Module "risk_main" -Port $RiskPort
 
 Write-Host ""
 Write-Host "Radiant local demo is starting:"
 Write-Host "  API    http://127.0.0.1:$ApiPort/api/health"
 Write-Host "  Trader http://127.0.0.1:$TraderPort/"
-Write-Host "  Risk   http://127.0.0.1:$RiskPort/"

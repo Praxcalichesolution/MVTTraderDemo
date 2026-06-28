@@ -8,8 +8,6 @@ SCREEN_META = {
     "decision-queue": {"label": "Decision Queue", "icon": "📋"},
     "dashboard": {"label": "Dashboard", "icon": "📊"},
     "atlas": {"label": "MVT Atlas", "icon": "A"},
-    "risk-atlas": {"label": "Risk Atlas", "icon": "R"},
-    "risk-module": {"label": "Exposure Workbench", "icon": "E"},
     "positions": {"label": "Positions & Risk", "icon": "📈"},
     "ai": {"label": "AI Intelligence", "icon": "🤖"},
     "performance": {"label": "Performance", "icon": "🎯"},
@@ -66,7 +64,6 @@ APP_MODES = {
         "screen_fallbacks": {
             "positions": "dashboard",
             "market": "ai",
-            "risk-module": "dashboard",
         },
         "nav_sections": [
             {"label": "Trading", "items": ["decision-queue", "dashboard"]},
@@ -96,74 +93,13 @@ APP_MODES = {
             {"key": "management", "label": "Leadership", "screens": ["boardroom", "admin"]},
         ],
     },
-    "risk": {
-        "id": "risk",
-        "title": "Radiant - Risk",
-        "browser_title": "Radiant - Risk",
-        "brand_mark": "Radiant - Risk",
-        "primary_nav_heading": "Risk",
-        "tagline": "Risk oversight for exposures, controls, and market surveillance",
-        "default_screen": "dashboard",
-        "storage_prefix": "radiant_risk",
-        "login_button": "Sign In to Risk",
-        "login_hint": "sarah.mitchell@ineos-ts.com / Risk2026!",
-        "login_default_email": "sarah.mitchell@ineos-ts.com",
-        "login_default_password": "Risk2026!",
-        "allowed_roles": ["risk", "executive", "admin"],
-        "allowed_screens": [
-            "dashboard",
-            "risk-atlas",
-            "risk-module",
-            "positions",
-            "market",
-            "ai",
-            "compliance",
-            "documentation",
-            "ai-studio",
-            "configuration",
-            "boardroom",
-            "admin",
-        ],
-        "topbar_kpis": [
-            {"label": "Desk VaR", "screen": "risk-module"},
-            {"label": "Limit Use", "screen": "risk-module"},
-            {"label": "Exposures", "screen": "market"},
-            {"label": "Breaches", "screen": "compliance"},
-        ],
-        "screen_fallbacks": {
-            "decision-queue": "dashboard",
-            "performance": "dashboard",
-            "decision-intelligence": "ai",
-            "vessels": "market",
-            "comms": "compliance",
-        },
-        "nav_sections": [
-            {"label": "Risk", "items": ["dashboard", "risk-atlas", "risk-module", "positions", "market", "compliance"]},
-            {"label": "Intelligence", "items": ["ai"]},
-            {"label": "Tools", "items": ["documentation", "ai-studio", "configuration"]},
-            {
-                "label": "Management",
-                "items": [
-                    {"screen": "boardroom", "roles": ["executive", "admin"]},
-                    {"screen": "admin", "roles": ["admin"]},
-                ],
-            },
-        ],
-        "documentation_groups": [
-            {"key": "risk", "label": "Risk Workspace", "screens": ["dashboard", "risk-atlas", "risk-module", "positions", "market", "compliance"]},
-            {"key": "intelligence", "label": "AI & Oversight", "screens": ["ai"]},
-            {"key": "tools", "label": "Risk Tools", "screens": ["documentation", "ai-studio", "configuration"]},
-            {"key": "management", "label": "Leadership", "screens": ["boardroom", "admin"]},
-        ],
-    },
 }
 
 
 ROLE_APP_ACCESS = {
     "trader": ["trader"],
-    "risk": ["risk"],
-    "executive": ["trader", "risk"],
-    "admin": ["trader", "risk"],
+    "executive": ["trader"],
+    "admin": ["trader"],
 }
 
 
